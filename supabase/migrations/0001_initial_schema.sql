@@ -207,9 +207,14 @@ insert into public.subjects (slug, name, description, icon, sort_order) values
   ('matematica',  'Matemática',  'Álgebra, geometria, funções e muito mais.',   'Calculator',    1),
   ('fisica',      'Física',      'Mecânica, eletricidade, ondas e termologia.', 'Atom',          2),
   ('quimica',     'Química',     'Atomística, ligações químicas e reações.',    'FlaskConical',  3),
-  ('portugues',   'Português',   'Gramática, interpretação de texto e redação.','BookOpen',      4),
-  ('ingles',      'Inglês',      'Vocabulário, gramática e leitura.',           'Languages',     5),
-  ('historia',    'História',    'História do Brasil, geral e contemporânea.',  'Landmark',      6),
-  ('geografia',   'Geografia',   'Geografia física, humana e geopolítica.',     'Globe2',        7),
-  ('programacao', 'Programação', 'Lógica, algoritmos e linguagens.',            'Code2',         8)
+  ('biologia',    'Biologia',    'Citologia, genética, ecologia e evolução.',   'Leaf',          4),
+  ('portugues',   'Português',   'Gramática, interpretação de texto e redação.','BookOpen',      5),
+  ('ingles',      'Inglês',      'Vocabulário, gramática e leitura.',           'Languages',     6),
+  ('historia',    'História',    'História do Brasil, geral e contemporânea.',  'Landmark',      7),
+  ('geografia',   'Geografia',   'Geografia física, humana e geopolítica.',     'Globe2',        8),
+  ('filosofia',   'Filosofia',   'Ética, lógica, política e metafísica.',      'Brain',         9),
+  ('sociologia',  'Sociologia',  'Sociedade, cultura e instituições sociais.',   'Users',         10),
+  ('literatura',  'Literatura',  'Movimentos literários e análise de textos.',   'BookText',      11),
+  ('arte',        'Arte',        'História da arte, estilos e expressões.',     'Palette',       12),
+  ('programacao', 'Programação', 'Lógica, algoritmos e linguagens.',            'Code2',         13)
 on conflict (slug) do nothing;

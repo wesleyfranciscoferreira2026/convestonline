@@ -1612,6 +1612,332 @@ select.input {
   border-radius: 6px;
 }
 
+/* --------------------------------- IA / Tutor --------------------------- */
+.ai-hero-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(600px 200px at 100% 0%, color-mix(in srgb, #66cccc 22%, transparent), transparent 60%),
+    linear-gradient(135deg, #54afac, #3d8f8c);
+  color: #ffffff;
+  text-decoration: none;
+  transition:
+    transform var(--duration-base) var(--easing),
+    box-shadow var(--duration-base) var(--easing);
+}
+
+.ai-hero-card:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.ai-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ai-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  padding: 3px var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+}
+
+.ai-hero-text h3 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ai-hero-text p {
+  font-size: 13.5px;
+  color: rgb(255 255 255 / 0.85);
+  max-width: 520px;
+}
+
+.ai-hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-5);
+  font-size: 14px;
+  font-weight: 700;
+  color: #14302f;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: transform var(--duration-fast) var(--easing);
+}
+
+.ai-hero-card:hover .ai-hero-cta {
+  transform: translateX(2px);
+}
+
+.ai-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.ai-header h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ai-header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ai-setup-card {
+  border-color: var(--color-primary);
+}
+
+.ai-setup-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ai-setup-note {
+  margin-top: var(--space-4);
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.ai-chat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  min-height: 480px;
+}
+
+.ai-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.ai-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+
+.ai-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: var(--shadow-md);
+}
+
+.ai-welcome h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ai-welcome p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  max-width: 420px;
+}
+
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.ai-suggestion {
+  padding: 8px var(--space-4);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-primary-dark);
+  background: var(--color-primary-soft);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing),
+    border-color var(--duration-fast) var(--easing);
+}
+
+.ai-suggestion:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-softer);
+}
+
+.ai-msg {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.ai-msg-user {
+  flex-direction: row-reverse;
+}
+
+.ai-msg-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: var(--color-primary-dark);
+  background: var(--color-primary-soft);
+}
+
+.ai-msg-user .ai-msg-bubble {
+  background: var(--color-primary);
+  color: #14302f;
+}
+
+.ai-msg-assistant .ai-msg-bubble {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+}
+
+.ai-msg-bubble {
+  max-width: 80%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.ai-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+}
+
+.ai-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  animation: typing-dot 1.2s ease-in-out infinite;
+}
+
+.ai-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ai-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.ai-input-bar {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.ai-input-bar .input {
+  flex: 1;
+}
+
+.ai-config-sheet {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.ai-markdown h2,
+.ai-markdown h3,
+.ai-markdown h4 {
+  margin: var(--space-3) 0 var(--space-1);
+  font-weight: 700;
+}
+
+.ai-markdown h2 {
+  font-size: 16px;
+}
+
+.ai-markdown h3 {
+  font-size: 15px;
+}
+
+.ai-markdown h4 {
+  font-size: 14px;
+}
+
+.ai-markdown p {
+  margin: var(--space-2) 0;
+}
+
+.ai-markdown ul.ai-list {
+  margin: var(--space-2) 0 var(--space-2) var(--space-5);
+  list-style: disc;
+}
+
+.ai-markdown ul.ai-list li {
+  margin: var(--space-1) 0;
+}
+
+.ai-markdown code {
+  padding: 2px 6px;
+  font-size: 12.5px;
+  background: var(--color-primary-softer);
+  border-radius: 6px;
+  font-family: 'Consolas', 'Menlo', monospace;
+}
+
+.ai-markdown strong {
+  font-weight: 700;
+}
+
+.ai-markdown em {
+  font-style: italic;
+}
+
 /* ----------------------------- Responsivo ------------------------------- */
 @media (max-width: 1080px) {
   .stats-grid {

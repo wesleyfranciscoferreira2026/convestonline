@@ -1,6 +1,8 @@
 import {
   Atom,
   BookOpen,
+  BookText,
+  Brain,
   Calculator,
   Code2,
   FlaskConical,
@@ -8,18 +10,26 @@ import {
   GraduationCap,
   Landmark,
   Languages,
+  Leaf,
+  Palette,
+  Users,
 } from 'lucide-react'
 
 /** Mapa do campo subjects.icon (string) para o componente Lucide. */
 const ICONS = {
   Atom,
   BookOpen,
+  BookText,
+  Brain,
   Calculator,
   Code2,
   FlaskConical,
   Globe2,
   Landmark,
   Languages,
+  Leaf,
+  Palette,
+  Users,
 }
 
 export default function SubjectIcon({ name, size = 20, ...rest }) {

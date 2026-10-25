@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Search,
   Settings,
+  Sparkles,
   X,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
@@ -21,6 +22,7 @@ import PageTransition from './PageTransition'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: Home, end: true },
+  { to: '/ia', label: 'Convest IA', icon: Sparkles },
   { to: '/explorar', label: 'Explorar', icon: Compass },
   { to: '/estudos', label: 'Meus estudos', icon: BookOpen },
   { to: '/exercicios', label: 'Exercícios', icon: ClipboardList },
@@ -29,7 +31,12 @@ const NAV_ITEMS = [
   { to: '/perfil', label: 'Perfil', icon: Settings },
 ]
 
-const BOTTOM_ITEMS = NAV_ITEMS.slice(0, 4)
+const BOTTOM_ITEMS = [
+  { to: '/', label: 'Início', icon: Home, end: true },
+  { to: '/ia', label: 'IA', icon: Sparkles },
+  { to: '/explorar', label: 'Explorar', icon: Compass },
+  { to: '/exercicios', label: 'Exercícios', icon: ClipboardList },
+]
 
 export default function AppLayout() {
   const { profile, user, signOut } = useAuth()
@@ -68,8 +75,7 @@ export default function AppLayout() {
       {/* ---------------- Sidebar (desktop) ---------------- */}
       <aside className="sidebar">
         <NavLink to="/" className="sidebar-logo" aria-label="Aura Study — Início">
-          <span className="brand-mark">aura</span>
-          <span className="brand-sub">study</span>
+          <span className="brand-mark">convest</span>
         </NavLink>
         <nav className="sidebar-nav" aria-label="Navegação principal">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
@@ -198,7 +204,7 @@ export default function AppLayout() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sheet-header">
-              <span className="brand-mark">aura</span>
+              <span className="brand-mark">convest</span>
               <button type="button" className="icon-btn" aria-label="Fechar menu" onClick={() => setMenuOpen(false)}>
                 <X size={19} />
               </button>

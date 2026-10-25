@@ -9,6 +9,7 @@ import {
   Compass,
   Flame,
   Loader2,
+  Sparkles,
   Plus,
   Target,
   Trash2,
@@ -185,6 +186,20 @@ export default function Dashboard() {
 
   return (
     <div className="page dashboard">
+      {/* ---------- Convest IA ---------- */}
+      <Link to="/ia" className="ai-hero-card">
+        <div className="ai-hero-text">
+          <span className="ai-hero-badge">
+            <Sparkles size={14} aria-hidden="true" /> NOVO
+          </span>
+          <h3>Convest IA — sua tutora particular</h3>
+          <p>Tire dúvidas de matemática, física, história, geografia e mais. Explico passo a passo e cito as fontes.</p>
+        </div>
+        <span className="ai-hero-cta">
+          Perguntar à IA <ArrowRight size={16} aria-hidden="true" />
+        </span>
+      </Link>
+
       {/* ---------- Boas-vindas + resumo da rotina ---------- */}
       <Card className="hero-card">
         <div className="hero-text">

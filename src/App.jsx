@@ -8,6 +8,7 @@ import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
+import AITutor from './pages/AITutor'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Settings from './pages/Settings'
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/cadastro" element={<PageTransition><Signup /></PageTransition>} />
       <Route path="/recuperar" element={<PageTransition><ForgotPassword /></PageTransition>} />
       <Route path="/redefinir-senha" element={<PageTransition><ResetPassword /></PageTransition>} />
+      <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
 
       <Route
         element={
