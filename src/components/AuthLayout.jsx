@@ -6,7 +6,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
     <main className="auth-screen">
       <div className="auth-panel">
-        <Link to="/login" className="auth-brand" aria-label="Aura Study">
+        <Link to="/login" className="auth-brand" aria-label="Convest+">
           <span className="brand-mark">convest+</span>
         </Link>
         <p className="auth-tagline">

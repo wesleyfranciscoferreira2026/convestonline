@@ -1,4 +1,4 @@
-/** Primitivos de UI reutilizáveis do Aura Study. */
+/** Primitivos de UI reutilizáveis do Convest+. */
 
 export function FullPageLoader() {
   return (

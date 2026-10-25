@@ -13,7 +13,7 @@ export default function AdminQuestions() {
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
 
-  const blank = { subject_id: '', lesson_id: '', prompt: '', options: ['', '', '', ''], correct_index: 0, explanation: '', difficulty: 'medium', status: 'draft', sort_order: 0 }
+  const blank = { subject_id: '', lesson_id: '', prompt: '', options: ['', '', '', ''], correct_index: 0, explanation: '', difficulty: 'medium', topic: '', status: 'draft', sort_order: 0 }
 
   async function load() {
     const [{ data: subs }, { data: ls }, { data: qs }] = await Promise.all([
@@ -41,6 +41,7 @@ export default function AdminQuestions() {
       correct_index: Number(form.correct_index),
       explanation: form.explanation.trim() || null,
       difficulty: form.difficulty,
+      topic: form.topic.trim() || null,
       status: form.status,
       sort_order: Number(form.sort_order) || 0,
     }
@@ -106,7 +107,7 @@ export default function AdminQuestions() {
             <div key={q.id} className="admin-row admin-row-question">
               <div className="admin-row-info">
                 <strong>{q.prompt}</strong>
-                <span>{q.subjects?.name} · {q.lessons?.title ?? 'sem aula'} · {q.options.length} alt. · {q.difficulty}</span>
+                <span>{q.subjects?.name} · {q.topic ? `${q.topic} · ` : ''}{q.lessons?.title ?? 'sem aula'} · {q.options.length} alt. · {q.difficulty}</span>
               </div>
               <span className={`status-pill ${q.status === 'published' ? 'is-published' : 'is-draft'}`}>
                 {q.status === 'published' ? 'Publicada' : 'Rascunho'}
@@ -207,6 +208,10 @@ function QuestionForm({ initial, subjects, lessons, allLessons, saving, onSave, 
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => update('options', [...form.options, ''])}>
           + Alternativa
         </button>
+      </div>
+      <div className="field">
+        <label htmlFor="qf-topic">Tópico (ex.: Eletrodinâmica, Hidrodinâmica)</label>
+        <input id="qf-topic" className="input" value={form.topic ?? ''} onChange={(e) => update('topic', e.target.value)} />
       </div>
       <div className="field">
         <label htmlFor="qf-expl">Explicação (gabarito)</label>

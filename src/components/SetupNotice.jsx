@@ -16,7 +16,7 @@ export default function SetupNotice() {
         </div>
         <h1>Conecte o Supabase</h1>
         <p>
-          O Aura Study está pronto, mas precisa das credenciais do seu projeto Supabase
+          O Convest+ está pronto, mas precisa das credenciais do seu projeto Supabase
           para funcionar.
         </p>
         <ol>

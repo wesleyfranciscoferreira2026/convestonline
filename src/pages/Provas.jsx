@@ -32,6 +32,9 @@ export default function Provas() {
   const [category, setCategory] = useState('enem')
   const [selectedExam, setSelectedExam] = useState(null)
   const [selectedSubjects, setSelectedSubjects] = useState([])
+  const [selectedTopic, setSelectedTopic] = useState('')
+  const [difficulty, setDifficulty] = useState('all')
+  const [topics, setTopics] = useState([])
   const [quantity, setQuantity] = useState(10)
   const [questions, setQuestions] = useState([])
   const [loadingQ, setLoadingQ] = useState(false)
@@ -59,6 +62,24 @@ export default function Provas() {
 
   const filteredExams = (exams ?? []).filter((e) => e.category === category)
 
+  // Carrega tópicos distintos para a prova selecionada
+  useEffect(() => {
+    if (!selectedExam) { setTopics([]); return }
+    let active = true
+    async function load() {
+      const { data } = await supabase
+        .from('questions')
+        .select('topic')
+        .eq('exam_id', selectedExam.id)
+        .eq('status', 'published')
+      if (!active) return
+      const set = new Set((data ?? []).map((q) => q.topic).filter(Boolean))
+      setTopics(Array.from(set).sort())
+    }
+    load()
+    return () => { active = false }
+  }, [selectedExam])
+
   function toggleSubject(id) {
     setSelectedSubjects((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
@@ -66,13 +87,15 @@ export default function Provas() {
   async function startFromBank() {
     if (selectedSubjects.length === 0) { toast('Selecione ao menos uma matéria.', 'error'); return }
     setLoadingQ(true)
-    const { data } = await supabase
+    let query = supabase
       .from('questions')
-      .select('id, prompt, options, correct_index, explanation, difficulty, subject_id, subjects(name, icon)')
+      .select('id, prompt, options, correct_index, explanation, difficulty, topic, subject_id, subjects(name, icon)')
       .eq('exam_id', selectedExam.id)
       .eq('status', 'published')
       .in('subject_id', selectedSubjects)
-      .order('sort_order')
+    if (selectedTopic) query = query.eq('topic', selectedTopic)
+    if (difficulty !== 'all') query = query.eq('difficulty', difficulty)
+    const { data } = await query.order('sort_order')
     setLoadingQ(false)
     const qs = (data ?? []).sort(() => Math.random() - 0.5).slice(0, quantity)
     if (qs.length === 0) {
@@ -88,26 +111,32 @@ export default function Provas() {
     if (!aiConfig.apiKey) { toast('Configure sua chave de API na Convest IA primeiro.', 'error'); return }
     if (selectedSubjects.length === 0) { toast('Selecione ao menos uma matéria.', 'error'); return }
     const subjectNames = subjects.filter((s) => selectedSubjects.includes(s.id)).map((s) => s.name).join(', ')
+    const diffLabel = difficulty === 'all' ? 'variada' : difficulty === 'easy' ? 'fácil' : difficulty === 'medium' ? 'média' : 'difícil'
     setGenerating(true)
     try {
-      const prompt = `Gere ${quantity} questões de múltipla escolha no estilo da prova "${selectedExam.name}" (${selectedExam.description || ''}), matérias: ${subjectNames}.
+      const prompt = `Gere ${quantity} questões de múltipla escolha no estilo da prova "${selectedExam.name}" (${selectedExam.description || ''}), matérias: ${subjectNames}${selectedTopic ? `, tema específico: ${selectedTopic}` : ''}.
+
+Nível de dificuldade: ${diffLabel}. Textos de enunciado podem ser longos (até ~300 palavras), com contexto, tabelas descritas em texto, gráficos descritos, situações-problema realistas no estilo da banca.
 
 Retorne APENAS um JSON válido (sem markdown, sem texto extra) no formato:
 [
   {
-    "prompt": "enunciado da questão",
-    "options": ["alternativa A", "alternativa B", "alternativa C", "alternativa D"],
+    "prompt": "enunciado da questão (pode ser longo)",
+    "options": ["alternativa A", "alternativa B", "alternativa C", "alternativa D", "alternativa E"],
     "correct_index": 0,
-    "explanation": "explicação da resposta correta"
+    "explanation": "explicação didática da resposta correta",
+    "topic": "tópico específico da questão",
+    "difficulty": "${difficulty === 'all' ? 'medium' : difficulty}"
   }
 ]
 
 Regras:
-- 4 alternativas por questão.
-- correct_index é o índice (0-3) da alternativa correta.
-- Estilo e dificuldade compatíveis com a prova ${selectedExam.name}.
-- Questões claras, sem ambiguidade.
+- 5 alternativas por questão (A-E), como nas bancas brasileiras.
+- correct_index é o índice (0-4) da alternativa correta.
+- Estilo, vocabulário e dificuldade compatíveis com a prova ${selectedExam.name}.
+- Questões claras, sem ambiguidade, com textos mais longos quando apropriado.
 - Explicações didáticas e concisas.
+- O campo "topic" deve ser o tópico específico (ex.: Eletrodinâmica, Hidrodinâmica, Revolução Francesa).
 - Retorne somente o array JSON, nada mais.`
 
       const res = await fetch(`${aiConfig.baseUrl.replace(/\/$/, '')}/chat/completions`, {
@@ -127,6 +156,8 @@ Regras:
         options: q.options,
         correct_index: q.correct_index,
         explanation: q.explanation,
+        topic: q.topic || selectedTopic || null,
+        difficulty: q.difficulty || (difficulty === 'all' ? 'medium' : difficulty),
         subject_id: selectedSubjects[0],
         subjects: subjects.find((s) => s.id === selectedSubjects[0]),
       }))
@@ -234,6 +265,22 @@ Regras:
             </button>
           </div>
           <div className="field">
+            <label htmlFor="pv-topic">Tópico (opcional)</label>
+            <select id="pv-topic" className="input" value={selectedTopic} onChange={(e) => setSelectedTopic(e.target.value)}>
+              <option value="">Todos os tópicos</option>
+              {topics.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="pv-diff">Dificuldade</label>
+            <select id="pv-diff" className="input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+              <option value="all">Todas</option>
+              <option value="easy">Fácil</option>
+              <option value="medium">Médio</option>
+              <option value="hard">Difícil</option>
+            </select>
+          </div>
+          <div className="field">
             <label htmlFor="pv-qty">Quantidade</label>
             <select id="pv-qty" className="input" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))}>
               <option value={5}>5 questões</option>
@@ -243,8 +290,9 @@ Regras:
             </select>
           </div>
           <p className="gen-desc">
-            No banco: {selectedSubjects.reduce((a, id) => a + (counts[selectedExam.id] ? 0 : 0), 0)} questões disponíveis para esta prova.
-            {counts[selectedExam.id] ? ` (${counts[selectedExam.id]} no total)` : ' (nenhuma cadastrada ainda)'}
+            {counts[selectedExam.id]
+              ? `${counts[selectedExam.id]} questões no banco para esta prova${selectedTopic ? ` (tópico: ${selectedTopic})` : ''}${difficulty !== 'all' ? ` · dificuldade ${difficulty}` : ''}.`
+              : 'Nenhuma questão cadastrada ainda — use "Gerar com IA".'}
           </p>
           <div className="task-form-actions">
             <button type="button" className="btn btn-outline" onClick={startFromBank} disabled={loadingQ || selectedSubjects.length === 0}>

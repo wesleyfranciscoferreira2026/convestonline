@@ -27,7 +27,7 @@ export default function Exercises() {
   const [loadingQ, setLoadingQ] = useState(false)
   const [session, setSession] = useState(null) // { index, answers: [{selected, correct}], finished }
   const [mode, setMode] = useState('bank') // 'bank' | 'generate'
-  const [genConfig, setGenConfig] = useState({ banca: 'ENEM', subjectId: '', topic: '', count: 5 })
+  const [genConfig, setGenConfig] = useState({ banca: 'ENEM', subjectId: '', topic: '', difficulty: 'medium', count: 5 })
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
 
@@ -84,24 +84,30 @@ export default function Exercises() {
     const subject = subjects.find((s) => s.id === genConfig.subjectId)
     setGenerating(true)
     try {
+      const diffLabel = genConfig.difficulty === 'easy' ? 'fácil' : genConfig.difficulty === 'hard' ? 'difícil' : 'média'
       const prompt = `Gere ${genConfig.count} questões de múltipla escolha no estilo da banca "${genConfig.banca}", sobre a matéria "${subject.name}"${genConfig.topic ? `, tema: ${genConfig.topic}` : ''}.
+
+Nível de dificuldade: ${diffLabel}. Textos de enunciado podem ser longos (até ~300 palavras), com contexto, situações-problema realistas no estilo da banca.
 
 Retorne APENAS um JSON válido (sem markdown, sem texto extra) no formato:
 [
   {
-    "prompt": "enunciado da questão",
-    "options": ["alternativa A", "alternativa B", "alternativa C", "alternativa D"],
+    "prompt": "enunciado da questão (pode ser longo)",
+    "options": ["alternativa A", "alternativa B", "alternativa C", "alternativa D", "alternativa E"],
     "correct_index": 0,
-    "explanation": "explicação da resposta correta"
+    "explanation": "explicação didática da resposta correta",
+    "topic": "tópico específico da questão",
+    "difficulty": "${genConfig.difficulty}"
   }
 ]
 
 Regras:
-- 4 alternativas por questão (A, B, C, D).
-- correct_index é o índice (0-3) da alternativa correta.
-- Estilo e dificuldade compatíveis com a banca ${genConfig.banca}.
-- Questões claras, sem ambiguidade.
+- 5 alternativas por questão (A-E), como nas bancas brasileiras.
+- correct_index é o índice (0-4) da alternativa correta.
+- Estilo, vocabulário e dificuldade compatíveis com a banca ${genConfig.banca}.
+- Questões claras, sem ambiguidade, com textos mais longos quando apropriado.
 - Explicações didáticas e concisas.
+- O campo "topic" deve ser o tópico específico (ex.: Eletrodinâmica, Hidrodinâmica).
 - Retorne somente o array JSON, nada mais.`
 
       const res = await fetch(`${aiConfig.baseUrl.replace(/\/$/, '')}/chat/completions`, {
@@ -132,7 +138,8 @@ Regras:
         options: q.options,
         correct_index: q.correct_index,
         explanation: q.explanation,
-        difficulty: 'medium',
+        topic: q.topic || genConfig.topic || null,
+        difficulty: q.difficulty || genConfig.difficulty,
       }))
       setQuestions(qs)
       setActiveSubject(subject)
@@ -291,6 +298,19 @@ Regras:
                   value={genConfig.topic}
                   onChange={(e) => setGenConfig({ ...genConfig, topic: e.target.value })}
                 />
+              </div>
+              <div className="field">
+                <label htmlFor="gen-diff">Dificuldade</label>
+                <select
+                  id="gen-diff"
+                  className="input"
+                  value={genConfig.difficulty}
+                  onChange={(e) => setGenConfig({ ...genConfig, difficulty: e.target.value })}
+                >
+                  <option value="easy">Fácil</option>
+                  <option value="medium">Médio</option>
+                  <option value="hard">Difícil</option>
+                </select>
               </div>
               <div className="field">
                 <label htmlFor="gen-count">Quantidade</label>

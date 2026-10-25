@@ -116,7 +116,7 @@ export default function AppLayout() {
     <div className="app-shell">
       {/* ---------------- Sidebar (desktop) ---------------- */}
       <aside className="sidebar">
-        <NavLink to="/" className="sidebar-logo" aria-label="Aura Study — Início">
+        <NavLink to="/" className="sidebar-logo" aria-label="Convest+ - Início">
           <span className="brand-mark">convest+</span>
         </NavLink>
         <nav className="sidebar-nav" aria-label="Navegação principal">
