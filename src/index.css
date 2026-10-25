@@ -2210,6 +2210,66 @@ select.input {
   color: var(--color-text-secondary);
 }
 
+/* -------------------------- Revisão ------------------------------------- */
+.review-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.review-summary span {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.review-summary strong {
+  color: var(--color-text);
+}
+
+.review-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.review-card.is-reviewed {
+  opacity: 0.6;
+}
+
+.review-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.review-subject {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary-dark);
+}
+
+.review-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-primary-softer);
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+}
+
+.review-card-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
 /* ----------------------- Exercícios: gerador e abas ---------------------- */
 .exercise-mode-tabs {
   display: inline-flex;

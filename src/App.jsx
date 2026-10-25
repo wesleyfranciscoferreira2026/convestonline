@@ -14,6 +14,7 @@ import LessonReader from './pages/LessonReader'
 import Exercises from './pages/Exercises'
 import MyStudies from './pages/MyStudies'
 import Stats from './pages/Stats'
+import Review from './pages/Review'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Settings from './pages/Settings'
@@ -44,16 +45,7 @@ export default function App() {
         <Route path="/aula/:id" element={<PageTransition><LessonReader /></PageTransition>} />
         <Route path="/estudos" element={<PageTransition><MyStudies /></PageTransition>} />
         <Route path="/exercicios" element={<PageTransition><Exercises /></PageTransition>} />
-        <Route
-          path="/revisao"
-          element={
-            <ComingSoon
-              icon={RotateCcw}
-              title="Revisão"
-              description="A área de revisão de questões erradas, difíceis e favoritas chega na Fase 3, junto com o histórico completo."
-            />
-          }
-        />
+        <Route path="/revisao" element={<PageTransition><Review /></PageTransition>} />
         <Route path="/estatisticas" element={<PageTransition><Stats /></PageTransition>} />
         <Route path="/perfil" element={<Settings />} />
       </Route>
