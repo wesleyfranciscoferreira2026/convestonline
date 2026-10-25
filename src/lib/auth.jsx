@@ -9,6 +9,13 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  // True quando a URL contém tokens de confirmação/recuperação de e-mail.
+  const [handlingAuth, setHandlingAuth] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const hash = window.location.hash || ''
+    const search = window.location.search || ''
+    return hash.includes('access_token') || hash.includes('type=') || search.includes('code=')
+  })
   const [isGuest, setIsGuest] = useState(() => {
     try { return localStorage.getItem('convest-guest') === '1' } catch { return false }
   })
@@ -65,8 +72,11 @@ export function AuthProvider({ children }) {
         const p = await fetchProfile(data.session.user.id)
         applyTheme(p?.theme ?? 'system')
         handleEmailConfirmation()
+      } else if (handlingAuth) {
+        // Tokens na URL mas sessão não estabelecida → link inválido/expirado.
+        toast('O link de confirmação é inválido ou expirou. Solicite um novo.', 'error')
       }
-      if (active) setLoading(false)
+      if (active) { setLoading(false); setHandlingAuth(false) }
     })
 
     const {
@@ -77,6 +87,7 @@ export function AuthProvider({ children }) {
         // Login real cancela o modo visitante.
         try { localStorage.removeItem('convest-guest') } catch { /* ignora */ }
         setIsGuest(false)
+        setHandlingAuth(false)
         // setTimeout evita deadlock do onAuthStateChange com chamadas ao Supabase
         setTimeout(async () => {
           const p = await fetchProfile(nextSession.user.id)
@@ -105,7 +116,10 @@ export function AuthProvider({ children }) {
       supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: name } },
+        options: {
+          data: { full_name: name },
+          emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}`,
+        },
       }),
     [],
   )
@@ -113,7 +127,7 @@ export function AuthProvider({ children }) {
   const resetPassword = useCallback(
     (email) =>
       supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/redefinir-senha`,
+        redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}redefinir-senha`,
       }),
     [],
   )
@@ -130,6 +144,7 @@ export function AuthProvider({ children }) {
     profile,
     loading,
     configured: isSupabaseConfigured,
+    handlingAuth,
     isGuest,
     continueAsGuest,
     exitGuest,
