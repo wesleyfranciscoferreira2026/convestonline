@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Compass, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import SubjectIcon from '../components/SubjectIcon'
