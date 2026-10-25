@@ -1,10 +1,10 @@
-# AGENTS.md — Aura Study
+# AGENTS.md — Convest+
 
 Contexto para agentes de código que trabalham neste projeto.
 
 ## Visão geral
 
-Aura Study é uma plataforma web responsiva de estudos (ver PRD na raiz do produto).
+Convest+ é uma plataforma web responsiva de estudos (ver PRD na raiz do produto).
 Identidade visual "Aura": minimalista, tecnológica, sofisticada — turquesa (#66CCCC) usada
 com moderação, muito espaço negativo, cartões brancos com bordas discretas.
 

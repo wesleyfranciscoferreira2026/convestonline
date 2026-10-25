@@ -9,7 +9,7 @@ export default function SetupNotice() {
     <main className="setup-screen">
       <div className="setup-card">
         <span className="brand-mark" aria-hidden="true">
-          convest
+          convest+
         </span>
         <div className="setup-icon">
           <KeyRound size={22} />

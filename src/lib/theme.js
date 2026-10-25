@@ -1,4 +1,5 @@
-const STORAGE_KEY = 'aura-theme'
+const STORAGE_KEY = 'convest-theme'
+const LEGACY_KEY = 'aura-theme'
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 
 /** Aplica 'light' | 'dark' | 'system' no <html> e persiste a escolha. */
@@ -17,7 +18,7 @@ export function applyTheme(theme) {
 media.addEventListener('change', () => {
   let stored = 'system'
   try {
-    stored = localStorage.getItem(STORAGE_KEY) || 'system'
+    stored = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY) || 'system'
   } catch {
     // ignora
   }

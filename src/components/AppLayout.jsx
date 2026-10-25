@@ -117,7 +117,7 @@ export default function AppLayout() {
       {/* ---------------- Sidebar (desktop) ---------------- */}
       <aside className="sidebar">
         <NavLink to="/" className="sidebar-logo" aria-label="Aura Study — Início">
-          <span className="brand-mark">convest</span>
+          <span className="brand-mark">convest+</span>
         </NavLink>
         <nav className="sidebar-nav" aria-label="Navegação principal">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
@@ -267,7 +267,7 @@ export default function AppLayout() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sheet-header">
-              <span className="brand-mark">convest</span>
+              <span className="brand-mark">convest+</span>
               <button type="button" className="icon-btn" aria-label="Fechar menu" onClick={() => setMenuOpen(false)}>
                 <X size={19} />
               </button>

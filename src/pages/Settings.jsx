@@ -174,10 +174,10 @@ export default function Settings() {
 
         <div className="setting-row">
           <div>
-            <strong>Novidades do Aura</strong>
+            <strong>Novidades do Convest+</strong>
             <p>Receber avisos sobre novos conteúdos e melhorias da plataforma.</p>
           </div>
-          <Toggle checked={notify} onChange={onChangeNotify} label="Novidades do Aura" id="notify" />
+          <Toggle checked={notify} onChange={onChangeNotify} label="Novidades do Convest+" id="notify" />
         </div>
       </Card>
 

@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
   function handleEmailConfirmation() {
     const hash = window.location.hash || ''
     if (hash.includes('type=signup') || hash.includes('type=email')) {
-      toast('E-mail confirmado! Bem-vindo ao Aura Study.')
+      toast('E-mail confirmado! Bem-vindo ao Convest+.')
       // Limpa o hash para não repetir a mensagem ao recarregar.
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search)

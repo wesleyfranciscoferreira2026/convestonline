@@ -7,7 +7,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
     <main className="auth-screen">
       <div className="auth-panel">
         <Link to="/login" className="auth-brand" aria-label="Aura Study">
-          <span className="brand-mark">convest</span>
+          <span className="brand-mark">convest+</span>
         </Link>
         <p className="auth-tagline">
           <Sparkles size={16} aria-hidden="true" />

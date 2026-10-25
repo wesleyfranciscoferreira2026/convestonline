@@ -3,7 +3,7 @@
 export function FullPageLoader() {
   return (
     <div className="fullpage-loader" role="status" aria-label="Carregando">
-      <span className="brand-mark">aura</span>
+      <span className="brand-mark">convest+</span>
       <span className="loader-bar" />
     </div>
   )

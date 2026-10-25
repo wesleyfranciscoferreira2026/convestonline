@@ -16,7 +16,7 @@
       // Aplica o tema antes da primeira pintura para evitar "flash" de tema claro.
       ;(function () {
         try {
-          var theme = localStorage.getItem('aura-theme') || 'system'
+          var theme = localStorage.getItem('convest-theme') || localStorage.getItem('aura-theme') || 'system'
           var dark =
             theme === 'dark' ||
             (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)

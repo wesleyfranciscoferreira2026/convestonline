@@ -1,4 +1,4 @@
-# Aura Study
+# Convest+
 
 Plataforma moderna de estudos e aprendizagem — organize sua rotina, aprenda conteúdos, resolva exercícios e acompanhe sua evolução.
 
