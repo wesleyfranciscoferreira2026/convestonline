@@ -13,6 +13,7 @@ import SubjectLessons from './pages/SubjectLessons'
 import LessonReader from './pages/LessonReader'
 import Exercises from './pages/Exercises'
 import MyStudies from './pages/MyStudies'
+import Stats from './pages/Stats'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Settings from './pages/Settings'
@@ -53,16 +54,7 @@ export default function App() {
             />
           }
         />
-        <Route
-          path="/estatisticas"
-          element={
-            <ComingSoon
-              icon={LineChart}
-              title="Estatísticas"
-              description="Gráficos detalhados de evolução chegam na Fase 3. Os resumos da página inicial já mostram seus números reais."
-            />
-          }
-        />
+        <Route path="/estatisticas" element={<PageTransition><Stats /></PageTransition>} />
         <Route path="/perfil" element={<Settings />} />
       </Route>
 

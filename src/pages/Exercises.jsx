@@ -7,6 +7,8 @@ import {
   ClipboardList,
   Loader2,
   RotateCcw,
+  Sparkles,
+  Wand2,
   XCircle,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -24,6 +26,10 @@ export default function Exercises() {
   const [questions, setQuestions] = useState([])
   const [loadingQ, setLoadingQ] = useState(false)
   const [session, setSession] = useState(null) // { index, answers: [{selected, correct}], finished }
+  const [mode, setMode] = useState('bank') // 'bank' | 'generate'
+  const [genConfig, setGenConfig] = useState({ banca: 'ENEM', subjectId: '', topic: '', count: 5 })
+  const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState('')
 
   useEffect(() => {
     let active = true
@@ -60,6 +66,82 @@ export default function Exercises() {
     }
     setQuestions(qs)
     setSession({ index: 0, answers: [], selected: null, confirmed: false, finished: false })
+  }
+
+  async function generateQuestions() {
+    setGenError('')
+    const aiConfig = (() => {
+      try { return JSON.parse(localStorage.getItem('convest-ai-config') || '{}') } catch { return {} }
+    })()
+    if (!aiConfig.apiKey) {
+      setGenError('Configure sua chave de API na Convest IA antes de gerar questões.')
+      return
+    }
+    if (!genConfig.subjectId) {
+      setGenError('Selecione uma matéria.')
+      return
+    }
+    const subject = subjects.find((s) => s.id === genConfig.subjectId)
+    setGenerating(true)
+    try {
+      const prompt = `Gere ${genConfig.count} questões de múltipla escolha no estilo da banca "${genConfig.banca}", sobre a matéria "${subject.name}"${genConfig.topic ? `, tema: ${genConfig.topic}` : ''}.
+
+Retorne APENAS um JSON válido (sem markdown, sem texto extra) no formato:
+[
+  {
+    "prompt": "enunciado da questão",
+    "options": ["alternativa A", "alternativa B", "alternativa C", "alternativa D"],
+    "correct_index": 0,
+    "explanation": "explicação da resposta correta"
+  }
+]
+
+Regras:
+- 4 alternativas por questão (A, B, C, D).
+- correct_index é o índice (0-3) da alternativa correta.
+- Estilo e dificuldade compatíveis com a banca ${genConfig.banca}.
+- Questões claras, sem ambiguidade.
+- Explicações didáticas e concisas.
+- Retorne somente o array JSON, nada mais.`
+
+      const res = await fetch(`${aiConfig.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${aiConfig.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: aiConfig.model || 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.text()
+        throw new Error(`Erro ${res.status}: ${err.slice(0, 150)}`)
+      }
+      const data = await res.json()
+      const raw = data?.choices?.[0]?.message?.content ?? ''
+      // Remove cercas de código markdown se presentes
+      const cleaned = raw.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim()
+      const parsed = JSON.parse(cleaned)
+      if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Resposta inválida do modelo.')
+      const qs = parsed.map((q, i) => ({
+        id: `gen-${Date.now()}-${i}`,
+        prompt: q.prompt,
+        options: q.options,
+        correct_index: q.correct_index,
+        explanation: q.explanation,
+        difficulty: 'medium',
+      }))
+      setQuestions(qs)
+      setActiveSubject(subject)
+      setSession({ index: 0, answers: [], selected: null, confirmed: false, finished: false })
+    } catch (e) {
+      setGenError(`⚠️ ${e.message}. Tente novamente ou ajuste a chave de API.`)
+    } finally {
+      setGenerating(false)
+    }
   }
 
   async function confirmAnswer() {
@@ -102,39 +184,139 @@ export default function Exercises() {
       <div className="page">
         <header className="page-header">
           <h2>Exercícios</h2>
-          <p>Escolha uma matéria e teste seus conhecimentos.</p>
+          <p>Resolva questões do banco ou gere novas com a Convest IA por banca, matéria e tema.</p>
         </header>
 
-        {!subjects ? (
-          <div className="subject-grid subject-grid-lg">
-            {[0, 1, 2, 3].map((i) => (
-              <Card key={i}><div style={{ height: 80 }} /></Card>
-            ))}
-          </div>
-        ) : subjects.filter((s) => (counts[s.id] || 0) > 0).length === 0 ? (
-          <Card>
-            <EmptyState
-              icon={ClipboardList}
-              title="Exercícios em preparação"
-              description="Os exercícios serão publicados em breve. Enquanto isso, estude as aulas disponíveis."
-              action={<Link to="/explorar" className="btn btn-primary">Explorar matérias</Link>}
-            />
-          </Card>
-        ) : (
-          <div className="subject-grid subject-grid-lg">
-            {subjects
-              .filter((s) => (counts[s.id] || 0) > 0)
-              .map((s) => (
-                <button key={s.id} type="button" className="subject-card-lg subject-card-btn" onClick={() => start(s)}>
-                  <span className="subject-icon">
-                    <SubjectIcon name={s.icon} size={22} />
-                  </span>
-                  <h3>{s.name}</h3>
-                  <p>{counts[s.id]} {counts[s.id] === 1 ? 'questão' : 'questões'}</p>
-                  <span className="subject-badge">Iniciar →</span>
-                </button>
+        <div className="exercise-mode-tabs">
+          <button
+            type="button"
+            className={`segment ${mode === 'bank' ? 'is-active' : ''}`}
+            onClick={() => setMode('bank')}
+          >
+            <ClipboardList size={16} aria-hidden="true" /> Banco de questões
+          </button>
+          <button
+            type="button"
+            className={`segment ${mode === 'generate' ? 'is-active' : ''}`}
+            onClick={() => setMode('generate')}
+          >
+            <Wand2 size={16} aria-hidden="true" /> Gerar com IA
+          </button>
+        </div>
+
+        {mode === 'bank' && (
+          !subjects ? (
+            <div className="subject-grid subject-grid-lg">
+              {[0, 1, 2, 3].map((i) => (
+                <Card key={i}><div style={{ height: 80 }} /></Card>
               ))}
-          </div>
+            </div>
+          ) : subjects.filter((s) => (counts[s.id] || 0) > 0).length === 0 ? (
+            <Card>
+              <EmptyState
+                icon={ClipboardList}
+                title="Exercícios em preparação"
+                description="Os exercícios serão publicados em breve. Enquanto isso, estude as aulas disponíveis ou gere questões com a IA."
+                action={<Link to="/explorar" className="btn btn-primary">Explorar matérias</Link>}
+              />
+            </Card>
+          ) : (
+            <div className="subject-grid subject-grid-lg">
+              {subjects
+                .filter((s) => (counts[s.id] || 0) > 0)
+                .map((s) => (
+                  <button key={s.id} type="button" className="subject-card-lg subject-card-btn" onClick={() => start(s)}>
+                    <span className="subject-icon">
+                      <SubjectIcon name={s.icon} size={22} />
+                    </span>
+                    <h3>{s.name}</h3>
+                    <p>{counts[s.id]} {counts[s.id] === 1 ? 'questão' : 'questões'}</p>
+                    <span className="subject-badge">Iniciar →</span>
+                  </button>
+                ))}
+            </div>
+          )
+        )}
+
+        {mode === 'generate' && (
+          <Card className="gen-card">
+            <h3 className="section-title">Gerar questões com IA</h3>
+            <p className="gen-desc">
+              Escolha a banca, a matéria e o tema. A Convest IA cria uma lista de questões no estilo da banca selecionada.
+              Requer chave de API configurada na aba Convest IA.
+            </p>
+            <div className="gen-form">
+              <div className="field">
+                <label htmlFor="gen-banca">Banca</label>
+                <select
+                  id="gen-banca"
+                  className="input"
+                  value={genConfig.banca}
+                  onChange={(e) => setGenConfig({ ...genConfig, banca: e.target.value })}
+                >
+                  <option>ENEM</option>
+                  <option>UERJ</option>
+                  <option>FUVEST</option>
+                  <option>UNICAMP</option>
+                  <option>UNESP</option>
+                  <option>ITA</option>
+                  <option>IME</option>
+                  <option>Concursos</option>
+                  <option>Vestibular geral</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="gen-subject">Matéria</label>
+                <select
+                  id="gen-subject"
+                  className="input"
+                  value={genConfig.subjectId}
+                  onChange={(e) => setGenConfig({ ...genConfig, subjectId: e.target.value })}
+                >
+                  <option value="">Selecione…</option>
+                  {(subjects ?? []).map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="gen-topic">Tema / assunto (opcional)</label>
+                <input
+                  id="gen-topic"
+                  type="text"
+                  className="input"
+                  placeholder="Ex.: hidrodinâmica, Revolução Francesa, funções"
+                  value={genConfig.topic}
+                  onChange={(e) => setGenConfig({ ...genConfig, topic: e.target.value })}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="gen-count">Quantidade</label>
+                <select
+                  id="gen-count"
+                  className="input"
+                  value={genConfig.count}
+                  onChange={(e) => setGenConfig({ ...genConfig, count: Number(e.target.value) })}
+                >
+                  <option value={5}>5 questões</option>
+                  <option value={10}>10 questões</option>
+                  <option value={15}>15 questões</option>
+                  <option value={20}>20 questões</option>
+                </select>
+              </div>
+            </div>
+            {genError && <p className="form-error" role="alert">{genError}</p>}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={generateQuestions}
+              disabled={generating}
+            >
+              {generating ? <Loader2 size={17} className="spin" aria-hidden="true" /> : <Sparkles size={17} aria-hidden="true" />}
+              {generating ? 'Gerando questões…' : 'Gerar questões'}
+            </button>
+            {generating && <p className="gen-hint">Isso pode levar alguns segundos.</p>}
+          </Card>
         )}
       </div>
     )

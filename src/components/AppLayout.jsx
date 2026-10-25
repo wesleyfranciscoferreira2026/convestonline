@@ -46,6 +46,7 @@ export default function AppLayout() {
   const [notifOpen, setNotifOpen] = useState(false)
   const [query, setQuery] = useState('')
   const profileRef = useRef(null)
+  const activeSecondsRef = useRef(0)
   const notifRef = useRef(null)
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || ''
@@ -58,6 +59,44 @@ export default function AppLayout() {
     document.addEventListener('mousedown', onClickOutside)
     return () => document.removeEventListener('mousedown', onClickOutside)
   }, [])
+
+  // Rastreia tempo ativo no site (aba visível e com foco) para as estatísticas.
+  useEffect(() => {
+    const TICK = 30
+    const FLUSH = 5 * 60
+    let acc = 0
+    let lastFlush = 0
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible' && document.hasFocus()) {
+        acc += TICK
+        if (acc - lastFlush >= FLUSH) {
+          flushActive(acc - lastFlush)
+          lastFlush = acc
+        }
+      }
+    }, TICK * 1000)
+    const flush = () => {
+      const remaining = acc - lastFlush
+      if (remaining > 0) flushActive(remaining)
+    }
+    const onVis = () => { if (document.visibilityState === 'hidden') flush() }
+    document.addEventListener('visibilitychange', onVis)
+    window.addEventListener('beforeunload', flush)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVis)
+      window.removeEventListener('beforeunload', flush)
+      flush()
+    }
+  }, [])
+
+  function flushActive(seconds) {
+    const today = new Date().toISOString().slice(0, 10)
+    let data = {}
+    try { data = JSON.parse(localStorage.getItem('convest-active') || '{}') } catch { data = {} }
+    data[today] = (data[today] || 0) + seconds
+    try { localStorage.setItem('convest-active', JSON.stringify(data)) } catch { /* ignora */ }
+  }
 
   function onSearchSubmit(event) {
     event.preventDefault()

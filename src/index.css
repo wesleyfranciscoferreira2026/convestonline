@@ -2210,6 +2210,117 @@ select.input {
   color: var(--color-text-secondary);
 }
 
+/* ----------------------- Exercícios: gerador e abas ---------------------- */
+.exercise-mode-tabs {
+  display: inline-flex;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  background: var(--color-primary-softer);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+}
+
+.exercise-mode-tabs .segment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.gen-card {
+  max-width: 640px;
+}
+
+.gen-desc {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-5);
+}
+
+.gen-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.gen-form .field:last-child {
+  grid-column: 1 / -1;
+}
+
+.gen-hint {
+  margin-top: var(--space-2);
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+/* ---------------------- Estatísticas: extras ---------------------------- */
+.subject-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.subject-stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.subject-stat-name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 15px;
+}
+
+.subject-stat-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.subject-stat-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+}
+
+.history-time {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 110px;
+}
+
+.history-desc {
+  font-size: 13.5px;
+}
+
+.week-min {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
 /* --------------------------------- IA / Tutor --------------------------- */
 .ai-hero-card {
   display: flex;

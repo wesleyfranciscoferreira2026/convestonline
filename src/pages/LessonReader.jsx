@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -27,6 +27,7 @@ export default function LessonReader() {
   const [progress, setProgress] = useState(null)
   const [favorite, setFavorite] = useState(false)
   const [saving, setSaving] = useState(false)
+  const lessonRef = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -37,6 +38,7 @@ export default function LessonReader() {
         .eq('id', id)
         .maybeSingle()
       if (!active || !l) { setLesson(l); return }
+      lessonRef.current = l
       setLesson(l)
 
       const [{ data: subj }, { data: sibs }] = await Promise.all([
@@ -86,7 +88,25 @@ export default function LessonReader() {
       }
     }
     load()
-    return () => { active = false }
+    const startedAt = Date.now()
+    return () => {
+      active = false
+      if (user) {
+        const minutes = Math.round((Date.now() - startedAt) / 60000)
+        if (minutes >= 1) {
+          supabase
+            .from('study_sessions')
+            .insert({
+              user_id: user.id,
+              lesson_id: id,
+              subject_id: lessonRef.current?.subject_id ?? null,
+              duration_minutes: minutes,
+              source: 'lesson',
+            })
+            .then(() => {})
+        }
+      }
+    }
   }, [id, user])
 
   const currentIndex = siblings.findIndex((s) => s.id === id)
