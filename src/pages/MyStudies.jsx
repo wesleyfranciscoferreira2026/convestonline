@@ -54,6 +54,7 @@ export default function MyStudies() {
             icon={BookOpen}
             title="Entre na sua conta"
             description="Seus estudos, progresso e favoritos ficam salvos na sua conta."
+            action={<Link to="/login" className="btn btn-primary">Entrar</Link>}
           />
         </Card>
       </div>

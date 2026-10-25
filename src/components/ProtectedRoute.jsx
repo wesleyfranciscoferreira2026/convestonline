@@ -3,10 +3,10 @@ import { useAuth } from '../lib/auth'
 import { FullPageLoader } from './ui'
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, isGuest, loading } = useAuth()
   const location = useLocation()
 
   if (loading) return <FullPageLoader />
-  if (!user) return <Navigate to="/login" replace state={{ from: location }} />
+  if (!user && !isGuest) return <Navigate to="/login" replace state={{ from: location }} />
   return children
 }

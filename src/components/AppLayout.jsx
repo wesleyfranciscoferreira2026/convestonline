@@ -42,7 +42,7 @@ const BOTTOM_ITEMS = [
 ]
 
 export default function AppLayout() {
-  const { profile, user, signOut } = useAuth()
+  const { profile, user, isGuest, exitGuest, signOut } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -181,34 +181,49 @@ export default function AppLayout() {
               )}
             </div>
 
-            <div className="popover-wrap" ref={profileRef}>
-              <button
-                type="button"
-                className="avatar-btn"
-                aria-label="Menu do perfil"
-                aria-expanded={profileOpen}
-                onClick={() => setProfileOpen((v) => !v)}
-              >
-                <Avatar name={displayName} url={profile?.avatar_url} size={36} />
-              </button>
-              {profileOpen && (
-                <div className="popover popover-right" role="menu">
-                  <div className="popover-user">
-                    <strong>{displayName || 'Estudante'}</strong>
-                    <span>{user?.email}</span>
+            {isGuest ? (
+              <div className="guest-actions">
+                <Link to="/login" className="btn btn-primary btn-sm">Entrar</Link>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { exitGuest(); navigate('/login') }}>
+                  Sair do modo visitante
+                </button>
+              </div>
+            ) : (
+              <div className="popover-wrap" ref={profileRef}>
+                <button
+                  type="button"
+                  className="avatar-btn"
+                  aria-label="Menu do perfil"
+                  aria-expanded={profileOpen}
+                  onClick={() => setProfileOpen((v) => !v)}
+                >
+                  <Avatar name={displayName} url={profile?.avatar_url} size={36} />
+                </button>
+                {profileOpen && (
+                  <div className="popover popover-right" role="menu">
+                    <div className="popover-user">
+                      <strong>{displayName || 'Estudante'}</strong>
+                      <span>{user?.email}</span>
+                    </div>
+                    <NavLink to="/perfil" role="menuitem" onClick={() => setProfileOpen(false)}>
+                      <Settings size={16} aria-hidden="true" /> Perfil e configurações
+                    </NavLink>
+                    <button type="button" role="menuitem" onClick={onSignOut}>
+                      <LogOut size={16} aria-hidden="true" /> Sair
+                    </button>
                   </div>
-                  <NavLink to="/perfil" role="menuitem" onClick={() => setProfileOpen(false)}>
-                    <Settings size={16} aria-hidden="true" /> Perfil e configurações
-                  </NavLink>
-                  <button type="button" role="menuitem" onClick={onSignOut}>
-                    <LogOut size={16} aria-hidden="true" /> Sair
-                  </button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </header>
 
+        {isGuest && (
+          <div className="guest-banner">
+            <span>Você está no modo visitante — seu progresso não será salvo.</span>
+            <Link to="/login" className="guest-banner-link">Entrar ou criar conta</Link>
+          </div>
+        )}
         <main className="page-content">
           <PageTransition>
             <Outlet />

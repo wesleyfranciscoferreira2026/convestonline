@@ -27,7 +27,7 @@ import {
 } from '../utils/date'
 
 export default function Dashboard() {
-  const { user, profile } = useAuth()
+  const { user, profile, isGuest } = useAuth()
   const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [sessions, setSessions] = useState([])
@@ -41,7 +41,13 @@ export default function Dashboard() {
   const todayISO = toISODate()
 
   const load = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      // Modo visitante: carrega apenas o catálogo de matérias.
+      const { data } = await supabase.from('subjects').select('id, name, icon, description').order('sort_order')
+      setSubjects(data ?? [])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 6)
@@ -336,44 +342,61 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-col">
-          {/* ---------- Plano de hoje ---------- */}
-          <TodayPlan
-            tasks={tasks}
-            subjects={subjects}
-            doneCount={doneTasks}
-            onAdd={addTask}
-            onToggle={toggleTask}
-            onDelete={deleteTask}
-          />
-
-          {/* ---------- Semana ---------- */}
-          <Card>
-            <SectionHeader title="Sua semana" subtitle="Minutos estudados por dia" />
-            {weekMinutes === 0 ? (
+          {isGuest ? (
+            <Card className="guest-cta-card">
               <EmptyState
-                icon={Clock}
-                title="Nenhuma sessão esta semana"
-                description="Conclua uma tarefa do plano de hoje para registrar seus primeiros minutos."
+                icon={Compass}
+                title="Crie sua conta para acompanhar seu progresso"
+                description="No modo visitante você pode ler aulas e explorar matérias. Cadastre-se para salvar progresso, resolver exercícios e ver estatísticas."
+                action={
+                  <Link to="/cadastro" className="btn btn-primary">
+                    Criar conta gratuita <ArrowRight size={16} aria-hidden="true" />
+                  </Link>
+                }
               />
-            ) : (
-              <div className="week-chart" role="img" aria-label={`Total da semana: ${minutesToHuman(weekMinutes)}`}>
-                {week.map((day) => (
-                  <div key={day.key} className={`week-day ${day.isToday ? 'is-today' : ''}`}>
-                    <span className="week-bar-wrap">
-                      <span
-                        className="week-bar"
-                        style={{
-                          height: `${weekMinutes ? Math.max(6, Math.round((day.minutes / Math.max(...week.map((d) => d.minutes), 1)) * 100)) : 6}%`,
-                        }}
-                        title={`${minutesToHuman(day.minutes)}`}
-                      />
-                    </span>
-                    <span className="week-label">{day.label}</span>
+            </Card>
+          ) : (
+            <>
+              {/* ---------- Plano de hoje ---------- */}
+              <TodayPlan
+                tasks={tasks}
+                subjects={subjects}
+                doneCount={doneTasks}
+                onAdd={addTask}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+              />
+
+              {/* ---------- Semana ---------- */}
+              <Card>
+                <SectionHeader title="Sua semana" subtitle="Minutos estudados por dia" />
+                {weekMinutes === 0 ? (
+                  <EmptyState
+                    icon={Clock}
+                    title="Nenhuma sessão esta semana"
+                    description="Conclua uma tarefa do plano de hoje para registrar seus primeiros minutos."
+                  />
+                ) : (
+                  <div className="week-chart" role="img" aria-label={`Total da semana: ${minutesToHuman(weekMinutes)}`}>
+                    {week.map((day) => (
+                      <div key={day.key} className={`week-day ${day.isToday ? 'is-today' : ''}`}>
+                        <span className="week-bar-wrap">
+                          <span
+                            className="week-bar"
+                            style={{
+                              height: `${weekMinutes ? Math.max(6, Math.round((day.minutes / Math.max(...week.map((d) => d.minutes), 1)) * 100)) : 6}%`,
+                            }}
+                            title={`${minutesToHuman(day.minutes)}`}
+                          />
+                        </span>
+                        <span className="week-label">{day.label}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </Card>
+                )}
+              </Card>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -48,7 +48,7 @@ export default function Exercises() {
   }, [])
 
   async function start(subject) {
-    if (!user) { toast('Entre na sua conta para resolver exercícios.', 'error'); return }
+    // Visitantes podem resolver; o progresso só é salvo para usuários logados.
     setActiveSubject(subject)
     setLoadingQ(true)
     const { data } = await supabase
@@ -148,13 +148,15 @@ Regras:
     if (session.selected === null) return
     const q = questions[session.index]
     const correct = session.selected === q.correct_index
-    // Registra a tentativa.
-    await supabase.from('question_attempts').insert({
-      user_id: user.id,
-      subject_id: activeSubject.id,
-      question_id: q.id,
-      is_correct: correct,
-    })
+    // Registra a tentativa apenas se estiver logado.
+    if (user) {
+      await supabase.from('question_attempts').insert({
+        user_id: user.id,
+        subject_id: activeSubject.id,
+        question_id: q.id,
+        is_correct: correct,
+      })
+    }
     setSession((s) => ({
       ...s,
       confirmed: true,

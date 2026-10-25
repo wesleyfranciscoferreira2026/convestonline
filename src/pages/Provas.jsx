@@ -64,7 +64,6 @@ export default function Provas() {
   }
 
   async function startFromBank() {
-    if (!user) { toast('Entre na sua conta para resolver provas.', 'error'); return }
     if (selectedSubjects.length === 0) { toast('Selecione ao menos uma matéria.', 'error'); return }
     setLoadingQ(true)
     const { data } = await supabase

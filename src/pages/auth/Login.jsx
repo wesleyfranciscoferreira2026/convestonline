@@ -6,7 +6,7 @@ import { useAuth } from '../../lib/auth'
 import { supabase } from '../../lib/supabaseClient'
 
 export default function Login() {
-  const { signIn } = useAuth()
+  const { signIn, continueAsGuest } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState('')
@@ -41,9 +41,18 @@ export default function Login() {
       title="Entrar na sua conta"
       subtitle="Continue de onde parou nos seus estudos."
       footer={
-        <p>
-          Ainda não tem conta? <Link to="/cadastro">Criar conta gratuita</Link>
-        </p>
+        <>
+          <p>
+            Ainda não tem conta? <Link to="/cadastro">Criar conta gratuita</Link>
+          </p>
+          <button
+            type="button"
+            className="btn btn-ghost btn-block"
+            onClick={() => { continueAsGuest(); navigate('/', { replace: true }) }}
+          >
+            Continuar sem login
+          </button>
+        </>
       }
     >
       <form className="form" onSubmit={onSubmit} noValidate={false}>

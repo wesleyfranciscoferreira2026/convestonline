@@ -9,7 +9,20 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isGuest, setIsGuest] = useState(() => {
+    try { return localStorage.getItem('convest-guest') === '1' } catch { return false }
+  })
   const toast = useToast()
+
+  function continueAsGuest() {
+    try { localStorage.setItem('convest-guest', '1') } catch { /* ignora */ }
+    setIsGuest(true)
+  }
+
+  function exitGuest() {
+    try { localStorage.removeItem('convest-guest') } catch { /* ignora */ }
+    setIsGuest(false)
+  }
 
   // Mensagem de boas-vindas quando o usuário confirma o e-mail (link do e-mail).
   function handleEmailConfirmation() {
@@ -47,6 +60,8 @@ export function AuthProvider({ children }) {
       if (!active) return
       setSession(data.session)
       if (data.session?.user) {
+        try { localStorage.removeItem('convest-guest') } catch { /* ignora */ }
+        setIsGuest(false)
         const p = await fetchProfile(data.session.user.id)
         applyTheme(p?.theme ?? 'system')
         handleEmailConfirmation()
@@ -59,6 +74,9 @@ export function AuthProvider({ children }) {
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession)
       if (nextSession?.user) {
+        // Login real cancela o modo visitante.
+        try { localStorage.removeItem('convest-guest') } catch { /* ignora */ }
+        setIsGuest(false)
         // setTimeout evita deadlock do onAuthStateChange com chamadas ao Supabase
         setTimeout(async () => {
           const p = await fetchProfile(nextSession.user.id)
@@ -112,6 +130,9 @@ export function AuthProvider({ children }) {
     profile,
     loading,
     configured: isSupabaseConfigured,
+    isGuest,
+    continueAsGuest,
+    exitGuest,
     signIn,
     signUp,
     resetPassword,
