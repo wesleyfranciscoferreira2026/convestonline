@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     if (typeof window === 'undefined') return false
     const hash = window.location.hash || ''
     const search = window.location.search || ''
-    return hash.includes('access_token') || hash.includes('type=') || search.includes('code=')
+    return hash.includes('access_token') || hash.includes('type=') || search.includes('code=') || search.includes('token_hash=')
   })
   const [isGuest, setIsGuest] = useState(() => {
     try { return localStorage.getItem('convest-guest') === '1' } catch { return false }
@@ -63,17 +63,56 @@ export function AuthProvider({ children }) {
     }
 
     let active = true
-    supabase.auth.getSession().then(async ({ data }) => {
+    async function establishSession() {
+      // 1) Tenta detectar tokens no hash (fluxo implícito)
+      const hash = window.location.hash || ''
+      const search = window.location.search || ''
+      const params = new URLSearchParams(search)
+      const code = params.get('code')
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type') || (hash.includes('type=') ? new URLSearchParams(hash.slice(1)).get('type') : null)
+
+      // 2) Se tem code (PKCE), troca explicitamente
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          console.error('exchangeCodeForSession error:', error.message)
+          if (active) toast('O link de confirmação é inválido ou expirou. Solicite um novo.', 'error')
+          return null
+        }
+        return data.session
+      }
+
+      // 3) Se tem token_hash (fluxo de verificação de e-mail)
+      if (tokenHash && type) {
+        const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type })
+        if (error) {
+          console.error('verifyOtp error:', error.message)
+          if (active) toast('O link de confirmação é inválido ou expirou. Solicite um novo.', 'error')
+          return null
+        }
+        return data.session
+      }
+
+      // 4) Fluxo implícito (tokens no hash) — getSession detecta automaticamente
+      const { data } = await supabase.auth.getSession()
+      return data.session
+    }
+
+    establishSession().then(async (session) => {
       if (!active) return
-      setSession(data.session)
-      if (data.session?.user) {
+      setSession(session)
+      if (session?.user) {
         try { localStorage.removeItem('convest-guest') } catch { /* ignora */ }
         setIsGuest(false)
-        const p = await fetchProfile(data.session.user.id)
+        const p = await fetchProfile(session.user.id)
         applyTheme(p?.theme ?? 'system')
         handleEmailConfirmation()
+        // Limpa a URL (remove tokens)
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', window.location.pathname)
+        }
       } else if (handlingAuth) {
-        // Tokens na URL mas sessão não estabelecida → link inválido/expirado.
         toast('O link de confirmação é inválido ou expirou. Solicite um novo.', 'error')
       }
       if (active) { setLoading(false); setHandlingAuth(false) }
