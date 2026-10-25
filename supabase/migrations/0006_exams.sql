@@ -1,7 +1,21 @@
 -- ============================================================================
 -- Convest — Provas e Bancas
 -- Tabela de provas/vestibulares e vínculo com questões.
+-- (Inclui a função is_admin() caso a migration 0005 ainda não tenha sido rodada.)
 -- ============================================================================
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
 create table if not exists public.exams (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
