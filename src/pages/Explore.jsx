@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Compass, Search } from 'lucide-react'
+import { ArrowRight, Compass, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import SubjectIcon from '../components/SubjectIcon'
 import { Card, EmptyState, Skeleton } from '../components/ui'
@@ -83,14 +83,18 @@ export default function Explore() {
       ) : (
         <div className="subject-grid subject-grid-lg">
           {filtered.map((s) => (
-            <Card key={s.id} className="subject-card-lg" as="article">
-              <span className="subject-icon">
-                <SubjectIcon name={s.icon} size={22} />
-              </span>
-              <h3>{s.name}</h3>
-              <p>{s.description}</p>
-              <span className="subject-badge">Conteúdos em breve · Fase 2</span>
-            </Card>
+            <Link key={s.id} to={`/materia/${s.slug}`} className="subject-card-link">
+              <Card className="subject-card-lg" as="article">
+                <span className="subject-icon">
+                  <SubjectIcon name={s.icon} size={22} />
+                </span>
+                <h3>{s.name}</h3>
+                <p>{s.description}</p>
+                <span className="subject-badge">
+                  Ver aulas <ArrowRight size={12} aria-hidden="true" />
+                </span>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

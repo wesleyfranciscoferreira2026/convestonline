@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react'
 import { Card, EmptyState } from '../components/ui'
+import Markdown from '../components/Markdown'
 
 const STORAGE_KEY = 'convest-ai-config'
 const HISTORY_KEY = 'convest-ai-history'
@@ -58,6 +59,7 @@ export default function AITutor() {
   const [loading, setLoading] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [draft, setDraft] = useState(config)
+  const [testStatus, setTestStatus] = useState('')
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -72,6 +74,37 @@ export default function AITutor() {
     setConfig(draft)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
     setConfigOpen(false)
+  }
+
+  async function testConnection() {
+    if (!draft.apiKey) {
+      setTestStatus('Cole uma chave de API primeiro.')
+      return
+    }
+    setTestStatus('Testando…')
+    try {
+      const res = await fetch(`${draft.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${draft.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: draft.model,
+          messages: [{ role: 'user', content: 'Responda apenas: OK' }],
+          temperature: 0,
+          max_tokens: 5,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.text()
+        setTestStatus(`Falhou (${res.status}): ${err.slice(0, 120)}`)
+        return
+      }
+      setTestStatus('✅ Conexão OK! Chave válida.')
+    } catch (e) {
+      setTestStatus(`⚠️ Erro de rede/CORS: ${e.message}. Use o Groq (suporta navegador).`)
+    }
   }
 
   async function send(text) {
@@ -109,9 +142,14 @@ export default function AITutor() {
       const answer = data?.choices?.[0]?.message?.content ?? 'Não consegui gerar uma resposta.'
       setMessages((m) => [...m, { role: 'assistant', content: answer }])
     } catch (e) {
+      const msg = e?.message || ''
+      const isNetwork = /failed to fetch|networkerror|load failed/i.test(msg)
+      const hint = isNetwork
+        ? 'Parece um bloqueio de rede/CORS. A OpenAI bloqueia chamadas diretas do navegador — use o Groq (grátis, compatível) em console.groq.com/keys, ou um provedor com CORS habilitado.'
+        : 'Verifique sua chave de API, o endpoint e o nome do modelo.'
       setMessages((m) => [
         ...m,
-        { role: 'assistant', content: `⚠️ ${e.message}\n\nVerifique sua chave de API e a conexão.` },
+        { role: 'assistant', content: `⚠️ ${msg || 'Erro desconhecido'}\n\n${hint}` },
       ])
     } finally {
       setLoading(false)
@@ -284,7 +322,11 @@ export default function AITutor() {
                 Compatível com qualquer provedor no formato OpenAI (Groq, OpenAI, Together, OpenRouter…).
                 A chave fica apenas no seu navegador.
               </p>
+              {testStatus && <p className="form-notice">{testStatus}</p>}
               <div className="task-form-actions">
+                <button type="button" className="btn btn-ghost btn-sm" onClick={testConnection}>
+                  Testar conexão
+                </button>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfigOpen(false)}>
                   Cancelar
                 </button>
@@ -300,52 +342,4 @@ export default function AITutor() {
   )
 }
 
-/* ---------- Renderização simples de Markdown ---------- */
-function Markdown({ text }) {
-  const lines = text.split('\n')
-  const blocks = []
-  let list = []
-  const flushList = () => {
-    if (list.length) {
-      blocks.push(
-        <ul key={`ul-${blocks.length}`} className="ai-list">
-          {list.map((l, i) => (
-            <li key={i}>{renderInline(l)}</li>
-          ))}
-        </ul>,
-      )
-      list = []
-    }
-  }
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      list.push(trimmed.slice(2))
-      continue
-    }
-    flushList()
-    if (trimmed === '') {
-      blocks.push(<br key={`br-${blocks.length}`} />)
-    } else if (trimmed.startsWith('### ')) {
-      blocks.push(<h4 key={`h-${blocks.length}`}>{renderInline(trimmed.slice(4))}</h4>)
-    } else if (trimmed.startsWith('## ')) {
-      blocks.push(<h3 key={`h-${blocks.length}`}>{renderInline(trimmed.slice(3))}</h3>)
-    } else if (trimmed.startsWith('# ')) {
-      blocks.push(<h2 key={`h-${blocks.length}`}>{renderInline(trimmed.slice(2))}</h2>)
-    } else {
-      blocks.push(<p key={`p-${blocks.length}`}>{renderInline(trimmed)}</p>)
-    }
-  }
-  flushList()
-  return <div className="ai-markdown">{blocks}</div>
-}
-
-function renderInline(s) {
-  const parts = s.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g)
-  return parts.map((p, i) => {
-    if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>
-    if (p.startsWith('*') && p.endsWith('*')) return <em key={i}>{p.slice(1, -1)}</em>
-    if (p.startsWith('`') && p.endsWith('`')) return <code key={i}>{p.slice(1, -1)}</code>
-    return p
-  })
-}
+/* Markdown renderizado pelo componente compartilhado src/components/Markdown.jsx */

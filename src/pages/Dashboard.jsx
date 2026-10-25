@@ -298,7 +298,7 @@ export default function Dashboard() {
                       </span>
                       <ProgressBar value={row.progress_percent} label={`Progresso de ${row.lessons.title}`} />
                     </div>
-                    <Link to="/estudos" className="btn btn-outline btn-sm">
+                    <Link to={`/aula/${row.lessons.id}`} className="btn btn-outline btn-sm">
                       Continuar
                     </Link>
                   </li>

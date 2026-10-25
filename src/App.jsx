@@ -9,6 +9,10 @@ import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 import AITutor from './pages/AITutor'
+import SubjectLessons from './pages/SubjectLessons'
+import LessonReader from './pages/LessonReader'
+import Exercises from './pages/Exercises'
+import MyStudies from './pages/MyStudies'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Settings from './pages/Settings'
@@ -35,26 +39,10 @@ export default function App() {
       >
         <Route path="/" element={<Dashboard />} />
         <Route path="/explorar" element={<Explore />} />
-        <Route
-          path="/estudos"
-          element={
-            <ComingSoon
-              icon={BookOpen}
-              title="Meus estudos"
-              description="Sua trilha de aulas, tópicos e progresso por matéria chega na Fase 2 do produto. Por enquanto, explore as matérias e monte seu plano de hoje."
-            />
-          }
-        />
-        <Route
-          path="/exercicios"
-          element={
-            <ComingSoon
-              icon={ClipboardList}
-              title="Exercícios"
-              description="Questões de múltipla escolha com correção e explicações chegam na Fase 2. Suas estatísticas de acertos já estão sendo preparadas para recebê-las."
-            />
-          }
-        />
+        <Route path="/materia/:slug" element={<PageTransition><SubjectLessons /></PageTransition>} />
+        <Route path="/aula/:id" element={<PageTransition><LessonReader /></PageTransition>} />
+        <Route path="/estudos" element={<PageTransition><MyStudies /></PageTransition>} />
+        <Route path="/exercicios" element={<PageTransition><Exercises /></PageTransition>} />
         <Route
           path="/revisao"
           element={
