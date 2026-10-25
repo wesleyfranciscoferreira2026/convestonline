@@ -33,7 +33,11 @@ export default function Signup() {
 
     // Se a confirmação de e-mail estiver ativa, não há sessão imediata.
     if (!data.session) {
-      setNotice('Conta criada! Confirme seu e-mail para começar a estudar.')
+      setNotice(
+        'Conta criada! Enviamos um e-mail de confirmação para ' +
+          email.trim() +
+          '. Clique no link do e-mail (verifique também a pasta de spam) antes de entrar.',
+      )
       return
     }
     navigate('/', { replace: true })

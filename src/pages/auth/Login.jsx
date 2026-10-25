@@ -22,11 +22,14 @@ export default function Login() {
     const { error: authError } = await signIn(email.trim(), password)
     setSubmitting(false)
     if (authError) {
-      setError(
-        authError.message === 'Invalid login credentials'
-          ? 'E-mail ou senha incorretos. Tente novamente.'
-          : 'Não foi possível entrar agora. Tente novamente em instantes.',
-      )
+      const msg = (authError.message || '').toLowerCase()
+      if (msg.includes('email not confirmed') || msg.includes('not confirmed')) {
+        setError('Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada (e spam) e clique no link de confirmação antes de entrar.')
+      } else if (msg.includes('invalid login credentials') || msg.includes('invalid credentials')) {
+        setError('E-mail ou senha incorretos. Se você acabou de se cadastrar, confirme seu e-mail primeiro.')
+      } else {
+        setError('Não foi possível entrar agora. Tente novamente em instantes.')
+      }
       return
     }
     const destination = location.state?.from?.pathname ?? '/'
