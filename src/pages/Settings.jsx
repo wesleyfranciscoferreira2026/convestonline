@@ -64,6 +64,7 @@ export default function Settings() {
   function onChangeTheme(next) {
     setTheme(next)
     applyTheme(next)
+    // Atualiza o perfil local de forma otimista para a UI não voltar ao valor antigo.
     savePreferences({ theme: next })
   }
 

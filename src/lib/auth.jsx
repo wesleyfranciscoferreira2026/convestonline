@@ -31,7 +31,8 @@ export function AuthProvider({ children }) {
       .maybeSingle()
     if (error) console.error('Erro ao carregar perfil:', error.message)
     setProfile(data ?? null)
-    applyTheme(data?.theme ?? 'system')
+    // Não aplica o tema aqui — quem chama decide (evita sobrescrever uma escolha
+    // feita pelo usuário com um valor defasado vindo do banco).
     return data
   }, [])
 
@@ -46,7 +47,8 @@ export function AuthProvider({ children }) {
       if (!active) return
       setSession(data.session)
       if (data.session?.user) {
-        await fetchProfile(data.session.user.id)
+        const p = await fetchProfile(data.session.user.id)
+        applyTheme(p?.theme ?? 'system')
         handleEmailConfirmation()
       }
       if (active) setLoading(false)
@@ -58,8 +60,11 @@ export function AuthProvider({ children }) {
       setSession(nextSession)
       if (nextSession?.user) {
         // setTimeout evita deadlock do onAuthStateChange com chamadas ao Supabase
-        setTimeout(() => fetchProfile(nextSession.user.id), 0)
-        if (event === 'SIGNED_IN') handleEmailConfirmation()
+        setTimeout(async () => {
+          const p = await fetchProfile(nextSession.user.id)
+          applyTheme(p?.theme ?? 'system')
+          if (event === 'SIGNED_IN') handleEmailConfirmation()
+        }, 0)
       } else {
         setProfile(null)
         applyTheme('system')
