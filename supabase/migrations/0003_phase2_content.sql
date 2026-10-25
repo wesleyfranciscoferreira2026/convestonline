@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Convest — Fase 2: Aprendizagem
 -- Tabela de questões + conteúdo de demonstração (aulas e exercícios).
 -- Todo o conteúdo é publicado como "published" para demonstração.
@@ -32,7 +32,7 @@ create policy "questions_select_published" on public.questions
 -- ============================================================================
 insert into public.lessons (subject_id, title, description, content, estimated_minutes, sort_order, status)
 select s.id, 'Equações do 1º grau', 'Resolvendo equações lineares com uma incógnita.',
-$$# Equações do 1º grau
+$md$# Equações do 1º grau
 
 Uma **equação do 1º grau** é uma igualdade que contém uma incógnita (geralmente x) elevada à potência 1.
 
@@ -58,14 +58,14 @@ Resolva $3x + 7 = 22$.
 ## Dica
 
 Sempre confira substituindo o valor encontrado na equação original. Se ambos os lados forem iguais, está correto.
-$$,
+$md$,
 15, 1, 'published'
 from public.subjects s where s.slug = 'matematica'
 on conflict do nothing;
 
 insert into public.lessons (subject_id, title, description, content, estimated_minutes, sort_order, status)
 select s.id, 'Funções: conceito e gráfico', 'O que é uma função e como representá-la.',
-$$# Funções
+$md$# Funções
 
 Uma **função** é uma relação entre dois conjuntos onde cada elemento do primeiro (domínio) se associa a **exatamente um** elemento do segundo (contradomínio).
 
@@ -96,14 +96,14 @@ O gráfico de uma função é o conjunto de pontos $(x, f(x))$. Para funções d
 - **Domínio:** valores de $x$ permitidos.
 - **Imagem:** valores que $f(x)$ pode assumir.
 - **Zeros:** valores de $x$ onde $f(x) = 0$.
-$$,
+$md$,
 20, 2, 'published'
 from public.subjects s where s.slug = 'matematica'
 on conflict do nothing;
 
 insert into public.lessons (subject_id, title, description, content, estimated_minutes, sort_order, status)
 select s.id, 'Geometria básica: áreas e perímetros', 'Áreas e perímetros de figuras planas.',
-$$# Geometria básica
+$md$# Geometria básica
 
 ## Quadrado
 
@@ -131,7 +131,7 @@ Um retângulo de base 8 cm e altura 5 cm tem área $8 \cdot 5 = 40$ cm² e perí
 ## Dica
 
 Sempre verifique as unidades: se as medidas estão em cm, a área estará em cm² e o perímetro em cm.
-$$,
+$md$,
 15, 3, 'published'
 from public.subjects s where s.slug = 'matematica'
 on conflict do nothing;
@@ -141,7 +141,7 @@ on conflict do nothing;
 -- ============================================================================
 insert into public.lessons (subject_id, title, description, content, estimated_minutes, sort_order, status)
 select s.id, 'Revolução Francesa', 'Causas, fases e consequências da Revolução Francesa.',
-$$# Revolução Francesa (1789–1799)
+$md$# Revolução Francesa (1789–1799)
 
 A Revolução Francesa foi um dos eventos mais importantes da história moderna, marcando o fim do Antigo Regime e o início da era contemporânea.
 
@@ -168,14 +168,14 @@ A Revolução Francesa foi um dos eventos mais importantes da história moderna,
 ## Lema
 
 **Liberdade, Igualdade, Fraternidade** — lema da Revolução, ainda presente na bandeira francesa.
-$$,
+$md$,
 25, 1, 'published'
 from public.subjects s where s.slug = 'historia'
 on conflict do nothing;
 
 insert into public.lessons (subject_id, title, description, content, estimated_minutes, sort_order, status)
 select s.id, 'Brasil Colônia', 'Período colonial brasileiro: economia, sociedade e cultura.',
-$$# Brasil Colônia (1500–1822)
+$md$# Brasil Colônia (1500–1822)
 
 ## Chegada dos portugueses (1500)
 
@@ -202,7 +202,7 @@ Pedro Álvares Cabral chegou ao Brasil em 22 de abril de 1500. Inicialmente, o i
 ## Independência (1822)
 
 D. Pedro I proclamou a independência em 7 de setembro de 1822, às margens do Ipiranga.
-$$,
+$md$,
 20, 2, 'published'
 from public.subjects s where s.slug = 'historia'
 on conflict do nothing;
@@ -212,7 +212,7 @@ on conflict do nothing;
 -- ============================================================================
 insert into public.lessons (subject_id, title, description, content, estimated_minutes, sort_order, status)
 select s.id, 'Lei de Ohm', 'Relação entre tensão, corrente e resistência.',
-$$# Lei de Ohm
+$md$# Lei de Ohm
 
 A Lei de Ohm descreve a relação entre **tensão (U)**, **corrente (I)** e **resistência (R)** em um circuito elétrico.
 
@@ -241,7 +241,7 @@ $$P = U \cdot I$$ (em Watts)
 ## Dica
 
 A Lei de Ohm vale para condutores ôhmicos (resistência constante). Lâmpadas e diodos não são ôhmicos.
-$$,
+$md$,
 15, 1, 'published'
 from public.subjects s where s.slug = 'fisica'
 on conflict do nothing;
