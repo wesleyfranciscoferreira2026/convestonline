@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Search,
   Settings,
+  Shield,
   Sparkles,
   X,
 } from 'lucide-react'
@@ -128,6 +129,12 @@ export default function AppLayout() {
               <span>{label}</span>
             </NavLink>
           ))}
+          {profile?.role === 'admin' && (
+            <NavLink to="/admin" className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
+              <Shield size={19} aria-hidden="true" />
+              <span>Admin</span>
+            </NavLink>
+          )}
         </nav>
         <div className="sidebar-footer">
           <p className="sidebar-goal-hint">Seu próximo nível começa com o que você aprende hoje.</p>
