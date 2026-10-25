@@ -2,10 +2,12 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import ProtectedRoute from './components/ProtectedRoute'
 import AppLayout from './components/AppLayout'
+import PageTransition from './components/PageTransition'
 import SetupNotice from './components/SetupNotice'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
+import ResetPassword from './pages/auth/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Settings from './pages/Settings'
@@ -17,9 +19,10 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/cadastro" element={<Signup />} />
-      <Route path="/recuperar" element={<ForgotPassword />} />
+      <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+      <Route path="/cadastro" element={<PageTransition><Signup /></PageTransition>} />
+      <Route path="/recuperar" element={<PageTransition><ForgotPassword /></PageTransition>} />
+      <Route path="/redefinir-senha" element={<PageTransition><ResetPassword /></PageTransition>} />
 
       <Route
         element={

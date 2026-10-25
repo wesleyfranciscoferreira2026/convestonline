@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import AuthLayout from '../../components/AuthLayout'
 import { useAuth } from '../../lib/auth'
+import { supabase } from '../../lib/supabaseClient'
 
 export default function Login() {
   const { signIn } = useAuth()
@@ -12,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [resendStatus, setResendStatus] = useState('')
 
   async function onSubmit(event) {
     event.preventDefault()
@@ -84,6 +86,30 @@ export default function Login() {
         <Link to="/recuperar" className="form-link">
           Esqueci minha senha
         </Link>
+
+        <button
+          type="button"
+          className="form-link form-link-muted"
+          onClick={async () => {
+            if (!email.trim()) {
+              setResendStatus('Digite seu e-mail acima para reenviar a confirmação.')
+              return
+            }
+            setResendStatus('Enviando…')
+            const { error: resendError } = await supabase.auth.resend({
+              type: 'signup',
+              email: email.trim(),
+            })
+            setResendStatus(
+              resendError
+                ? 'Não foi possível reenviar. Verifique o e-mail digitado.'
+                : 'E-mail de confirmação reenviado. Confira sua caixa de entrada.',
+            )
+          }}
+        >
+          Não recebeu o e-mail de confirmação? Reenviar
+        </button>
+        {resendStatus && <p className="form-notice">{resendStatus}</p>}
       </form>
     </AuthLayout>
   )

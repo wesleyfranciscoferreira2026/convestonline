@@ -63,6 +63,22 @@
   --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.45);
 }
 
+/* -------------------------- Transições de página ------------------------- */
+.page-transition {
+  animation: page-enter var(--duration-base) var(--easing) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* -------------------------------- Base ---------------------------------- */
 *,
 *::before,
@@ -335,6 +351,21 @@ select.input {
 .form-link {
   align-self: center;
   font-size: 13px;
+}
+
+.form-link-muted {
+  align-self: center;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.form-link-muted:hover {
+  color: var(--color-primary-dark);
 }
 
 /* -------------------------------- Cards --------------------------------- */

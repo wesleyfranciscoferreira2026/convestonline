@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../lib/auth'
 import { getGreeting, formatToday } from '../utils/date'
 import { Avatar } from './ui'
+import PageTransition from './PageTransition'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: Home, end: true },
@@ -155,7 +156,9 @@ export default function AppLayout() {
         </header>
 
         <main className="page-content">
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </main>
       </div>
 

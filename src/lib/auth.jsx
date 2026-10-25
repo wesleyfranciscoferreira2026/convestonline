@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { supabase, isSupabaseConfigured } from './supabaseClient'
 import { applyTheme } from './theme'
+import { useToast } from '../components/Toast'
 
 const AuthContext = createContext(null)
 
@@ -8,6 +9,19 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const toast = useToast()
+
+  // Mensagem de boas-vindas quando o usuário confirma o e-mail (link do e-mail).
+  function handleEmailConfirmation() {
+    const hash = window.location.hash || ''
+    if (hash.includes('type=signup') || hash.includes('type=email')) {
+      toast('E-mail confirmado! Bem-vindo ao Aura Study.')
+      // Limpa o hash para não repetir a mensagem ao recarregar.
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+      }
+    }
+  }
 
   const fetchProfile = useCallback(async (userId) => {
     const { data, error } = await supabase
@@ -31,17 +45,21 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return
       setSession(data.session)
-      if (data.session?.user) await fetchProfile(data.session.user.id)
+      if (data.session?.user) {
+        await fetchProfile(data.session.user.id)
+        handleEmailConfirmation()
+      }
       if (active) setLoading(false)
     })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession)
       if (nextSession?.user) {
         // setTimeout evita deadlock do onAuthStateChange com chamadas ao Supabase
         setTimeout(() => fetchProfile(nextSession.user.id), 0)
+        if (event === 'SIGNED_IN') handleEmailConfirmation()
       } else {
         setProfile(null)
         applyTheme('system')
@@ -72,7 +90,7 @@ export function AuthProvider({ children }) {
   const resetPassword = useCallback(
     (email) =>
       supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/redefinir-senha`,
       }),
     [],
   )

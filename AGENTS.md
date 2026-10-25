@@ -21,6 +21,18 @@ com moderação, muito espaço negativo, cartões brancos com bordas discretas.
 - `npm run build` — build de produção (use para validar antes de finalizar tarefas)
 - Banco: aplicar `supabase/migrations/0001_initial_schema.sql` no SQL Editor do Supabase
 
+## Deploy (GitHub Pages)
+
+- Site publicado: https://wesleyfranciscoferreira2026.github.io/convestonline/
+- Workflow `.github/workflows/deploy.yml`: push na `main` → build → Pages.
+- **Base path:** o build usa `/convestonline/` (vite.config.js, função por `command`);
+  dev local fica em `/`. O `BrowserRouter` usa `basename={import.meta.env.BASE_URL}`.
+- SPA no Pages: o workflow copia `dist/index.html` → `dist/404.html` (não há
+  rewrites no Pages). Se mudar de plataforma, remova o base path.
+- Segredos do site publicado (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`):
+  Settings → Secrets and variables → Actions. Sem eles o site mostra a SetupNotice.
+- Windows: use `npm.cmd`/`npx.cmd` (a política de execução do PowerShell bloqueia `.ps1`).
+
 ## Estrutura
 
 ```

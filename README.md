@@ -2,6 +2,13 @@
 
 Plataforma moderna de estudos e aprendizagem — organize sua rotina, aprenda conteúdos, resolva exercícios e acompanhe sua evolução.
 
+🌐 **Site:** https://wesleyfranciscoferreira2026.github.io/convestonline/
+
+Deploy automático via GitHub Actions → GitHub Pages a cada push na `main`
+(ver `.github/workflows/deploy.yml`). Para ativar login e dados reais no site
+publicado, cadastre os segredos `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
+em **Settings → Secrets and variables → Actions**.
+
 ## Stack
 
 - **Front-end:** React 18 + Vite + React Router
