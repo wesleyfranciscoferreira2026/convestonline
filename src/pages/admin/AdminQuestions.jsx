@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { ClipboardList, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
-import JSZip from 'jszip'
 import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../components/Toast'
 import { Card, EmptyState } from '../../components/ui'
@@ -242,6 +241,7 @@ export default function AdminQuestions() {
                 setImporting(true)
                 setImportStatus('Lendo arquivo…')
                 try {
+                  const { default: JSZip } = await import('jszip')
                   const zip = await JSZip.loadAsync(file)
                   const manifestFile = zip.file('questions.json')
                   if (!manifestFile) throw new Error('O ZIP não contém questions.json.')
@@ -255,17 +255,20 @@ export default function AdminQuestions() {
                   if (!valid.length) throw new Error('Nenhuma questão válida. Cada questão precisa de 5 alternativas, gabarito, tópico e enunciado.')
                   let done = 0
                   const payload = []
+                  const uploadedImages = new Map()
                   for (const q of valid) {
                     let imageUrl = null
                     if (q.image_file) {
+                      imageUrl = uploadedImages.get(q.image_file) || null
                       const image = zip.file(q.image_file)
-                      if (image) {
+                      if (!imageUrl && image) {
                         const blob = await image.async('blob')
                         const ext = q.image_file.split('.').pop()?.toLowerCase() || 'jpg'
-                        const path = `enem-quimica/${encodeURIComponent(q.source_ref)}.${ext}`
+                        const path = `enem-quimica/${encodeURIComponent(q.image_file.split('/').pop())}`
                         const { error: uploadError } = await supabase.storage.from('question-images').upload(path, blob, { contentType: ext === 'png' ? 'image/png' : 'image/jpeg', upsert: true })
                         if (uploadError) throw new Error(`Imagem ${q.source_ref}: ${uploadError.message}`)
                         imageUrl = supabase.storage.from('question-images').getPublicUrl(path).data.publicUrl
+                        uploadedImages.set(q.image_file, imageUrl)
                       }
                     }
                     payload.push({
