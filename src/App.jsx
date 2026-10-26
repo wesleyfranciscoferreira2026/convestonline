@@ -21,6 +21,7 @@ import MyStudies from './pages/MyStudies'
 import Stats from './pages/Stats'
 import Review from './pages/Review'
 import Provas from './pages/Provas'
+import Plans from './pages/Plans'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminLessons from './pages/admin/AdminLessons'
 import AdminQuestions from './pages/admin/AdminQuestions'
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="/estudos" element={<PageTransition><MyStudies /></PageTransition>} />
         <Route path="/exercicios" element={<PageTransition><Exercises /></PageTransition>} />
         <Route path="/provas" element={<PageTransition><Provas /></PageTransition>} />
+        <Route path="/planos" element={<PageTransition><Plans /></PageTransition>} />
         <Route path="/revisao" element={<PageTransition><Review /></PageTransition>} />
         <Route path="/estatisticas" element={<PageTransition><Stats /></PageTransition>} />
         <Route path="/perfil" element={<Settings />} />

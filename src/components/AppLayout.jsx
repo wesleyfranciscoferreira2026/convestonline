@@ -6,6 +6,7 @@ import {
   BookOpen,
   ClipboardList,
   Compass,
+  Crown,
   GraduationCap,
   Home,
   LogOut,
@@ -32,6 +33,7 @@ const NAV_ITEMS = [
   { to: '/provas', label: 'Provas', icon: GraduationCap },
   { to: '/revisao', label: 'Revisão', icon: RotateCcw },
   { to: '/estatisticas', label: 'Estatísticas', icon: BarChart3 },
+  { to: '/planos', label: 'Planos', icon: Crown },
   { to: '/perfil', label: 'Perfil', icon: Settings },
 ]
 
