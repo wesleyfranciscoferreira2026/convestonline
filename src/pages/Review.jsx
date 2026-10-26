@@ -160,8 +160,8 @@ export default function Review() {
             <Markdown text={q.prompt} />
             {sourceImages.map((url, i) => (
               <a key={url} className="question-image-link" href={url} target="_blank" rel="noopener noreferrer">
-                <img className="question-image" src={url} alt={`Página original ${i + 1} do enunciado e alternativas; abrir em tamanho real`} loading="lazy" />
-                <span>Ver página original {i + 1} em tamanho real ↗</span>
+                <img className="question-image" src={url} alt={`Figura da questão ${i + 1}; abrir em tamanho real`} loading="lazy" />
+                <span>Ver figura {i + 1} em tamanho real ↗</span>
               </a>
             ))}
           </div>
