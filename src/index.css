@@ -2929,6 +2929,20 @@ select.input {
   background: #ffffff;
 }
 
+.question-image-link {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 100%;
+  margin-top: var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.question-image-link .question-image {
+  margin-top: 0;
+}
+
 .question-prompt .md p:first-child {
   margin-top: 0;
 }

@@ -1,12 +1,30 @@
 -- ============================================================================
 -- Convest+ — Imagens em questões e ano da prova
 -- ============================================================================
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
 alter table public.questions
   add column if not exists stem_image_url text,
+  add column if not exists source_images jsonb not null default '[]'::jsonb,
   add column if not exists option_images jsonb not null default '[]'::jsonb,
-  add column if not exists year integer;
+  add column if not exists year integer,
+  add column if not exists source_ref text,
+  add column if not exists question_type text not null default 'multiple_choice'
+    check (question_type in ('multiple_choice', 'true_false'));
 
 create index if not exists questions_exam_year_idx on public.questions (exam_id, year);
+create unique index if not exists questions_source_ref_unique on public.questions(source_ref);
 
 -- Bucket público para as imagens das questões (leitura pública, escrita só admin)
 insert into storage.buckets (id, name, public)

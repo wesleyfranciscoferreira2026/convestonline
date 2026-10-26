@@ -33,7 +33,7 @@ export default function Review() {
       const [{ data: attempts }, { data: reviewed }] = await Promise.all([
         supabase
           .from('question_attempts')
-          .select('question_id, is_correct, subject_id, questions(id, prompt, options, option_images, stem_image_url, correct_index, explanation, subject_id, subjects(name, icon))')
+          .select('question_id, is_correct, subject_id, questions(id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, subject_id, subjects(name, icon))')
           .eq('user_id', user.id)
           .eq('is_correct', false),
         supabase.from('reviewed_questions').select('question_id').eq('user_id', user.id),
@@ -144,6 +144,7 @@ export default function Review() {
       )
     }
     const q = questions[session.index]
+    const sourceImages = q.source_images?.length ? q.source_images : q.stem_image_url ? [q.stem_image_url] : []
     return (
       <div className="page">
         <header className="page-header">
@@ -157,7 +158,12 @@ export default function Review() {
         <Card className="question-card">
           <div className="question-prompt">
             <Markdown text={q.prompt} />
-            {q.stem_image_url && <img className="question-image" src={q.stem_image_url} alt="Imagem do enunciado" loading="lazy" />}
+            {sourceImages.map((url, i) => (
+              <a key={url} className="question-image-link" href={url} target="_blank" rel="noopener noreferrer">
+                <img className="question-image" src={url} alt={`Página original ${i + 1} do enunciado e alternativas; abrir em tamanho real`} loading="lazy" />
+                <span>Ver página original {i + 1} em tamanho real ↗</span>
+              </a>
+            ))}
           </div>
           <div className="question-options">
             {q.options.map((opt, idx) => {

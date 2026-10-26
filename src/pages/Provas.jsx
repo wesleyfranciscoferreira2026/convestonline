@@ -35,6 +35,7 @@ export default function Provas() {
   const [selectedSubjects, setSelectedSubjects] = useState([])
   const [selectedTopic, setSelectedTopic] = useState('')
   const [difficulty, setDifficulty] = useState('all')
+  const [questionType, setQuestionType] = useState('multiple_choice')
   const [topics, setTopics] = useState([])
   const [years, setYears] = useState([])
   const [selectedYear, setSelectedYear] = useState('')
@@ -67,7 +68,7 @@ export default function Provas() {
 
   // Carrega tópicos e anos disponíveis para a prova selecionada
   useEffect(() => {
-    if (!selectedExam) { setTopics([]); setYears([]); return }
+    if (!selectedExam || selectedSubjects.length === 0) { setTopics([]); setYears([]); return }
     let active = true
     async function load() {
       const { data } = await supabase
@@ -75,6 +76,7 @@ export default function Provas() {
         .select('topic, year')
         .eq('exam_id', selectedExam.id)
         .eq('status', 'published')
+        .in('subject_id', selectedSubjects)
       if (!active) return
       const tset = new Set((data ?? []).map((q) => q.topic).filter(Boolean))
       const yset = new Set((data ?? []).map((q) => q.year).filter(Boolean))
@@ -83,7 +85,7 @@ export default function Provas() {
     }
     load()
     return () => { active = false }
-  }, [selectedExam])
+  }, [selectedExam, selectedSubjects])
 
   function toggleSubject(id) {
     setSelectedSubjects((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -94,13 +96,14 @@ export default function Provas() {
     setLoadingQ(true)
     let query = supabase
       .from('questions')
-      .select('id, prompt, options, option_images, stem_image_url, correct_index, explanation, difficulty, topic, year, subject_id, subjects(name, icon)')
+      .select('id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, difficulty, question_type, topic, year, subject_id, subjects(name, icon)')
       .eq('exam_id', selectedExam.id)
       .eq('status', 'published')
       .in('subject_id', selectedSubjects)
     if (selectedTopic) query = query.eq('topic', selectedTopic)
     if (selectedYear) query = query.eq('year', Number(selectedYear))
     if (difficulty !== 'all') query = query.eq('difficulty', difficulty)
+    query = query.eq('question_type', questionType)
     const { data } = await query.order('sort_order')
     setLoadingQ(false)
     const qs = (data ?? []).sort(() => Math.random() - 0.5).slice(0, quantity)
@@ -120,7 +123,13 @@ export default function Provas() {
     const diffLabel = difficulty === 'all' ? 'variada' : difficulty === 'easy' ? 'fácil' : difficulty === 'medium' ? 'média' : 'difícil'
     setGenerating(true)
     try {
-      const prompt = `Gere ${quantity} questões de múltipla escolha no estilo da prova "${selectedExam.name}" (${selectedExam.description || ''}), matérias: ${subjectNames}${selectedTopic ? `, tema específico: ${selectedTopic}` : ''}.
+      const typeInstruction = questionType === 'true_false'
+        ? 'Cada questão deve ser de Certo ou Errado, com duas alternativas: ["Certo", "Errado"].'
+        : 'Cada questão deve ser de múltipla escolha com cinco alternativas (A-E).'
+      const optionsTemplate = questionType === 'true_false'
+        ? '["Certo", "Errado"]'
+        : '["alternativa A", "alternativa B", "alternativa C", "alternativa D", "alternativa E"]'
+      const prompt = `Gere ${quantity} questões no estilo da prova "${selectedExam.name}" (${selectedExam.description || ''}), matérias: ${subjectNames}${selectedTopic ? `, tema específico: ${selectedTopic}` : ''}.
 
 Nível de dificuldade: ${diffLabel}. Textos de enunciado podem ser longos (até ~300 palavras), com contexto, tabelas descritas em texto, gráficos descritos, situações-problema realistas no estilo da banca.
 
@@ -128,7 +137,7 @@ Retorne APENAS um JSON válido (sem markdown, sem texto extra) no formato:
 [
   {
     "prompt": "enunciado da questão (pode ser longo)",
-    "options": ["alternativa A", "alternativa B", "alternativa C", "alternativa D", "alternativa E"],
+    "options": ${optionsTemplate},
     "correct_index": 0,
     "explanation": "explicação didática da resposta correta",
     "topic": "tópico específico da questão",
@@ -137,8 +146,8 @@ Retorne APENAS um JSON válido (sem markdown, sem texto extra) no formato:
 ]
 
 Regras:
-- 5 alternativas por questão (A-E), como nas bancas brasileiras.
-- correct_index é o índice (0-4) da alternativa correta.
+- ${typeInstruction}
+- correct_index é o índice da alternativa correta.
 - Estilo, vocabulário e dificuldade compatíveis com a prova ${selectedExam.name}.
 - Questões claras, sem ambiguidade, com textos mais longos quando apropriado.
 - Explicações didáticas e concisas.
@@ -164,6 +173,7 @@ Regras:
         explanation: q.explanation,
         topic: q.topic || selectedTopic || null,
         difficulty: q.difficulty || (difficulty === 'all' ? 'medium' : difficulty),
+        question_type: questionType,
         subject_id: selectedSubjects[0],
         subjects: subjects.find((s) => s.id === selectedSubjects[0]),
       }))
@@ -180,8 +190,14 @@ Regras:
     if (session.selected === null) return
     const q = questions[session.index]
     const correct = session.selected === q.correct_index
-    if (user && q.id && !String(q.id).startsWith('gen-')) {
-      await supabase.from('question_attempts').insert({ user_id: user.id, subject_id: q.subject_id, question_id: q.id, is_correct: correct })
+    if (user) {
+      const generated = String(q.id || '').startsWith('gen-')
+      await supabase.from('question_attempts').insert({
+        user_id: user.id,
+        subject_id: q.subject_id,
+        question_id: generated ? null : q.id,
+        is_correct: correct,
+      })
     }
     setSession((s) => ({ ...s, confirmed: true, answers: [...s.answers, { selected: s.selected, correct }] }))
   }
@@ -199,6 +215,8 @@ Regras:
     setQuestions([])
     setSession(null)
     setSelectedSubjects([])
+    setSelectedTopic('')
+    setSelectedYear('')
   }
 
   // ---------- Hub ----------
@@ -227,7 +245,7 @@ Regras:
         ) : (
           <div className="subject-grid subject-grid-lg">
             {filteredExams.map((e) => (
-              <button key={e.id} type="button" className="subject-card-lg subject-card-btn" onClick={() => { setSelectedExam(e); setSelectedSubjects([]) }}>
+              <button key={e.id} type="button" className="subject-card-lg subject-card-btn" onClick={() => { setSelectedExam(e); setSelectedSubjects([]); setSelectedTopic(''); setSelectedYear('') }}>
                 <h3>{e.name}</h3>
                 <p>{e.description}</p>
                 <span className="subject-badge">
@@ -296,6 +314,13 @@ Regras:
             </select>
           </div>
           <div className="field">
+            <label htmlFor="pv-type">Tipo de questão</label>
+            <select id="pv-type" className="input" value={questionType} onChange={(e) => setQuestionType(e.target.value)}>
+              <option value="multiple_choice">Múltipla escolha</option>
+              <option value="true_false">Certo ou Errado</option>
+            </select>
+          </div>
+          <div className="field">
             <label htmlFor="pv-qty">Quantidade</label>
             <select id="pv-qty" className="input" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))}>
               <option value={5}>5 questões</option>
@@ -353,6 +378,7 @@ Regras:
 
   // ---------- Runner ----------
   const q = questions[session.index]
+  const sourceImages = q.source_images?.length ? q.source_images : q.stem_image_url ? [q.stem_image_url] : []
   return (
     <div className="page">
       <header className="page-header">
@@ -366,7 +392,12 @@ Regras:
       <Card className="question-card">
         <div className="question-prompt">
           <Markdown text={q.prompt} />
-          {q.stem_image_url && <img className="question-image" src={q.stem_image_url} alt="Imagem do enunciado" loading="lazy" />}
+          {sourceImages.map((url, i) => (
+            <a key={url} className="question-image-link" href={url} target="_blank" rel="noopener noreferrer">
+              <img className="question-image" src={url} alt={`Página original ${i + 1} do enunciado e alternativas; abrir em tamanho real`} loading="lazy" />
+              <span>Ver página original {i + 1} em tamanho real ↗</span>
+            </a>
+          ))}
         </div>
         <div className="question-options">
           {q.options.map((opt, idx) => {

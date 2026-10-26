@@ -54,7 +54,7 @@ export default function Exercises() {
     setLoadingQ(true)
     const { data } = await supabase
       .from('questions')
-      .select('id, prompt, options, option_images, stem_image_url, correct_index, explanation, difficulty')
+      .select('id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, difficulty')
       .eq('subject_id', subject.id)
       .eq('status', 'published')
       .order('sort_order')
@@ -156,12 +156,13 @@ Regras:
     if (session.selected === null) return
     const q = questions[session.index]
     const correct = session.selected === q.correct_index
-    // Registra a tentativa apenas se estiver logado.
+    // Registra a tentativa apenas se estiver logado; IDs gerados pela IA não
+    // são UUIDs do banco, mas ainda contam nas estatísticas do aluno.
     if (user) {
       await supabase.from('question_attempts').insert({
         user_id: user.id,
         subject_id: activeSubject.id,
-        question_id: q.id,
+        question_id: String(q.id || '').startsWith('gen-') ? null : q.id,
         is_correct: correct,
       })
     }
@@ -414,6 +415,7 @@ Regras:
 
   // ---------- Runner ----------
   const q = questions[session.index]
+  const sourceImages = q.source_images?.length ? q.source_images : q.stem_image_url ? [q.stem_image_url] : []
   const isLast = session.index === questions.length - 1
   return (
     <div className="page">
@@ -431,7 +433,12 @@ Regras:
       <Card className="question-card">
         <div className="question-prompt">
           <Markdown text={q.prompt} />
-          {q.stem_image_url && <img className="question-image" src={q.stem_image_url} alt="Imagem do enunciado" loading="lazy" />}
+          {sourceImages.map((url, i) => (
+            <a key={url} className="question-image-link" href={url} target="_blank" rel="noopener noreferrer">
+              <img className="question-image" src={url} alt={`Página original ${i + 1} do enunciado e alternativas; abrir em tamanho real`} loading="lazy" />
+              <span>Ver página original {i + 1} em tamanho real ↗</span>
+            </a>
+          ))}
         </div>
         <div className="question-options">
           {q.options.map((opt, idx) => {

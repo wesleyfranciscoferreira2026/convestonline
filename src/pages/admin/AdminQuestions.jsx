@@ -26,9 +26,6 @@ export default function AdminQuestions() {
   const [filterSubject, setFilterSubject] = useState('')
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
-  const [importOpen, setImportOpen] = useState(false)
-  const [importing, setImporting] = useState(false)
-  const [importStatus, setImportStatus] = useState('')
 
   const blank = {
     subject_id: '',
@@ -36,6 +33,7 @@ export default function AdminQuestions() {
     exam_id: '',
     year: '',
     topic: '',
+    question_type: 'multiple_choice',
     prompt: '',
     stem_image_url: null,
     options: ['', '', '', ''],
@@ -54,7 +52,7 @@ export default function AdminQuestions() {
       supabase.from('lessons').select('id, title, subject_id').order('sort_order'),
       supabase
         .from('questions')
-        .select('id, prompt, options, option_images, stem_image_url, correct_index, explanation, difficulty, topic, year, exam_id, status, sort_order, subject_id, lesson_id, subjects(name), lessons(title), exams(name)')
+        .select('id, prompt, options, option_images, stem_image_url, correct_index, explanation, difficulty, question_type, topic, year, exam_id, status, sort_order, subject_id, lesson_id, subjects(name), lessons(title), exams(name)')
         .order('created_at', { ascending: false }),
     ])
     setSubjects(subs ?? [])
@@ -83,6 +81,7 @@ export default function AdminQuestions() {
       exam_id: form.exam_id || null,
       year: form.year ? Number(form.year) : null,
       topic: form.topic.trim() || null,
+      question_type: form.question_type || 'multiple_choice',
       prompt: form.prompt.trim(),
       stem_image_url: form.stem_image_url || null,
       options: opts,
@@ -129,14 +128,9 @@ export default function AdminQuestions() {
           <h2>Questões</h2>
           <p>Cadastre questões por prova, ano e tópico, com imagens no enunciado e nas alternativas.</p>
         </div>
-        <div className="admin-row-actions">
-          <button type="button" className="btn btn-outline" onClick={() => { setImportOpen(true); setImportStatus('') }}>
-            Importar caderno ZIP
-          </button>
-          <button type="button" className="btn btn-primary" onClick={() => setEditing({ ...blank, options: ['', '', '', ''], option_images: [null, null, null, null] })}>
-            <Plus size={16} aria-hidden="true" /> Nova questão
-          </button>
-        </div>
+        <button type="button" className="btn btn-primary" onClick={() => setEditing({ ...blank, options: ['', '', '', ''], option_images: [null, null, null, null] })}>
+          <Plus size={16} aria-hidden="true" /> Nova questão
+        </button>
       </header>
 
       <div className="admin-filter">
@@ -163,7 +157,7 @@ export default function AdminQuestions() {
                   {q.exams?.name ? ` · ${q.exams.name}` : ''}
                   {q.year ? ` ${q.year}` : ''}
                   {q.topic ? ` · ${q.topic}` : ''}
-                  {` · ${q.options.length} alt. · ${q.difficulty}`}
+                  {` · ${q.question_type === 'true_false' ? 'Certo/Errado' : `${q.options.length} alt.`} · ${q.difficulty}`}
                   {q.stem_image_url || q.option_images?.some(Boolean) ? ' · com imagem' : ''}
                 </span>
               </div>
@@ -220,96 +214,6 @@ export default function AdminQuestions() {
               onCancel={() => setEditing(null)}
               onSubjectChange={(sid) => setEditing((e) => ({ ...e, subject_id: sid, lesson_id: '' }))}
             />
-          </div>
-        </div>
-      )}
-
-      {importOpen && (
-        <div className="sheet-overlay" onClick={() => !importing && setImportOpen(false)}>
-          <div className="sheet admin-sheet" role="dialog" aria-modal="true" aria-label="Importar caderno de questões" onClick={(e) => e.stopPropagation()}>
-            <div className="sheet-header">
-              <strong>Importar caderno ENEM</strong>
-              <button type="button" className="icon-btn" aria-label="Fechar" disabled={importing} onClick={() => setImportOpen(false)}><X size={19} /></button>
-            </div>
-            <p className="gen-desc">Selecione o ZIP Convest preparado com <code>questions.json</code> e os recortes JPG das questões. Questões incompletas ou sem gabarito ficam fora da importação.</p>
-            <div className="field">
-              <label htmlFor="question-zip">Arquivo ZIP do caderno</label>
-              <input id="question-zip" className="input" type="file" accept=".zip,application/zip" disabled={importing} onChange={async (e) => {
-                const input = e.currentTarget
-                const file = e.target.files?.[0]
-                if (!file) return
-                setImporting(true)
-                setImportStatus('Lendo arquivo…')
-                try {
-                  const { default: JSZip } = await import('jszip')
-                  const zip = await JSZip.loadAsync(file)
-                  const manifestFile = zip.file('questions.json')
-                  if (!manifestFile) throw new Error('O ZIP não contém questions.json.')
-                  const manifest = JSON.parse(await manifestFile.async('string'))
-                  const records = Array.isArray(manifest) ? manifest : manifest.questions
-                  if (!Array.isArray(records) || records.length === 0) throw new Error('Manifesto sem questões.')
-                  const { data: subs } = await supabase.from('subjects').select('id').eq('slug', 'quimica').single()
-                  const { data: exam } = await supabase.from('exams').select('id').eq('slug', 'enem').single()
-                  if (!subs?.id || !exam?.id) throw new Error('Matéria Química ou prova ENEM não encontrada no banco.')
-                  const valid = records.filter((q) => q.source_ref && q.prompt?.trim() && Array.isArray(q.options) && q.options.length === 5 && Number.isInteger(q.correct_index) && q.correct_index >= 0 && q.correct_index < 5 && q.topic)
-                  if (!valid.length) throw new Error('Nenhuma questão válida. Cada questão precisa de 5 alternativas, gabarito, tópico e enunciado.')
-                  let done = 0
-                  const payload = []
-                  const uploadedImages = new Map()
-                  for (const q of valid) {
-                    let imageUrl = null
-                    if (q.image_file) {
-                      imageUrl = uploadedImages.get(q.image_file) || null
-                      const image = zip.file(q.image_file)
-                      if (!imageUrl && image) {
-                        const blob = await image.async('blob')
-                        const ext = q.image_file.split('.').pop()?.toLowerCase() || 'jpg'
-                        const path = `enem-quimica/${encodeURIComponent(q.image_file.split('/').pop())}`
-                        const { error: uploadError } = await supabase.storage.from('question-images').upload(path, blob, { contentType: ext === 'png' ? 'image/png' : 'image/jpeg', upsert: true })
-                        if (uploadError) throw new Error(`Imagem ${q.source_ref}: ${uploadError.message}`)
-                        imageUrl = supabase.storage.from('question-images').getPublicUrl(path).data.publicUrl
-                        uploadedImages.set(q.image_file, imageUrl)
-                      }
-                    }
-                    payload.push({
-                      source_ref: q.source_ref,
-                      source_name: manifest.source || 'Caderno ENEM — Química',
-                      subject_id: subs.id,
-                      exam_id: exam.id,
-                      year: q.year,
-                      topic: q.topic,
-                      difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : 'medium',
-                      prompt: q.prompt.trim(),
-                      options: q.options,
-                      option_images: q.option_images || [null, null, null, null, null],
-                      stem_image_url: q.stem_image_url || imageUrl,
-                      correct_index: q.correct_index,
-                      explanation: q.explanation || null,
-                      status: 'published',
-                      sort_order: Number(q.number) || done + 1,
-                    })
-                    done += 1
-                    if (done % 10 === 0) setImportStatus(`Preparando imagens e dados… ${done}/${valid.length}`)
-                  }
-                  for (let i = 0; i < payload.length; i += 50) {
-                    const { error: insertError } = await supabase.from('questions').upsert(payload.slice(i, i + 50), { onConflict: 'source_ref' })
-                    if (insertError) throw new Error(insertError.message)
-                    setImportStatus(`Importadas ${Math.min(i + 50, payload.length)} de ${payload.length} questões…`)
-                  }
-                  const skipped = records.length - valid.length
-                  setImportStatus(`Concluído: ${valid.length} questões importadas para ENEM · Química${skipped ? `; ${skipped} registros sem gabarito/tópico foram ignorados` : ''}.`)
-                  toast(`${valid.length} questões importadas para ENEM · Química.`)
-                  load()
-                } catch (err) {
-                  setImportStatus(`Erro na importação: ${err.message}`)
-                } finally {
-                  setImporting(false)
-                  input.value = ''
-                }
-              }} />
-            </div>
-            {importing && <div className="gen-hint"><Loader2 size={15} className="spin" /> {importStatus}</div>}
-            {!importing && importStatus && <p className={importStatus.startsWith('Erro') ? 'form-error' : 'form-notice'} role="status">{importStatus}</p>}
           </div>
         </div>
       )}
@@ -408,6 +312,14 @@ function QuestionForm({ initial, subjects, exams, lessons, allLessons, saving, o
         <select id="qf-lesson" className="input" value={form.lesson_id ?? ''} onChange={(e) => update('lesson_id', e.target.value)}>
           <option value="">Nenhuma</option>
           {subjectLessons.map((l) => <option key={l.id} value={l.id}>{l.title}</option>)}
+        </select>
+      </div>
+
+      <div className="field">
+        <label htmlFor="qf-type">Tipo de questão</label>
+        <select id="qf-type" className="input" value={form.question_type ?? 'multiple_choice'} onChange={(e) => update('question_type', e.target.value)}>
+          <option value="multiple_choice">Múltipla escolha</option>
+          <option value="true_false">Certo ou Errado</option>
         </select>
       </div>
 
