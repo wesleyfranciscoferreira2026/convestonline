@@ -3527,6 +3527,117 @@ select.input {
   white-space: nowrap;
 }
 
+/* -------------------------- Promo Direito (Dashboard) -------------------- */
+.law-promo-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  color: #ffffff;
+  text-decoration: none;
+  transition:
+    transform var(--duration-base) var(--easing),
+    box-shadow var(--duration-base) var(--easing);
+  overflow: hidden;
+  position: relative;
+}
+
+.law-promo-card:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.law-promo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 0.18);
+  color: #ffffff;
+}
+
+.law-promo-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.law-promo-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+}
+
+.law-promo-body h3 {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.law-promo-text {
+  font-size: 14px;
+  color: rgb(255 255 255 / 0.9);
+  min-height: 44px;
+  line-height: 1.6;
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: #ffffff;
+  animation: blink-cursor 0.8s step-end infinite;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.law-promo-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-5);
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a8a;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: transform var(--duration-fast) var(--easing);
+}
+
+.law-promo-card:hover .law-promo-cta {
+  transform: translateX(2px);
+}
+
+@media (max-width: 860px) {
+  .law-promo-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .law-promo-cta {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
 /* -------------------------- Modo visitante ------------------------------ */
 .guest-banner {
   display: flex;
