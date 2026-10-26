@@ -2918,6 +2918,76 @@ select.input {
   gap: var(--space-2);
 }
 
+/* ------------------------- Imagens em questões ---------------------------- */
+.question-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--space-4) 0 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+}
+
+.question-prompt .md p:first-child {
+  margin-top: 0;
+}
+
+.option-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.option-image {
+  max-width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: var(--radius-sm);
+}
+
+.option-edit-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.image-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+}
+
+.image-field-label {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.image-preview img {
+  max-height: 120px;
+  max-width: 200px;
+  object-fit: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+}
+
 /* --------------------------------- Responsivo --------------------------- */
 @media (max-width: 1080px) {
   .stats-grid {

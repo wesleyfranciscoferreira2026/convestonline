@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
 import SubjectIcon from '../components/SubjectIcon'
+import Markdown from '../components/Markdown'
 import { Card, EmptyState, ProgressBar } from '../components/ui'
 
 const CATEGORIES = [
@@ -35,6 +36,8 @@ export default function Provas() {
   const [selectedTopic, setSelectedTopic] = useState('')
   const [difficulty, setDifficulty] = useState('all')
   const [topics, setTopics] = useState([])
+  const [years, setYears] = useState([])
+  const [selectedYear, setSelectedYear] = useState('')
   const [quantity, setQuantity] = useState(10)
   const [questions, setQuestions] = useState([])
   const [loadingQ, setLoadingQ] = useState(false)
@@ -62,19 +65,21 @@ export default function Provas() {
 
   const filteredExams = (exams ?? []).filter((e) => e.category === category)
 
-  // Carrega tópicos distintos para a prova selecionada
+  // Carrega tópicos e anos disponíveis para a prova selecionada
   useEffect(() => {
-    if (!selectedExam) { setTopics([]); return }
+    if (!selectedExam) { setTopics([]); setYears([]); return }
     let active = true
     async function load() {
       const { data } = await supabase
         .from('questions')
-        .select('topic')
+        .select('topic, year')
         .eq('exam_id', selectedExam.id)
         .eq('status', 'published')
       if (!active) return
-      const set = new Set((data ?? []).map((q) => q.topic).filter(Boolean))
-      setTopics(Array.from(set).sort())
+      const tset = new Set((data ?? []).map((q) => q.topic).filter(Boolean))
+      const yset = new Set((data ?? []).map((q) => q.year).filter(Boolean))
+      setTopics(Array.from(tset).sort())
+      setYears(Array.from(yset).sort((a, b) => b - a))
     }
     load()
     return () => { active = false }
@@ -89,11 +94,12 @@ export default function Provas() {
     setLoadingQ(true)
     let query = supabase
       .from('questions')
-      .select('id, prompt, options, correct_index, explanation, difficulty, topic, subject_id, subjects(name, icon)')
+      .select('id, prompt, options, option_images, stem_image_url, correct_index, explanation, difficulty, topic, year, subject_id, subjects(name, icon)')
       .eq('exam_id', selectedExam.id)
       .eq('status', 'published')
       .in('subject_id', selectedSubjects)
     if (selectedTopic) query = query.eq('topic', selectedTopic)
+    if (selectedYear) query = query.eq('year', Number(selectedYear))
     if (difficulty !== 'all') query = query.eq('difficulty', difficulty)
     const { data } = await query.order('sort_order')
     setLoadingQ(false)
@@ -271,6 +277,15 @@ Regras:
               {topics.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
+          {years.length > 0 && (
+            <div className="field">
+              <label htmlFor="pv-year">Ano da prova (opcional)</label>
+              <select id="pv-year" className="input" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+                <option value="">Todos os anos</option>
+                {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          )}
           <div className="field">
             <label htmlFor="pv-diff">Dificuldade</label>
             <select id="pv-diff" className="input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
@@ -349,19 +364,26 @@ Regras:
         <ProgressBar value={session.index + (session.confirmed ? 1 : 0)} max={questions.length} label="Progresso" />
       </header>
       <Card className="question-card">
-        <p className="question-prompt">{q.prompt}</p>
+        <div className="question-prompt">
+          <Markdown text={q.prompt} />
+          {q.stem_image_url && <img className="question-image" src={q.stem_image_url} alt="Imagem do enunciado" loading="lazy" />}
+        </div>
         <div className="question-options">
           {q.options.map((opt, idx) => {
             const selected = session.selected === idx
             const confirmed = session.confirmed
             const isCorrect = idx === q.correct_index
+            const img = q.option_images?.[idx]
             let cls = 'question-option'
             if (selected) cls += ' is-selected'
             if (confirmed) { if (isCorrect) cls += ' is-correct'; else if (selected) cls += ' is-wrong' }
             return (
               <button key={idx} type="button" className={cls} disabled={confirmed} onClick={() => setSession((s) => ({ ...s, selected: idx }))}>
                 <span className="option-letter">{String.fromCharCode(65 + idx)}</span>
-                <span>{opt}</span>
+                <span className="option-body">
+                  {opt && <span>{opt}</span>}
+                  {img && <img className="option-image" src={img} alt={`Imagem da alternativa ${String.fromCharCode(65 + idx)}`} loading="lazy" />}
+                </span>
                 {confirmed && isCorrect && <CheckCircle2 size={18} aria-hidden="true" />}
                 {confirmed && selected && !isCorrect && <XCircle size={18} aria-hidden="true" />}
               </button>

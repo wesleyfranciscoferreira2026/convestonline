@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
 import SubjectIcon from '../components/SubjectIcon'
+import Markdown from '../components/Markdown'
 import { Card, EmptyState, ProgressBar } from '../components/ui'
 
 export default function Review() {
@@ -32,7 +33,7 @@ export default function Review() {
       const [{ data: attempts }, { data: reviewed }] = await Promise.all([
         supabase
           .from('question_attempts')
-          .select('question_id, is_correct, subject_id, questions(id, prompt, options, correct_index, explanation, subject_id, subjects(name, icon))')
+          .select('question_id, is_correct, subject_id, questions(id, prompt, options, option_images, stem_image_url, correct_index, explanation, subject_id, subjects(name, icon))')
           .eq('user_id', user.id)
           .eq('is_correct', false),
         supabase.from('reviewed_questions').select('question_id').eq('user_id', user.id),
@@ -154,7 +155,10 @@ export default function Review() {
           <ProgressBar value={session.index + (session.confirmed ? 1 : 0)} max={questions.length} label="Progresso da revisão" />
         </header>
         <Card className="question-card">
-          <p className="question-prompt">{q.prompt}</p>
+          <div className="question-prompt">
+            <Markdown text={q.prompt} />
+            {q.stem_image_url && <img className="question-image" src={q.stem_image_url} alt="Imagem do enunciado" loading="lazy" />}
+          </div>
           <div className="question-options">
             {q.options.map((opt, idx) => {
               const selected = session.selected === idx
@@ -169,7 +173,10 @@ export default function Review() {
               return (
                 <button key={idx} type="button" className={cls} disabled={confirmed} onClick={() => setSession((s) => ({ ...s, selected: idx }))}>
                   <span className="option-letter">{String.fromCharCode(65 + idx)}</span>
-                  <span>{opt}</span>
+                  <span className="option-body">
+                    {opt && <span>{opt}</span>}
+                    {q.option_images?.[idx] && <img className="option-image" src={q.option_images[idx]} alt={`Imagem da alternativa ${String.fromCharCode(65 + idx)}`} loading="lazy" />}
+                  </span>
                   {confirmed && isCorrect && <CheckCircle2 size={18} aria-hidden="true" />}
                   {confirmed && selected && !isCorrect && <XCircle size={18} aria-hidden="true" />}
                 </button>

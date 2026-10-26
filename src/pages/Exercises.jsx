@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
 import SubjectIcon from '../components/SubjectIcon'
+import Markdown from '../components/Markdown'
 import { Card, EmptyState, ProgressBar } from '../components/ui'
 
 export default function Exercises() {
@@ -53,7 +54,7 @@ export default function Exercises() {
     setLoadingQ(true)
     const { data } = await supabase
       .from('questions')
-      .select('id, prompt, options, correct_index, explanation, difficulty')
+      .select('id, prompt, options, option_images, stem_image_url, correct_index, explanation, difficulty')
       .eq('subject_id', subject.id)
       .eq('status', 'published')
       .order('sort_order')
@@ -428,7 +429,10 @@ Regras:
       </header>
 
       <Card className="question-card">
-        <p className="question-prompt">{q.prompt}</p>
+        <div className="question-prompt">
+          <Markdown text={q.prompt} />
+          {q.stem_image_url && <img className="question-image" src={q.stem_image_url} alt="Imagem do enunciado" loading="lazy" />}
+        </div>
         <div className="question-options">
           {q.options.map((opt, idx) => {
             const selected = session.selected === idx
@@ -449,7 +453,10 @@ Regras:
                 onClick={() => setSession((s) => ({ ...s, selected: idx }))}
               >
                 <span className="option-letter">{String.fromCharCode(65 + idx)}</span>
-                <span>{opt}</span>
+                <span className="option-body">
+                  {opt && <span>{opt}</span>}
+                  {q.option_images?.[idx] && <img className="option-image" src={q.option_images[idx]} alt={`Imagem da alternativa ${String.fromCharCode(65 + idx)}`} loading="lazy" />}
+                </span>
                 {confirmed && isCorrect && <CheckCircle2 size={18} aria-hidden="true" />}
                 {confirmed && selected && !isCorrect && <XCircle size={18} aria-hidden="true" />}
               </button>
