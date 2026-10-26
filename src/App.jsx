@@ -11,6 +11,9 @@ import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 import AITutor from './pages/AITutor'
+import KidsLayout from './pages/kids/KidsLayout'
+import KidsHome from './pages/kids/KidsHome'
+import KidsSubjects from './pages/kids/KidsSubjects'
 import SubjectLessons from './pages/SubjectLessons'
 import LessonReader from './pages/LessonReader'
 import Exercises from './pages/Exercises'
@@ -36,6 +39,12 @@ export default function App() {
       <Route path="/cadastro" element={<PageTransition><Signup /></PageTransition>} />
       <Route path="/recuperar" element={<PageTransition><ForgotPassword /></PageTransition>} />
       <Route path="/redefinir-senha" element={<PageTransition><ResetPassword /></PageTransition>} />
+
+      <Route path="/kids" element={<KidsLayout />}>
+        <Route index element={<PageTransition><KidsHome /></PageTransition>} />
+        <Route path="materias" element={<PageTransition><KidsHome /></PageTransition>} />
+        <Route path="materia/:slug" element={<PageTransition><KidsSubjects /></PageTransition>} />
+      </Route>
       <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
 
       <Route

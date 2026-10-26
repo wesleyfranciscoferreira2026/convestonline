@@ -3087,6 +3087,331 @@ select.input {
   background: #ffffff;
 }
 
+/* -------------------------- Área Kids ----------------------------------- */
+.nav-item-highlight {
+  background: linear-gradient(135deg, color-mix(in srgb, #f97316 18%, transparent), color-mix(in srgb, #eab308 18%, transparent));
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.nav-item-highlight:hover {
+  background: linear-gradient(135deg, color-mix(in srgb, #f97316 28%, transparent), color-mix(in srgb, #eab308 28%, transparent));
+  color: #9a3412;
+}
+
+.nav-item-highlight.is-active {
+  background: linear-gradient(135deg, #f97316, #eab308);
+  color: #ffffff;
+}
+
+.kids-shell {
+  min-height: 100dvh;
+  background: linear-gradient(180deg, #fff7ed 0%, #fef3c7 50%, #fce7f3 100%);
+}
+
+.kids-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-6);
+  background: rgb(255 255 255 / 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.kids-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+}
+
+.kids-logo:hover { text-decoration: none; }
+
+.kids-brand {
+  font-size: 24px;
+  color: #f97316;
+}
+
+.kids-badge {
+  padding: 2px var(--space-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #f97316, #eab308);
+  border-radius: 999px;
+}
+
+.kids-nav {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.kids-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--easing), color var(--duration-fast) var(--easing);
+}
+
+.kids-nav-item:hover {
+  text-decoration: none;
+  background: rgb(249 115 22 / 0.1);
+  color: #c2410c;
+}
+
+.kids-nav-item.is-active {
+  background: linear-gradient(135deg, #f97316, #eab308);
+  color: #ffffff;
+}
+
+.kids-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.kids-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.kids-back-link:hover {
+  color: #c2410c;
+  text-decoration: none;
+}
+
+.kids-avatar-btn {
+  border-radius: 50%;
+}
+
+.kids-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-10);
+}
+
+.kids-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.kids-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-8);
+  background: linear-gradient(135deg, #f97316, #eab308);
+  border-radius: var(--radius-xl);
+  color: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+
+.kids-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.kids-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  padding: 4px var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+}
+
+.kids-hero h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.kids-hero p {
+  font-size: 15px;
+  color: rgb(255 255 255 / 0.9);
+  max-width: 480px;
+}
+
+.kids-hero-mascot {
+  font-size: 80px;
+  line-height: 1;
+  filter: drop-shadow(0 8px 16px rgb(0 0 0 / 0.15));
+}
+
+.kids-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.kids-section h2 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.kids-subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.kids-subject-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  text-decoration: none;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--duration-base) var(--easing),
+    box-shadow var(--duration-base) var(--easing),
+    transform var(--duration-base) var(--easing);
+}
+
+.kids-subject-card:hover {
+  text-decoration: none;
+  border-color: var(--kid-color, #f97316);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.kids-subject-emoji {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.kids-subject-card strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.kids-subject-card span {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.kids-grades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.kids-grade-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.kids-grade-card strong {
+  display: block;
+  font-size: 15px;
+}
+
+.kids-grade-card span {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.kids-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.kids-info-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.kids-info-card p {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+}
+
+.kids-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.kids-page-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.kids-page-header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.kids-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.kids-back-link:hover {
+  color: #c2410c;
+  text-decoration: none;
+}
+
+@media (max-width: 860px) {
+  .kids-topbar {
+    padding: var(--space-3) var(--space-4);
+  }
+  .kids-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+  .kids-hero {
+    padding: var(--space-6);
+  }
+  .kids-hero-mascot {
+    font-size: 56px;
+  }
+}
+
 /* --------------------------------- Responsivo --------------------------- */
 @media (max-width: 1080px) {
   .stats-grid {

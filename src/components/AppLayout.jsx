@@ -24,6 +24,7 @@ import PageTransition from './PageTransition'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: Home, end: true },
+  { to: '/kids', label: 'Kids 🧒', icon: Sparkles, highlight: true },
   { to: '/ia', label: 'Convest IA', icon: Sparkles },
   { to: '/explorar', label: 'Explorar', icon: Compass },
   { to: '/estudos', label: 'Meus estudos', icon: BookOpen },
@@ -120,12 +121,12 @@ export default function AppLayout() {
           <span className="brand-mark">convest+</span>
         </NavLink>
         <nav className="sidebar-nav" aria-label="Navegação principal">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {NAV_ITEMS.map(({ to, label, icon: Icon, end, highlight }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
-              className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}
+              className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''} ${highlight ? 'nav-item-highlight' : ''}`}
             >
               <Icon size={19} aria-hidden="true" />
               <span>{label}</span>
