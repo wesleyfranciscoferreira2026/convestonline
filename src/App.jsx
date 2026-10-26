@@ -14,6 +14,7 @@ import AITutor from './pages/AITutor'
 import KidsLayout from './pages/kids/KidsLayout'
 import KidsHome from './pages/kids/KidsHome'
 import KidsSubjects from './pages/kids/KidsSubjects'
+import KidsExercises from './pages/kids/KidsExercises'
 import SubjectLessons from './pages/SubjectLessons'
 import LessonReader from './pages/LessonReader'
 import Exercises from './pages/Exercises'
@@ -45,6 +46,7 @@ export default function App() {
         <Route index element={<PageTransition><KidsHome /></PageTransition>} />
         <Route path="materias" element={<PageTransition><KidsHome /></PageTransition>} />
         <Route path="materia/:slug" element={<PageTransition><KidsSubjects /></PageTransition>} />
+        <Route path="exercicios" element={<PageTransition><KidsExercises /></PageTransition>} />
       </Route>
       <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
 

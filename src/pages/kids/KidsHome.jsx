@@ -62,8 +62,11 @@ export default function KidsHome() {
         <Card className="kids-info-card">
           <Trophy size={24} aria-hidden="true" />
           <div>
-            <h3>Em breve!</h3>
-            <p>Conteúdos, exercícios e jogos educativos para crianças estão sendo preparados. Enquanto isso, explore as matérias disponíveis.</p>
+            <h3>Pratique com exercícios!</h3>
+            <p>Teste seus conhecimentos com questões adaptadas para cada nível de ensino.</p>
+            <Link to="/kids/exercicios" className="btn btn-primary" style={{ marginTop: 12 }}>
+              Começar exercícios
+            </Link>
           </div>
         </Card>
       </section>
