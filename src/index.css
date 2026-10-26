@@ -3213,6 +3213,60 @@ select.input {
 }
 
 /* -------------------------- Iniciantes ---------------------------------- */
+.beginner-page {
+  max-width: 900px;
+}
+
+.beginner-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-8);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  border-radius: var(--radius-xl);
+  color: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+
+.beginner-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.beginner-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  align-self: flex-start;
+  padding: 4px var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+}
+
+.beginner-hero h1 {
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.beginner-hero p {
+  font-size: 15px;
+  color: rgb(255 255 255 / 0.85);
+  max-width: 480px;
+}
+
+.beginner-hero-mascot {
+  font-size: 72px;
+  line-height: 1;
+  filter: drop-shadow(0 8px 16px rgb(0 0 0 / 0.15));
+}
+
 .beginner-tabs {
   display: inline-flex;
   gap: var(--space-2);
@@ -3221,6 +3275,206 @@ select.input {
   border-radius: var(--radius-md);
   margin-bottom: var(--space-5);
 }
+
+.beginner-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px var(--space-4);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing);
+}
+
+.beginner-tab.is-active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.beginner-subject-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.beginner-subject-tab {
+  padding: 8px var(--space-4);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing);
+}
+
+.beginner-subject-tab.is-active {
+  background: var(--color-primary);
+  color: #14302f;
+  border-color: var(--color-primary);
+}
+
+.beginner-study-card {
+  margin-bottom: var(--space-4);
+}
+
+.beginner-study .study-tips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.study-tip {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.study-tip:last-child {
+  border-bottom: none;
+}
+
+.study-tip strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+  color: var(--color-text);
+}
+
+.study-tip p {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.beginner-exercise-card {
+  max-width: 640px;
+}
+
+.beginner-exercise-desc {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.beginner-level-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.level-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  opacity: 0.6;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing);
+}
+
+.level-card.is-active {
+  opacity: 1;
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.level-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 50%;
+  background: var(--color-primary-softer);
+  color: var(--color-primary-dark);
+}
+
+.level-card.is-active .level-num {
+  background: var(--color-primary);
+  color: #14302f;
+}
+
+.level-card strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.level-card p {
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.beginner-practice-btn {
+  width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.beginner-result-card {
+  text-align: center;
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+}
+
+.beginner-result-emoji {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.beginner-result-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.beginner-result-text {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.beginner-result-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 860px) {
+  .beginner-hero {
+    padding: var(--space-6);
+  }
+  .beginner-hero-mascot {
+    font-size: 48px;
+  }
+}
+
+/* -------------------------- Modo visitante ------------------------------ */
 
 .beginner-tabs .segment {
   display: inline-flex;

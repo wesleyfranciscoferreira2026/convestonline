@@ -21,9 +21,9 @@ import { Card, EmptyState, ProgressBar } from '../components/ui'
 import Markdown from '../components/Markdown'
 
 const TABS = [
-  { key: 'study', label: 'Como estudar' },
-  { key: 'content', label: 'Conteúdos introdutórios' },
-  { key: 'exercises', label: 'Exercícios por nível' },
+  { key: 'study', label: 'Como estudar', icon: Lightbulb },
+  { key: 'content', label: 'Conteúdos', icon: BookOpen },
+  { key: 'exercises', label: 'Exercícios', icon: ClipboardList },
 ]
 
 const SUBJECTS = [
@@ -81,7 +81,7 @@ export default function Beginners() {
       .order('sort_order')
     setLoadingQ(false)
     const qs = (data ?? []).sort(() => Math.random() - 0.5)
-    if (qs.length === 0) { toast('Nenhuma questão para esse nível/m matéria.', 'error'); return }
+    if (qs.length === 0) { toast('Nenhuma questão para esse nível/matéria.', 'error'); return }
     setExQuestions(qs)
     setSession({ index: 0, answers: [], selected: null, confirmed: false, finished: false })
   }
@@ -143,11 +143,11 @@ export default function Beginners() {
     const pct = Math.round((correct / total) * 100)
     return (
       <div className="page">
-        <div className="kids-result-card" style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-8)' }}>
-          <div style={{ fontSize: 48 }}>{pct >= 80 ? '🏆' : pct >= 50 ? '⭐' : '💪'}</div>
-          <h1 style={{ fontSize: 24, fontWeight: 800 }}>{pct >= 80 ? 'Excelente!' : pct >= 50 ? 'Muito bem!' : 'Continue tentando!'}</h1>
-          <p>Você acertou {correct} de {total} ({pct}%).</p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
+        <div className="beginner-result-card">
+          <div className="beginner-result-emoji">{pct >= 80 ? '🏆' : pct >= 50 ? '⭐' : '💪'}</div>
+          <h1 className="beginner-result-title">{pct >= 80 ? 'Excelente!' : pct >= 50 ? 'Muito bem!' : 'Continue tentando!'}</h1>
+          <p className="beginner-result-text">Você acertou {correct} de {total} ({pct}%).</p>
+          <div className="beginner-result-actions">
             <button type="button" className="btn btn-outline" onClick={resetExercises}>Voltar</button>
             {pct >= 60 && level < 3 && (
               <button type="button" className="btn btn-primary" onClick={() => { setLevel((l) => l + 1); resetExercises() }}>
@@ -218,28 +218,38 @@ export default function Beginners() {
 
   // ---------- Hub ----------
   return (
-    <div className="page">
+    <div className="page beginner-page">
       <Link to="/" className="back-link">
         <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
       </Link>
-      <header className="page-header">
-        <h1>Estou iniciando no mundo dos estudos</h1>
-        <p>Conteúdos introdutórios, dicas de estudo e exercícios por nível de dificuldade.</p>
+
+      <header className="beginner-hero">
+        <div className="beginner-hero-text">
+          <span className="beginner-hero-badge">
+            <Sparkles size={14} aria-hidden="true" /> Trilha de estudos
+          </span>
+          <h1>Estou iniciando no mundo dos estudos</h1>
+          <p>Conteúdos introdutórios, dicas de estudo e exercícios por nível de dificuldade.</p>
+        </div>
+        <div className="beginner-hero-mascot" aria-hidden="true">📚</div>
       </header>
 
       <div className="beginner-tabs">
-        {TABS.map((t) => (
-          <button key={t.key} type="button" className={`segment ${tab === t.key ? 'is-active' : ''}`} onClick={() => setTab(t.key)}>
-            {t.label}
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const Icon = t.icon
+          return (
+            <button key={t.key} type="button" className={`beginner-tab ${tab === t.key ? 'is-active' : ''}`} onClick={() => setTab(t.key)}>
+              <Icon size={16} aria-hidden="true" /> {t.label}
+            </button>
+          )
+        })}
       </div>
 
       {/* ---------- Como estudar ---------- */}
       {tab === 'study' && (
         <div className="beginner-study">
-          <Card>
-            <h3 className="section-title">📚 Como estudar de forma efetiva</h3>
+          <Card className="beginner-study-card">
+            <h3 className="section-title">Como estudar de forma efetiva</h3>
             <div className="study-tips">
               <div className="study-tip">
                 <strong>1. Estude um pouco todos os dias</strong>
@@ -264,12 +274,12 @@ export default function Beginners() {
             </div>
           </Card>
 
-          <Card>
-            <h3 className="section-title">⏰ Rotina pesada: como estudar mesmo sem tempo</h3>
+          <Card className="beginner-study-card">
+            <h3 className="section-title">Rotina pesada: como estudar mesmo sem tempo</h3>
             <div className="study-tips">
               <div className="study-tip">
                 <strong>1. Use os "tempos mortos"</strong>
-                <p>Transporte, fila, intervalo — 5 minutos de estudo nesses momentos somam. Use o celular para revisar flashcards ou ler um resumo.</p>
+                <p>Transporte, fila, intervalo — 5 minutos de estudo nesses momentos somam. Use o celular para revisar ou ler um resumo.</p>
               </div>
               <div className="study-tip">
                 <strong>2. Estude antes de dormir</strong>
@@ -285,13 +295,13 @@ export default function Beginners() {
               </div>
               <div className="study-tip">
                 <strong>5. Não se culpe por dias ruins</strong>
-                <p>Ter dias sem estudo é normal. O importante é voltar no dia seguinte. Consistência maior que perfeição.</p>
+                <p>Ter dias sem estudo é normal. O importante é voltar no dia seguinte. Consistência vale mais que perfeição.</p>
               </div>
             </div>
           </Card>
 
-          <Card>
-            <h3 className="section-title">🎯 Como manter o foco</h3>
+          <Card className="beginner-study-card">
+            <h3 className="section-title">Como manter o foco</h3>
             <div className="study-tips">
               <div className="study-tip">
                 <strong>1. Técnica Pomodoro</strong>
@@ -368,28 +378,28 @@ export default function Beginners() {
       {/* ---------- Exercícios por nível ---------- */}
       {tab === 'exercises' && (
         <div className="beginner-exercises">
-          <Card>
+          <Card className="beginner-exercise-card">
             <h3 className="section-title">Exercícios por nível de dificuldade</h3>
-            <p style={{ fontSize: 13.5, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+            <p className="beginner-exercise-desc">
               Comece no Nível 1 (fácil) e avance conforme se sentir confortável. Ao acertar 60% ou mais, você pode avançar para o próximo nível.
             </p>
 
             <div className="beginner-level-info">
-              <div className={`level-card ${level === 1 ? 'is-active' : ''}`}>
+              <div className={`level-card ${level === 1 ? 'is-active' : ''}`} onClick={() => setLevel(1)}>
                 <span className="level-num">1</span>
                 <div>
                   <strong>Nível 1 — Fácil</strong>
                   <p>Questões básicas para começar do zero.</p>
                 </div>
               </div>
-              <div className={`level-card ${level === 2 ? 'is-active' : ''}`}>
+              <div className={`level-card ${level === 2 ? 'is-active' : ''}`} onClick={() => setLevel(2)}>
                 <span className="level-num">2</span>
                 <div>
                   <strong>Nível 2 — Médio</strong>
                   <p>Questões um pouco mais desafiadoras.</p>
                 </div>
               </div>
-              <div className={`level-card ${level === 3 ? 'is-active' : ''}`}>
+              <div className={`level-card ${level === 3 ? 'is-active' : ''}`} onClick={() => setLevel(3)}>
                 <span className="level-num">3</span>
                 <div>
                   <strong>Nível 3 — Difícil</strong>
@@ -414,9 +424,9 @@ export default function Beginners() {
               </div>
             </div>
 
-            <button type="button" className="btn btn-primary" onClick={startExercises} disabled={loadingQ} style={{ marginTop: 'var(--space-4)' }}>
-              {loadingQ ? <Loader2 size={16} className="spin" aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
-              {loadingQ ? 'Carregando…' : `Começar Nível ${level}`}
+            <button type="button" className="btn btn-primary beginner-practice-btn" onClick={startExercises} disabled={loadingQ}>
+              {loadingQ ? <Loader2 size={18} className="spin" aria-hidden="true" /> : <Sparkles size={18} aria-hidden="true" />}
+              {loadingQ ? 'Carregando…' : `Começar a praticar — Nível ${level}`}
             </button>
           </Card>
         </div>
