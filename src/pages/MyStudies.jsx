@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BookOpen, CheckCircle2, Heart, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Heart, Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import SubjectIcon from '../components/SubjectIcon'
@@ -71,6 +71,9 @@ export default function MyStudies() {
 
   return (
     <div className="page">
+      <Link to="/" className="back-link">
+        <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+      </Link>
       <header className="page-header">
         <h2>Meus estudos</h2>
         <p>Sua trilha de aulas, progresso e favoritos.</p>

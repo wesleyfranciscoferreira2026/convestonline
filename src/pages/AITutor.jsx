@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
+  ArrowLeft,
   Bot,
   Key,
   Loader2,
@@ -165,6 +167,9 @@ export default function AITutor() {
 
   return (
     <div className="page ai-page">
+      <Link to="/" className="back-link">
+        <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+      </Link>
       <header className="page-header ai-header">
         <div>
           <h2>

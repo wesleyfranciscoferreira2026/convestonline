@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Loader2, LogOut, Moon, Sun, SunMoon } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Loader2, LogOut, Moon, Sun, SunMoon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
@@ -96,6 +96,9 @@ export default function Settings() {
 
   return (
     <div className="page page-narrow">
+      <Link to="/" className="back-link">
+        <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+      </Link>
       <header className="page-header">
         <h2>Perfil e configurações</h2>
         <p>Gerencie sua conta e personalize sua experiência de estudo.</p>

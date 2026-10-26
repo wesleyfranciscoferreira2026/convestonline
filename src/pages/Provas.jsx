@@ -223,6 +223,9 @@ Regras:
   if (!selectedExam) {
     return (
       <div className="page">
+        <Link to="/" className="back-link">
+          <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+        </Link>
         <header className="page-header">
           <h2>Provas e Bancas</h2>
           <p>Escolha a prova e as matérias que deseja praticar.</p>

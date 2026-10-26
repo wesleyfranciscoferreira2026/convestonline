@@ -193,6 +193,9 @@ Regras:
   if (!activeSubject) {
     return (
       <div className="page">
+        <Link to="/" className="back-link">
+          <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+        </Link>
         <header className="page-header">
           <h2>Exercícios</h2>
           <p>Resolva questões do banco ou gere novas com a Convest IA por banca, matéria e tema.</p>

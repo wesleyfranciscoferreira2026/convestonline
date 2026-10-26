@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Flame, Target, Zap } from 'lucide-react'
+import { ArrowLeft, BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Flame, Target, Zap } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { buildWeekBuckets, computeStreak, minutesToHuman, toISODate } from '../utils/date'
@@ -119,6 +119,9 @@ export default function Stats() {
 
   return (
     <div className="page">
+      <Link to="/" className="back-link">
+        <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+      </Link>
       <header className="page-header">
         <h2>Estatísticas</h2>
         <p>Sua evolução individual — sem rankings, só você contra você.</p>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, Compass, Search } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Compass, Search } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import SubjectIcon from '../components/SubjectIcon'
 import { Card, EmptyState, Skeleton } from '../components/ui'
@@ -41,6 +41,9 @@ export default function Explore() {
 
   return (
     <div className="page">
+      <Link to="/" className="back-link">
+        <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+      </Link>
       <header className="page-header">
         <h2>Explorar conteúdos</h2>
         <p>Encontre sua próxima matéria e comece a estudar.</p>
