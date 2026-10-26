@@ -33,16 +33,26 @@ export default function Review() {
       const [{ data: attempts }, { data: reviewed }] = await Promise.all([
         supabase
           .from('question_attempts')
-          .select('question_id, is_correct, subject_id, questions(id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, subject_id, subjects(name, icon))')
+          .select('question_id, is_correct, subject_id')
           .eq('user_id', user.id)
           .eq('is_correct', false),
         supabase.from('reviewed_questions').select('question_id').eq('user_id', user.id),
       ])
       if (!active) return
+      // Busca as questões separadamente (evita depender de FK no PostgREST).
+      const ids = [...new Set((attempts ?? []).map((a) => a.question_id).filter(Boolean))]
+      let questionMap = {}
+      if (ids.length > 0) {
+        const { data: qs } = await supabase
+          .from('questions')
+          .select('id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, subject_id, subjects(name, icon)')
+          .in('id', ids)
+        for (const q of qs ?? []) questionMap[q.id] = q
+      }
       const map = new Map()
       for (const a of attempts ?? []) {
-        if (!a.questions) continue
-        const q = a.questions
+        const q = questionMap[a.question_id]
+        if (!q) continue
         if (!map.has(q.id)) map.set(q.id, { question: q, count: 0 })
         map.get(q.id).count += 1
       }
