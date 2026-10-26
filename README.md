@@ -25,7 +25,6 @@ em **Settings → Secrets and variables → Actions**.
 2. **Configure o Supabase**
    - Crie um projeto em [supabase.com](https://supabase.com) (se ainda não tiver).
    - No **SQL Editor**, execute o arquivo [`supabase/migrations/0001_initial_schema.sql`](supabase/migrations/0001_initial_schema.sql) — ele cria as tabelas, políticas de segurança (RLS) e as 8 matérias iniciais.
-   - Para imagens e importação de provas, execute `0008_question_images.sql` e depois `0009_question_source.sql`.
    - Em **Authentication > Providers**, garanta que o provedor de e-mail está ativo.
 
 3. **Configure as variáveis de ambiente**
