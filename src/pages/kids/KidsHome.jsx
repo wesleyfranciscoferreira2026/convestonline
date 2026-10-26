@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, Sparkles, Star, Trophy } from 'lucide-react'
 import { Card, EmptyState } from '../../components/ui'
@@ -17,6 +18,20 @@ const GRADES = [
 ]
 
 export default function KidsHome() {
+  const fullText = 'Aqui você aprende brincando. Escolha uma matéria e comece sua aventura!'
+  const [displayed, setDisplayed] = useState('')
+  const [started, setStarted] = useState(false)
+
+  useEffect(() => {
+    let i = 0
+    const id = setInterval(() => {
+      i += 1
+      setDisplayed(fullText.slice(0, i))
+      if (i >= fullText.length) clearInterval(id)
+    }, 35)
+    return () => clearInterval(id)
+  }, [])
+
   return (
     <div className="kids-page">
       <section className="kids-hero">
@@ -25,7 +40,10 @@ export default function KidsHome() {
             <Sparkles size={14} aria-hidden="true" /> Reforço escolar
           </span>
           <h1>Olá, pequeno estudante! 👋</h1>
-          <p>Aqui você aprende brincando. Escolha uma matéria e comece sua aventura!</p>
+          <p className="kids-hero-typewriter">
+            {displayed}
+            {displayed.length < fullText.length && <span className="typewriter-cursor kids-cursor" />}
+          </p>
         </div>
         <div className="kids-hero-mascot" aria-hidden="true">🦊</div>
       </section>
