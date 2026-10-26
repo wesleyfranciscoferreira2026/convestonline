@@ -14,12 +14,7 @@ values
   'ELETRO-Q007', (select id from public.subjects where slug='fisica'),
   (select id from public.exams where slug='enem'), 2009, 'Eletroquímica',
   'multiple_choice',
-  $md$Pilhas e baterias são dispositivos tão comuns em nossa sociedade que, sem percebermos, carregamos vários deles junto ao nosso corpo; eles estão presentes em aparelhos de MP3, relógios, rádios, celulares etc. As semirreações descritas a seguir ilustram o que ocorre em uma pilha de óxido de prata.
-
-Zn(s) + OH⁻(aq) → ZnO(s) + H₂O(l) + e⁻
-Ag₂O(s) + H₂O(l) + e⁻ → Ag(s) + OH⁻(aq)
-
-Pode-se afirmar que esta pilha:$md$,
+  '',
   '["https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q007.png"]'::jsonb,
   '[]'::jsonb,
   'https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q007.png',
@@ -35,15 +30,7 @@ Pode-se afirmar que esta pilha:$md$,
   'ELETRO-Q013', (select id from public.subjects where slug='fisica'),
   (select id from public.exams where slug='enem'), 2009, 'Eletroquímica',
   'multiple_choice',
-  $md$Para que apresente condutividade elétrica adequada a muitas aplicações, o cobre bruto obtido por métodos térmicos é purificado eletroliticamente.
-
-Nesse processo, o cobre bruto impuro constitui o ânodo da célula, que está imerso em uma solução de CuSO₄. À medida que o cobre impuro é oxidado no ânodo, íons Cu²⁺ da solução são depositados na forma pura no cátodo.
-
-Quanto às impurezas metálicas, algumas são oxidadas, passando à solução, enquanto outras simplesmente se desprendem do ânodo e se sedimentam abaixo dele. As impurezas sedimentadas são posteriormente processadas, e sua comercialização gera receita que ajuda a cobrir os custos do processo.
-
-A série eletroquímica a seguir lista o cobre e alguns metais presentes como impurezas no cobre bruto de acordo com suas forças redutoras relativas.
-
-Entre as impurezas metálicas que constam na série apresentada, as que se sedimentam abaixo do ânodo de cobre são:$md$,
+  '',
   '["https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q013.png"]'::jsonb,
   '[]'::jsonb,
   'https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q013.png',
@@ -59,11 +46,7 @@ Entre as impurezas metálicas que constam na série apresentada, as que se sedim
   'ELETRO-Q016', (select id from public.subjects where slug='fisica'),
   (select id from public.exams where slug='enem'), 2009, 'Química ambiental',
   'multiple_choice',
-  $md$Cerca de 1% do lixo urbano é constituído por resíduos sólidos contendo elementos tóxicos. Entre esses elementos estão metais pesados como o cádmio, o chumbo e o mercúrio, componentes de pilhas e baterias, que são perigosos à saúde humana e ao meio ambiente. Quando descartadas em lixos comuns, pilhas e baterias vão para aterros sanitários ou lixões a céu aberto, e o vazamento de seus componentes contamina o solo, os rios e o lençol freático, atingindo a flora e a fauna. Por serem bioacumulativos e não biodegradáveis, esses metais chegam de forma acumulada aos seres humanos, por meio da cadeia alimentar. A legislação vigente (Resolução CONAMA no 257/1999) regulamenta o destino de pilhas e baterias após seu esgotamento energético e determina aos fabricantes e/ou importadores a quantidade máxima permitida desses metais em cada tipo de pilha/bateria, porém o problema ainda persiste.
-
-(Disponível em: http://www.mma.gov.br. Acesso em: 11 jul. 2009 - adaptado)
-
-Uma medida que poderia contribuir para acabar definitivamente com o problema da poluição ambiental por metais pesados relatado no texto seria:$md$,
+  '',
   '["https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q016.png"]'::jsonb,
   '[]'::jsonb,
   'https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q016.png',
@@ -79,11 +62,7 @@ Uma medida que poderia contribuir para acabar definitivamente com o problema da 
   'ELETRO-Q032', (select id from public.subjects where slug='fisica'),
   (select id from public.exams where slug='enem'), 2010, 'Eletroquímica',
   'multiple_choice',
-  $md$A eletrólise é muito empregada na indústria com o objetivo de reaproveitar parte dos metais sucateados. O cobre, por exemplo, é um dos metais com maior rendimento no processo de eletrólise, com uma recuperação de, aproximadamente, 99,9 %. Por ser um metal de alto valor comercial e de múltiplas aplicações, sua recuperação torna-se viável economicamente.
-
-Suponha que, em um processo de recuperação de cobre puro tenha-se eletrolisado uma solução de sulfato de cobre (II) (CuSO₄) durante 3 h, empregando-se uma corrente elétrica de intensidade igual a 10 A. A massa de cobre puro recuperada é de, aproximadamente:
-
-Dados: Constante de Faraday F = 96.500 C/mol; Massa molar em g/mol: Cu = 63,5.$md$,
+  '',
   '["https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q032.png"]'::jsonb,
   '[]'::jsonb,
   'https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q032.png',
@@ -99,18 +78,7 @@ Dados: Constante de Faraday F = 96.500 C/mol; Massa molar em g/mol: Cu = 63,5.$m
   'ELETRO-Q036', (select id from public.subjects where slug='fisica'),
   (select id from public.exams where slug='enem'), 2010, 'Eletroquímica',
   'multiple_choice',
-  $md$As baterias de Ni-Cd muito utilizadas no nosso cotidiano não devem ser descartadas em lixos comuns uma vez que uma considerável quantidade de cádmio é volatilizada e emitida para o meio ambiente quando as baterias gastas são incineradas como componente do lixo. Com o objetivo de evitar a emissão de cádmio para a atmosfera durante a combustão é indicada que seja feita a reciclagem dos materiais dessas baterias. Uma maneira de separar o cádmio dos demais compostos presentes na bateria é realizar o processo de lixiviação ácida. Nela, tanto os metais (Cd, Ni e, eventualmente, Co) como os hidróxidos de íons metálicos Cd(OH)₂(s), Ni(OH)₂(s), Co(OH)₂(s) presentes na bateria, reagem com uma mistura ácida e são solubilizados. Em função da baixa seletividade (todos os íons metálicos são solubilizados), após a digestão ácida, é realizada uma etapa de extração dos metais com solventes orgânicos de acordo com a reação:
-
-M²⁺(aq) + 2HR(org) ⇌ MR₂(org) + 2H⁺(aq)
-
-Onde:
-M = Cd²⁺, Ni²⁺ ou Co²⁺
-HR = C₈H₁₇-PO₃H : identificado no gráfico por X
-HR = C₈H₁₇-PO₃H : identificado no gráfico por Y
-
-O gráfico mostra resultado da extração utilizando os solventes orgânicos X e Y em diferentes pH. (Figura 1: Extração de níquel, cádmio e cobalto em função do pH da solução utilizando solventes orgânicos X e Y.)
-
-A reação descrita no texto mostra o processo de extração dos metais por meio da reação com moléculas orgânicas, X e Y. Considerando-se as estruturas de X e Y e o processo de separação descrito, pode-se afirmar que:$md$,
+  '',
   '["https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q036.png"]'::jsonb,
   '[]'::jsonb,
   'https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q036.png',
@@ -126,11 +94,7 @@ A reação descrita no texto mostra o processo de extração dos metais por meio
   'ELETRO-Q046', (select id from public.subjects where slug='fisica'),
   (select id from public.exams where slug='enem'), 2010, 'Química inorgânica',
   'multiple_choice',
-  $md$O Cádmio, presente nas baterias, pode chegar ao solo quando esses materiais são descartados de maneira irregular no meio ambiente ou quando são incinerados. Diferentemente da forma metálica, os íons Cd²⁺ são extremamente perigosos para o organismo, pois eles podem substituir íons Ca²⁺, ocasionando uma doença degenerativa nos ossos, tornando-os muito porosos e causando dores intensas nas articulações. Podem ainda inibir enzimas ativadas pelo cátion Zn²⁺, que são extremamente importantes para o funcionamento dos rins. A figura mostra a variação do raio de alguns metais e seus respectivos cátions.
-
-(Disponível em: http://www.mma.gov.br. Acesso em: 11 jul. 2009 - adaptado)
-
-Com base no texto, a toxicidade do cádmio em sua forma iônica é consequência de esse elemento:$md$,
+  '',
   '["https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q046.png"]'::jsonb,
   '[]'::jsonb,
   'https://wesleyfranciscoferreira2026.github.io/convestonline/exam-figures/enem-quimica/q046.png',
