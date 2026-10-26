@@ -11,6 +11,7 @@ import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 import AITutor from './pages/AITutor'
+import Beginners from './pages/Beginners'
 import KidsLayout from './pages/kids/KidsLayout'
 import KidsHome from './pages/kids/KidsHome'
 import KidsSubjects from './pages/kids/KidsSubjects'
@@ -49,7 +50,7 @@ export default function App() {
         <Route path="exercicios" element={<PageTransition><KidsExercises /></PageTransition>} />
       </Route>
       <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
-
+      <Route path="/iniciantes" element={<PageTransition><Beginners /></PageTransition>} />
       <Route
         element={
           <ProtectedRoute>

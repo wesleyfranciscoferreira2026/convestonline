@@ -9,6 +9,7 @@ import {
   Crown,
   GraduationCap,
   Home,
+  Rocket,
   LogOut,
   Menu,
   RotateCcw,
@@ -25,6 +26,7 @@ import PageTransition from './PageTransition'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: Home, end: true },
+  { to: '/iniciantes', label: 'Iniciantes', icon: Rocket, highlight: true },
   { to: '/kids', label: 'Kids 🧒', icon: Sparkles, highlight: true },
   { to: '/ia', label: 'Convest IA', icon: Sparkles },
   { to: '/explorar', label: 'Explorar', icon: Compass },
