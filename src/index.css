@@ -3749,19 +3749,35 @@ select.input {
 }
 
 /* -------------------------- Área Kids ----------------------------------- */
-.nav-item-highlight {
+.nav-item-orange {
   background: linear-gradient(135deg, color-mix(in srgb, #f97316 18%, transparent), color-mix(in srgb, #eab308 18%, transparent));
   color: #c2410c;
   font-weight: 700;
 }
 
-.nav-item-highlight:hover {
+.nav-item-orange:hover {
   background: linear-gradient(135deg, color-mix(in srgb, #f97316 28%, transparent), color-mix(in srgb, #eab308 28%, transparent));
   color: #9a3412;
 }
 
-.nav-item-highlight.is-active {
+.nav-item-orange.is-active {
   background: linear-gradient(135deg, #f97316, #eab308);
+  color: #ffffff;
+}
+
+.nav-item-blue {
+  background: color-mix(in srgb, #1e40af 12%, transparent);
+  color: #1e40af;
+  font-weight: 700;
+}
+
+.nav-item-blue:hover {
+  background: color-mix(in srgb, #1e40af 20%, transparent);
+  color: #1e3a8a;
+}
+
+.nav-item-blue.is-active {
+  background: #1e40af;
   color: #ffffff;
 }
 

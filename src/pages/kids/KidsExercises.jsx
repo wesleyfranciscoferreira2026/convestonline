@@ -157,7 +157,7 @@ export default function KidsExercises() {
             </div>
           </div>
 
-          {gradeGroup === 'kids2' && topics.length > 0 && (
+          {topics.length > 0 && (
             <div className="field">
               <label>Tópico</label>
               <div className="kids-topic-chips">
