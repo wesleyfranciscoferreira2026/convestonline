@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { supabase, isSupabaseConfigured } from './supabaseClient'
-import { applyTheme } from './theme'
+import { applyTheme, applyAccent } from './theme'
 import { useToast } from '../components/Toast'
 
 const AuthContext = createContext(null)
@@ -107,6 +107,7 @@ export function AuthProvider({ children }) {
         setIsGuest(false)
         const p = await fetchProfile(session.user.id)
         applyTheme(p?.theme ?? 'system')
+        applyAccent(p?.accent ?? 'turquoise')
         handleEmailConfirmation()
         // Limpa a URL (remove tokens)
         if (window.history && window.history.replaceState) {
@@ -131,6 +132,7 @@ export function AuthProvider({ children }) {
         setTimeout(async () => {
           const p = await fetchProfile(nextSession.user.id)
           applyTheme(p?.theme ?? 'system')
+          applyAccent(p?.accent ?? 'turquoise')
           if (event === 'SIGNED_IN') handleEmailConfirmation()
         }, 0)
       } else {

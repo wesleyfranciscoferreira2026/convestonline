@@ -4,7 +4,7 @@ import { Loader2, LogOut, Moon, Sun, SunMoon } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
-import { applyTheme } from '../lib/theme'
+import { applyTheme, applyAccent, ACCENT_PRESETS } from '../lib/theme'
 import { Avatar, Card, SectionHeader, Toggle } from '../components/ui'
 
 const THEME_OPTIONS = [
@@ -21,6 +21,7 @@ export default function Settings() {
   const [name, setName] = useState('')
   const [dailyGoal, setDailyGoal] = useState(60)
   const [theme, setTheme] = useState('system')
+  const [accent, setAccent] = useState('turquoise')
   const [notify, setNotify] = useState(true)
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingPrefs, setSavingPrefs] = useState(false)
@@ -30,6 +31,7 @@ export default function Settings() {
       setName(profile.full_name ?? '')
       setDailyGoal(profile.daily_goal_minutes ?? 60)
       setTheme(profile.theme ?? 'system')
+      setAccent(profile.accent ?? 'turquoise')
       setNotify(profile.notify_updates ?? true)
     }
   }, [profile])
@@ -66,6 +68,12 @@ export default function Settings() {
     applyTheme(next)
     // Atualiza o perfil local de forma otimista para a UI não voltar ao valor antigo.
     savePreferences({ theme: next })
+  }
+
+  function onChangeAccent(next) {
+    setAccent(next)
+    applyAccent(next)
+    savePreferences({ accent: next })
   }
 
   function onChangeGoal(event) {
@@ -167,6 +175,30 @@ export default function Settings() {
               >
                 <Icon size={16} aria-hidden="true" />
                 {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <span className="field-label" id="accent-label">
+            Cor de destaque
+          </span>
+          <div className="accent-grid" role="radiogroup" aria-labelledby="accent-label">
+            {Object.entries(ACCENT_PRESETS).map(([key, preset]) => (
+              <button
+                key={key}
+                type="button"
+                role="radio"
+                aria-checked={accent === key}
+                aria-label={preset.name}
+                className={`accent-swatch ${accent === key ? 'is-active' : ''}`}
+                style={{ '--swatch': preset.primary, '--swatch-dark': preset.dark }}
+                onClick={() => onChangeAccent(key)}
+                disabled={savingPrefs}
+              >
+                <span className="accent-swatch-color" />
+                <span className="accent-swatch-name">{preset.name}</span>
               </button>
             ))}
           </div>

@@ -13,7 +13,7 @@
       rel="stylesheet"
     />
     <script>
-      // Aplica o tema antes da primeira pintura para evitar "flash" de tema claro.
+      // Aplica o tema e a cor de destaque antes da primeira pintura.
       ;(function () {
         try {
           var theme = localStorage.getItem('convest-theme') || localStorage.getItem('aura-theme') || 'system'
@@ -21,6 +21,21 @@
             theme === 'dark' ||
             (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
           document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+
+          var accents = {
+            turquoise: ['#66cccc', '#54afac'],
+            pink: ['#ec4899', '#db2777'],
+            yellow: ['#eab308', '#ca8a04'],
+            orange: ['#f97316', '#ea580c'],
+            purple: ['#8b5cf6', '#7c3aed'],
+            blue: ['#3b82f6', '#2563eb'],
+            green: ['#22c55e', '#16a34a'],
+            red: ['#ef4444', '#dc2626'],
+          }
+          var accent = localStorage.getItem('convest-accent') || 'turquoise'
+          var pair = accents[accent] || accents.turquoise
+          document.documentElement.style.setProperty('--color-primary', pair[0])
+          document.documentElement.style.setProperty('--color-primary-dark', pair[1])
         } catch (e) {}
       })()
     </script>

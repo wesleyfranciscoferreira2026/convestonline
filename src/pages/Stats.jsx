@@ -85,6 +85,35 @@ export default function Stats() {
     return { ...subj, mins, ans, cor, acc, completed }
   }).filter((s) => s.mins > 0 || s.ans > 0 || s.completed > 0)
 
+  // Melhor matéria: maior taxa de acerto (mín. 5 questões), desempate por mais acertos.
+  const bestSubject = bySubject
+    .filter((s) => s.ans >= 5)
+    .sort((a, b) => (b.acc ?? 0) - (a.acc ?? 0) || b.cor - a.cor)[0] || null
+
+  // Melhor período: agrupa tentativas por semana (segunda-feira) e encontra a melhor.
+  const weekMap = {}
+  for (const a of attempts) {
+    const d = new Date(a.answered_at)
+    const day = d.getDay() // 0=dom
+    const monday = new Date(d)
+    monday.setDate(d.getDate() - ((day + 6) % 7))
+    monday.setHours(0, 0, 0, 0)
+    const key = toISODate(monday)
+    if (!weekMap[key]) weekMap[key] = { correct: 0, total: 0, start: monday }
+    weekMap[key].total += 1
+    if (a.is_correct) weekMap[key].correct += 1
+  }
+  const weekEntries = Object.entries(weekMap).map(([key, v]) => ({
+    key,
+    start: v.start,
+    correct: v.correct,
+    total: v.total,
+    acc: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0,
+  }))
+  const bestWeek = weekEntries
+    .filter((w) => w.total >= 5)
+    .sort((a, b) => b.acc - a.acc || b.correct - a.correct)[0] || null
+
   // Histórico recente (últimas 10 atividades)
   const recent = sessions.slice(0, 10)
 
@@ -103,6 +132,46 @@ export default function Stats() {
         <StatCard icon={Flame} label="Sequência" value={`${streak} ${streak === 1 ? 'dia' : 'dias'}`} />
         <StatCard icon={Zap} label="Tempo ativo no site" value={minutesToHuman(activeMinutes)} />
       </div>
+
+      <Card className="best-performance-card">
+        <h3 className="section-title">Melhor desempenho</h3>
+        {bestSubject || bestWeek ? (
+          <div className="best-performance-grid">
+            {bestSubject && (
+              <div className="best-performance-item">
+                <span className="best-performance-label">Melhor matéria</span>
+                <div className="best-performance-value">
+                  <SubjectIcon name={bestSubject.icon} size={20} />
+                  <strong>{bestSubject.name}</strong>
+                </div>
+                <span className="best-performance-meta">
+                  {bestSubject.acc}% de acerto · {bestSubject.cor}/{bestSubject.ans} questões
+                </span>
+              </div>
+            )}
+            {bestWeek && (
+              <div className="best-performance-item">
+                <span className="best-performance-label">Melhor semana</span>
+                <div className="best-performance-value">
+                  <strong>
+                    {bestWeek.start.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} –{' '}
+                    {new Date(bestWeek.start.getTime() + 6 * 86400000).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </strong>
+                </div>
+                <span className="best-performance-meta">
+                  {bestWeek.acc}% de acerto · {bestWeek.correct}/{bestWeek.total} questões
+                </span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Target}
+            title="Ainda não há dados suficientes"
+            description="Resolva pelo menos 5 questões em uma matéria para calcular seu melhor desempenho."
+          />
+        )}
+      </Card>
 
       <Card>
         <h3 className="section-title">Minutos por dia — última semana</h3>
