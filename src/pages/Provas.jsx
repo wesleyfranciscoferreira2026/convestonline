@@ -202,6 +202,14 @@ Regras:
     setSession((s) => ({ ...s, confirmed: true, answers: [...s.answers, { selected: s.selected, correct }] }))
   }
 
+  function skipQuestion() {
+    setSession((s) => {
+      const nextIndex = s.index + 1
+      if (nextIndex >= questions.length) return { ...s, finished: true, selected: null, confirmed: false, skipped: (s.skipped || 0) + 1 }
+      return { ...s, index: nextIndex, selected: null, confirmed: false, skipped: (s.skipped || 0) + 1 }
+    })
+  }
+
   function nextQuestion() {
     setSession((s) => {
       const nextIndex = s.index + 1
@@ -356,13 +364,15 @@ Regras:
   // ---------- Resultado ----------
   if (session?.finished) {
     const correct = session.answers.filter((a) => a.correct).length
+    const skipped = session.skipped || 0
+    const answered = session.answers.length
     const total = questions.length
-    const pct = Math.round((correct / total) * 100)
+    const pct = answered > 0 ? Math.round((correct / answered) * 100) : 0
     return (
       <div className="page">
         <header className="page-header">
           <h2>Resultado — {selectedExam.name}</h2>
-          <p>Você acertou {correct} de {total}.</p>
+          <p>Você acertou {correct} de {answered} questões respondidas{skipped > 0 ? ` (${skipped} puladas)` : ''}.</p>
         </header>
         <Card className="result-card">
           <div className="result-score"><strong>{pct}%</strong><span>{correct}/{total}</span></div>
@@ -425,7 +435,10 @@ Regras:
           })}
         </div>
         {!session.confirmed ? (
-          <button type="button" className="btn btn-primary" disabled={session.selected === null} onClick={confirmAnswer}>Confirmar resposta</button>
+          <div className="question-actions">
+            <button type="button" className="btn btn-primary" disabled={session.selected === null} onClick={confirmAnswer}>Confirmar resposta</button>
+            <button type="button" className="btn btn-ghost" onClick={skipQuestion}>Pular questão</button>
+          </div>
         ) : (
           <div className="question-feedback">
             {session.selected === q.correct_index ? <p className="feedback-ok"><CheckCircle2 size={16} aria-hidden="true" /> Correta!</p> : <p className="feedback-bad"><XCircle size={16} aria-hidden="true" /> Incorreta.</p>}

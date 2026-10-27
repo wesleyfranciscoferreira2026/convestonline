@@ -99,6 +99,15 @@ export default function KidsExercises() {
     }))
   }
 
+  function skipQuestion() {
+    setShowEffect(null)
+    setSession((s) => {
+      const nextIndex = s.index + 1
+      if (nextIndex >= questions.length) return { ...s, finished: true, selected: null, confirmed: false, skipped: (s.skipped || 0) + 1 }
+      return { ...s, index: nextIndex, selected: null, confirmed: false, skipped: (s.skipped || 0) + 1 }
+    })
+  }
+
   function nextQuestion() {
     setSession((s) => {
       const nextIndex = s.index + 1
@@ -242,9 +251,14 @@ export default function KidsExercises() {
         </div>
 
         {!session.confirmed ? (
-          <button type="button" className="btn btn-primary kids-confirm-btn" disabled={session.selected === null} onClick={confirmAnswer}>
-            Confirmar
-          </button>
+          <div className="question-actions">
+            <button type="button" className="btn btn-primary kids-confirm-btn" disabled={session.selected === null} onClick={confirmAnswer}>
+              Confirmar
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={skipQuestion}>
+              Pular
+            </button>
+          </div>
         ) : (
           <div className="kids-feedback">
             {session.selected === q.correct_index ? (

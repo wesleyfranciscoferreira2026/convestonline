@@ -2116,6 +2116,12 @@ select.input {
   color: var(--color-primary-dark);
 }
 
+.question-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 .question-feedback {
   display: flex;
   flex-direction: column;

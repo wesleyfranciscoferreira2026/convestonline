@@ -101,6 +101,14 @@ export default function Beginners() {
     setSession((s) => ({ ...s, confirmed: true, answers: [...s.answers, { selected: s.selected, correct }] }))
   }
 
+  function skipQuestion() {
+    setSession((s) => {
+      const ni = s.index + 1
+      if (ni >= exQuestions.length) return { ...s, finished: true, selected: null, confirmed: false, skipped: (s.skipped || 0) + 1 }
+      return { ...s, index: ni, selected: null, confirmed: false, skipped: (s.skipped || 0) + 1 }
+    })
+  }
+
   function nextQuestion() {
     setSession((s) => {
       const ni = s.index + 1
@@ -195,9 +203,14 @@ export default function Beginners() {
             })}
           </div>
           {!session.confirmed ? (
-            <button type="button" className="btn btn-primary" disabled={session.selected === null} onClick={confirmAnswer}>
-              Confirmar
-            </button>
+            <div className="question-actions">
+              <button type="button" className="btn btn-primary" disabled={session.selected === null} onClick={confirmAnswer}>
+                Confirmar
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={skipQuestion}>
+                Pular
+              </button>
+            </div>
           ) : (
             <div className="question-feedback">
               {session.selected === q.correct_index ? (
