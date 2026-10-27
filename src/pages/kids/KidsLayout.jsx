@@ -34,8 +34,8 @@ export default function KidsLayout() {
           ))}
         </nav>
         <div className="kids-topbar-actions">
-          <NavLink to="/" className="kids-back-link" aria-label="Voltar ao site principal">
-            <ArrowLeft size={16} aria-hidden="true" /> Site principal
+          <NavLink to="/" className="kids-back-link" aria-label="Voltar ao início">
+            <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
           </NavLink>
           {user && (
             <button type="button" className="kids-avatar-btn" onClick={onSignOut} aria-label="Sair">
