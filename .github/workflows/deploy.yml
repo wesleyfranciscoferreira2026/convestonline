@@ -51,3 +51,27 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  # Publica a Edge Function de IA (roda depois do deploy do site).
+  # Requer os secrets SUPABASE_ACCESS_TOKEN e GROQ_API_KEY no repositorio.
+  # Sem esses secrets a etapa e ignorada e o app usa o modo "Minha chave".
+  deploy-ai:
+    needs: build
+    if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' && secrets.GROQ_API_KEY != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Publicar secret do provedor de IA
+        run: supabase secrets set --project-ref fyujuqqjjadrtmsnqzrb GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" GROQ_BASE_URL="https://api.groq.com/openai/v1" GROQ_MODEL="openai/gpt-oss-120b"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Publicar Edge Function ai-chat
+        run: supabase functions deploy ai-chat --no-verify-jwt --project-ref fyujuqqjjadrtmsnqzrb
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

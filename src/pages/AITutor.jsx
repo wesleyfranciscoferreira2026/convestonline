@@ -21,6 +21,7 @@ import {
   getAIConfig,
   getAIMode,
   getAIModeLabel,
+  isSiteAIAvailable,
   saveAIConfig,
   setAIMode,
   testAIConnection,
@@ -51,6 +52,7 @@ export default function AITutor() {
   const [config, setConfig] = useState(() => getAIConfig())
   const [mode, setMode] = useState(() => getAIMode())
   const [draftMode, setDraftMode] = useState(() => getAIMode())
+  const [siteReady, setSiteReady] = useState(null)
   const [messages, setMessages] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
@@ -150,7 +152,15 @@ ${result.error.hint}` },
     localStorage.removeItem(HISTORY_KEY)
   }
 
-  const configured = mode === 'own' ? Boolean(config.apiKey) : true
+  useEffect(() => {
+    let active = true
+    isSiteAIAvailable().then((ok) => {
+      if (active) setSiteReady(ok)
+    })
+    return () => { active = false }
+  }, [])
+
+  const configured = mode === 'own' ? Boolean(config.apiKey) : siteReady !== false
 
   return (
     <div className="page ai-page">
@@ -174,7 +184,7 @@ ${result.error.hint}` },
         </div>
       </header>
 
-      {mode === 'site' && (
+      {mode === 'site' && siteReady === true && (
         <Card className="ai-setup-card">
           <EmptyState
             icon={Sparkles}
@@ -198,7 +208,35 @@ ${result.error.hint}` },
         </Card>
       )}
 
-      {!configured && mode === 'own' && (
+      {mode === 'site' && siteReady === false && (
+        <Card className="ai-setup-card">
+          <EmptyState
+            icon={Key}
+            title="IA do site ainda nao ativada"
+            description="A funcao de IA do site ainda nao foi publicada no Supabase. Enquanto isso, use sua propria chave do Groq (gratuita) e tudo funciona normalmente."
+            action={
+              <div className="ai-setup-actions">
+                <a
+                  href="https://console.groq.com/keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline"
+                >
+                  Criar chave no Groq
+                </a>
+                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
+                  Colar minha chave
+                </button>
+              </div>
+            }
+          />
+          <p className="ai-setup-note">
+            A chave fica salva apenas no seu navegador (localStorage). Nunca e enviada para nossos servidores.
+          </p>
+        </Card>
+      )}
+
+      {mode === 'own' && !config.apiKey && (
         <Card className="ai-setup-card">
           <EmptyState
             icon={Key}
@@ -214,7 +252,7 @@ ${result.error.hint}` },
                 >
                   Criar chave no Groq
                 </a>
-                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode(mode); setConfigOpen(true) }}>
+                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
                   Colar minha chave
                 </button>
               </div>

@@ -232,6 +232,26 @@ async function callSiteProvider({ messages, temperature, maxTokens }) {
 }
 
 /**
+ * Verifica se a Edge Function "ai-chat" esta publicada no Supabase.
+ * A funcao responde 400 (mensagem vazia) quando existe, e 404 quando nao.
+ */
+export async function isSiteAIAvailable() {
+  if (!supabase) return false
+  try {
+    const { error } = await supabase.functions.invoke('ai-chat', {
+      body: { messages: [] },
+    })
+    if (!error) return true
+    const ctx = error.context
+    const status = ctx?.status || error.status || 0
+    if (status === 404) return false
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
  * Chama o provedor usando uma configuracao especifica (usado no "Testar conexao").
  * @returns {Promise<{ok: boolean, text?: string, error?: {title: string, hint: string}}>}
  */

@@ -47,23 +47,27 @@ A IA tem dois modos, escolhidos em **Convest IA > Configurar**:
 
 ### Ativar a "IA do site" (recomendado)
 
-A chave do Groq já está salva em `.env.secrets.local` (arquivo ignorado pelo git). Só falta ligá-la ao Supabase:
+A chave do Groq já está salva em `.env.secrets.local` (arquivo ignorado pelo git). Só falta ligá-la ao Supabase.
 
-1. Instale o [Supabase CLI](https://supabase.com/docs/guides/cli) e faça login **no seu terminal** (abre o navegador):
-   ```bash
-   npm run ai:login
-   ```
-   Equivale a `npx supabase login`. Só precisa ser feito uma vez.
-2. Publique o secret e a função:
-   ```bash
-   npm run ai:deploy
-   ```
-   O script (`scripts/deploy-ai.mjs`) já usa o projeto `fyujuqqjjadrtmsnqzrb`, lê a chave de `.env.secrets.local` e publica o secret `GROQ_API_KEY` + a Edge Function `ai-chat`. Se faltar o login, ele avisa com a instrução certa em vez de erro genérico.
-3. Modelo usado: `openai/gpt-oss-120b` (Groq). Para trocar, edite `GROQ_MODEL` em `.env.secrets.local` e rode `npm run ai:deploy` de novo.
+**Opção A — pelo GitHub Actions (sem instalar nada):**
+1. Gere um token de acesso em <https://supabase.com/dashboard/account/tokens>.
+2. Em **Settings → Secrets and variables → Actions**, cadastre:
+   - `SUPABASE_ACCESS_TOKEN` = o token acima
+   - `GROQ_API_KEY` = `gsk_...`
+3. Dê um push na `main`: o workflow publica o secret e a Edge Function automaticamente.
+   (Se os secrets não existirem, o job é ignorado e nada quebra.)
+
+**Opção B — pelo terminal:**
+```bash
+npm run ai:login    # abre o navegador (uma vez)
+npm run ai:deploy   # publica o secret + a funcao ai-chat
+```
+
+O modelo usado é `openai/gpt-oss-120b` (Groq). Para trocar, edite `GROQ_MODEL` (ou o secret no GitHub) e publique de novo.
 
 > ⚠️ A chave apareceu no chat. Se ela vazar publicamente, revogue em <https://console.groq.com/keys> e gere outra.
 
-Sem o passo 2, o app continua funcionando: ele cai automaticamente para a chave do aluno, se houver uma salva no navegador.
+Sem a publicação da função, o app continua funcionando: a tela da IA detecta que a função não está no ar e oferece o modo "Minha chave" (a chave do aluno fica só no navegador).
 
 ### Limites de uso
 
