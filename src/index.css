@@ -3674,6 +3674,90 @@ select.input {
   gap: var(--space-4);
 }
 
+.law-bank-disclaimer {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-softer);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.law-question-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.law-practice-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.law-question-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.law-question-meta span {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--color-primary-softer);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.law-answer-explanation {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-softer);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.law-answer-explanation strong {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+
+.law-result-score {
+  margin: var(--space-4) 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.law-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 700px) {
+  .law-question-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .law-practice-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .law-paid-card {
   border-color: #1e40af;
   background: linear-gradient(180deg, var(--color-surface), color-mix(in srgb, #1e40af 4%, var(--color-surface)));

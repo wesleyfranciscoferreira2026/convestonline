@@ -11,11 +11,20 @@ import {
   Sparkles,
   Target,
 } from 'lucide-react'
-import { Card, EmptyState, SectionHeader } from '../../components/ui'
+import { Card, SectionHeader } from '../../components/ui'
+import LawQuestions from './LawQuestions'
 
 const LAW_SUBJECTS = [
-  { slug: 'direito-constitucional', name: 'Direito Constitucional', icon: Scale, desc: 'Constituição, direitos fundamentais, organização do Estado.', color: '#1e40af' },
-  { slug: 'direito-penal', name: 'Direito Penal', icon: Gavel, desc: 'Crime, tipicidade, culpabilidade e penas.', color: '#7c2d12' },
+  { slug: 'direito-administrativo', name: 'Direito Administrativo', icon: Briefcase, desc: 'Administração pública, atos e serviços públicos.' },
+  { slug: 'direito-constitucional', name: 'Direito Constitucional', icon: Scale, desc: 'Constituição, direitos fundamentais e Estado.' },
+  { slug: 'direito-penal', name: 'Direito Penal', icon: Gavel, desc: 'Teoria do crime, penas e princípios penais.' },
+  { slug: 'direito-civil', name: 'Direito Civil', icon: BookOpen, desc: 'Pessoas, obrigações, contratos e responsabilidade.' },
+  { slug: 'processo-civil', name: 'Processo Civil', icon: FileText, desc: 'Jurisdição, procedimento e tutela de direitos.' },
+  { slug: 'processo-penal', name: 'Processo Penal', icon: Gavel, desc: 'Investigação, ação penal e garantias processuais.' },
+  { slug: 'direito-do-trabalho', name: 'Direito do Trabalho', icon: Briefcase, desc: 'Relações de trabalho e direitos trabalhistas.' },
+  { slug: 'direito-tributario', name: 'Direito Tributário', icon: FileText, desc: 'Tributos, competência e obrigações tributárias.' },
+  { slug: 'direito-do-consumidor', name: 'Direito do Consumidor', icon: Target, desc: 'Relações de consumo e proteção do consumidor.' },
+  { slug: 'direito-ambiental', name: 'Direito Ambiental', icon: Sparkles, desc: 'Proteção ambiental e responsabilidade por danos.' },
 ]
 
 const CONCURSOS = [
@@ -43,8 +52,7 @@ export default function LawHome() {
           </span>
           <h1>Sou estudante de Direito</h1>
           <p>
-            Conceitos, questões, apostilas e concursos para quem estuda Direito.
-            Foco em Direito Constitucional e Direito Penal.
+            Estude por disciplina e pratique questões autorais organizadas por banca e perfil de concurso.
           </p>
         </div>
       </header>
@@ -71,7 +79,7 @@ export default function LawHome() {
             {LAW_SUBJECTS.map((s) => (
               <Link key={s.slug} to={`/materia/${s.slug}`} className="subject-card-link">
                 <Card className="subject-card-lg" as="article">
-                  <span className="subject-icon" style={{ background: s.color + '18', color: s.color }}>
+                  <span className="subject-icon">
                     <s.icon size={22} aria-hidden="true" />
                   </span>
                   <h3>{s.name}</h3>
@@ -85,8 +93,7 @@ export default function LawHome() {
           </div>
           <Card>
             <p className="settings-note">
-              Os conceitos de Direito Constitucional e Direito Penal serão adicionados em breve.
-              Enquanto isso, explore as matérias disponíveis e resolva questões.
+              As questões disponíveis nesta área são autorais e identificadas como questões de treino — não são questões oficiais de concursos ou bancas.
             </p>
           </Card>
         </div>
@@ -95,18 +102,7 @@ export default function LawHome() {
       {/* ---------- Questões ---------- */}
       {section === 'questoes' && (
         <div className="law-section">
-          <Card>
-            <SectionHeader title="Questões de Direito" subtitle="Selecione a matéria, o tópico e o nível de dificuldade." />
-            <p className="settings-note">
-              Em breve: questões de Direito Constitucional e Penal organizadas por tópico
-              (princípios fundamentais, direitos e garantias, controle de constitucionalidade,
-              teoria do crime, dolo e culpa, penas, excludentes de ilicitude, etc.)
-              com 3 níveis de dificuldade (fácil, médio, difícil).
-            </p>
-            <Link to="/exercicios" className="btn btn-primary" style={{ marginTop: 12 }}>
-              Ir para exercícios gerais
-            </Link>
-          </Card>
+          <LawQuestions />
         </div>
       )}
 
