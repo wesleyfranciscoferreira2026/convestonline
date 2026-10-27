@@ -37,6 +37,11 @@ Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS_HEADERS })
   }
+  // Health check: permite ao front-end saber que a funcao esta no ar sem
+  // gastar tokens do provedor.
+  if (request.method === 'GET') {
+    return json({ ok: true, status: 'ready', model: Deno.env.get('GROQ_MODEL') || DEFAULT_MODEL })
+  }
   if (request.method !== 'POST') {
     return json(errorBody('Metodo nao permitido.', 'Use POST para conversar com a IA.', 405), 405)
   }
@@ -58,6 +63,11 @@ Deno.serve(async (request) => {
     payload = await request.json()
   } catch {
     return json(errorBody('Corpo da requisicao invalido.', 'Envie JSON com o campo messages.', 400), 400)
+  }
+
+  // Health check: nao chama o provedor e nao consome tokens.
+  if (payload?.ping) {
+    return json({ ok: true, status: 'ready', model: Deno.env.get('GROQ_MODEL') || DEFAULT_MODEL })
   }
 
   const messages = Array.isArray(payload?.messages) ? payload.messages : null

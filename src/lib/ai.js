@@ -242,14 +242,12 @@ async function callSiteProvider({ messages, temperature, maxTokens }) {
 export async function isSiteAIAvailable() {
   if (!supabase) return false
   try {
-    const { error } = await supabase.functions.invoke('ai-chat', {
-      body: { messages: [] },
-    })
-    if (!error) return true
-    const ctx = error.context
-    const status = ctx?.status || error.status || 0
+    const { data, error } = await supabase.functions.invoke('ai-chat', { body: { ping: true } })
+    if (!error && data?.ok) return true
+    const ctx = error?.context
+    const status = ctx?.status || error?.status || 0
     if (status === 404) return false
-    return true
+    return false
   } catch {
     return false
   }
