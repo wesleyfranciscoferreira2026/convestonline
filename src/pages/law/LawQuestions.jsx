@@ -33,19 +33,28 @@ const CONTEST_PROFILES = [
   'Geral',
 ]
 
+function getStoredAIConfig() {
+  try { return JSON.parse(localStorage.getItem('convest-ai-config') || '{}') } catch { return {} }
+}
+
 export default function LawQuestions() {
   const { user } = useAuth()
   const [subjects, setSubjects] = useState([])
   const [questions, setQuestions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [filters, setFilters] = useState({ subject: 'all', banca: 'all', concurso: 'all' })
+  const [filters, setFilters] = useState({ subject: 'all', topic: 'all', banca: 'all', concurso: 'all' })
   const [runQuestions, setRunQuestions] = useState(null)
   const [session, setSession] = useState(null)
+  const [hasAIKey, setHasAIKey] = useState(() => Boolean(getStoredAIConfig().apiKey))
+  const [generateContinuously, setGenerateContinuously] = useState(false)
+  const [generatingNext, setGeneratingNext] = useState(false)
+  const [generationError, setGenerationError] = useState('')
 
   useEffect(() => {
     let active = true
     async function load() {
+      setHasAIKey(Boolean(getStoredAIConfig().apiKey))
       setLoading(true)
       const { data: subjectRows, error: subjectError } = await supabase
         .from('subjects')
@@ -91,9 +100,15 @@ export default function LawQuestions() {
 
   const filteredQuestions = useMemo(() => questions.filter((question) => (
     (filters.subject === 'all' || question.subjects?.slug === filters.subject)
+    && (filters.topic === 'all' || question.topic === filters.topic)
     && (filters.banca === 'all' || question.banca === filters.banca)
     && (filters.concurso === 'all' || question.concurso === filters.concurso)
   )), [questions, filters])
+
+  const availableTopics = useMemo(() => [...new Set(questions
+    .filter((question) => filters.subject === 'all' || question.subjects?.slug === filters.subject)
+    .map((question) => question.topic)
+    .filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')), [questions, filters.subject])
 
   function startPractice() {
     const selected = [...filteredQuestions].sort(() => Math.random() - 0.5)
@@ -110,7 +125,7 @@ export default function LawQuestions() {
       await supabase.from('question_attempts').insert({
         user_id: user.id,
         subject_id: question.subject_id,
-        question_id: question.id,
+        question_id: String(question.id).startsWith('gen-') ? null : question.id,
         is_correct: isCorrect,
       })
     }
@@ -121,11 +136,79 @@ export default function LawQuestions() {
     }))
   }
 
-  function nextQuestion() {
-    setSession((current) => {
-      if (current.index + 1 >= runQuestions.length) {
-        return { ...current, finished: true }
+  async function nextQuestion() {
+    setGenerationError('')
+    const currentQuestion = runQuestions[session.index]
+
+    if (generateContinuously) {
+      const config = getStoredAIConfig()
+      if (config.apiKey) {
+        setGeneratingNext(true)
+        try {
+          const previousPrompts = runQuestions
+            .slice(0, session.index + 1)
+            .filter((question) => question.subject_id === currentQuestion.subject_id)
+            .slice(-5)
+            .map((question) => question.prompt)
+          const topic = filters.topic !== 'all' ? filters.topic : currentQuestion.topic
+          const prompt = `Crie uma questão jurídica AUTORAL e inédita de múltipla escolha. Não copie nem adapte questões de livros, apostilas ou provas existentes.
+
+Disciplina: ${currentQuestion.subjects?.name || 'Direito'}.
+Tópico: ${topic || 'escolha um tópico fundamental da disciplina'}.
+Perfil de concurso: ${currentQuestion.concurso || 'Geral'}.
+Formato de referência: ${currentQuestion.banca || 'questão autoral'} (use apenas características gerais do formato, sem alegar que é uma questão oficial).
+
+Evite repetir estes enunciados já usados na sessão:
+${previousPrompts.map((text, index) => `${index + 1}. ${text}`).join('\n')}
+
+Escreva enunciado claro, cinco alternativas A-E, apenas uma correta e comentário curto explicando a resposta. Evite depender de legislação local ou de informação não indicada no enunciado. Retorne somente JSON válido neste formato: {"prompt":"...","options":["...","...","...","...","..."],"correct_index":0,"explanation":"...","topic":"...","difficulty":"medium"}.`
+          const endpoint = `${(config.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '')}/chat/completions`
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}` },
+            body: JSON.stringify({
+              model: config.model || 'llama-3.3-70b-versatile',
+              messages: [{ role: 'user', content: prompt }],
+              temperature: 0.8,
+            }),
+          })
+          if (!response.ok) throw new Error(`Erro ${response.status} ao gerar questão.`)
+          const result = await response.json()
+          const raw = result?.choices?.[0]?.message?.content ?? ''
+          const cleaned = raw.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim()
+          const parsed = JSON.parse(cleaned)
+          if (!parsed.prompt || !Array.isArray(parsed.options) || parsed.options.length !== 5
+            || !Number.isInteger(parsed.correct_index) || parsed.correct_index < 0 || parsed.correct_index > 4) {
+            throw new Error('A resposta da IA veio em formato inválido.')
+          }
+          const generated = {
+            id: `gen-${Date.now()}`,
+            subject_id: currentQuestion.subject_id,
+            subjects: currentQuestion.subjects,
+            prompt: parsed.prompt,
+            options: parsed.options,
+            correct_index: parsed.correct_index,
+            explanation: parsed.explanation || '',
+            topic: parsed.topic || topic || currentQuestion.topic,
+            difficulty: parsed.difficulty || 'medium',
+            banca: currentQuestion.banca,
+            concurso: currentQuestion.concurso,
+          }
+          setRunQuestions((current) => [...current, generated])
+          setSession((current) => ({ ...current, index: current.index + 1, selected: null, confirmed: false }))
+          return
+        } catch (cause) {
+          setGenerationError(`${cause.message} Vou continuar com as questões autorais já cadastradas.`)
+        } finally {
+          setGeneratingNext(false)
+        }
+      } else {
+        setGenerationError('Configure uma chave de API em Convest IA para gerar questões novas. Vou continuar com o banco autoral.')
       }
+    }
+
+    setSession((current) => {
+      if (current.index + 1 >= runQuestions.length) return { ...current, finished: true }
       return { ...current, index: current.index + 1, selected: null, confirmed: false }
     })
   }
@@ -155,7 +238,7 @@ export default function LawQuestions() {
             <ArrowLeft size={16} aria-hidden="true" /> Sair das questões
           </button>
           <h2>{question.subjects?.name}</h2>
-          <p>Questão {session.index + 1} de {runQuestions.length} · {question.banca} (autoral)</p>
+          <p>Questão {session.index + 1}{generateContinuously ? '' : ` de ${runQuestions.length}`} · {question.banca} (autoral)</p>
           <ProgressBar value={session.index + (session.confirmed ? 1 : 0)} max={runQuestions.length} label="Progresso das questões de Direito" />
         </header>
         <Card className="question-card">
@@ -194,14 +277,15 @@ export default function LawQuestions() {
               <Markdown text={question.explanation} />
             </div>
           )}
+          {generationError && <p className="form-error" role="status">{generationError}</p>}
           <div className="question-actions">
             {!session.confirmed ? (
               <button type="button" className="btn btn-primary" onClick={confirmAnswer} disabled={session.selected == null}>
                 Confirmar resposta
               </button>
             ) : (
-              <button type="button" className="btn btn-primary" onClick={nextQuestion}>
-                {session.index + 1 === runQuestions.length ? 'Ver resultado' : 'Próxima questão'}
+              <button type="button" className="btn btn-primary" onClick={nextQuestion} disabled={generatingNext}>
+                {generatingNext ? <><Loader2 className="spin" size={16} aria-hidden="true" /> Gerando questão…</> : generateContinuously ? 'Gerar próxima questão' : session.index + 1 === runQuestions.length ? 'Ver resultado' : 'Próxima questão'}
               </button>
             )}
           </div>
@@ -212,7 +296,7 @@ export default function LawQuestions() {
 
   return (
     <Card>
-      <SectionHeader title="Banco de questões autorais" subtitle="Filtre por disciplina, banca de referência e perfil de concurso." />
+      <SectionHeader title="Banco de questões autorais" subtitle="Filtre por disciplina, tópico, banca de referência e perfil de concurso." />
       <p className="law-bank-disclaimer">
         Questões inéditas criadas para treino. Os nomes de bancas indicam apenas o formato de referência; não são questões oficiais nem foram copiadas do arquivo enviado.
       </p>
@@ -227,9 +311,16 @@ export default function LawQuestions() {
           <div className="law-question-filters">
             <div className="field">
               <label htmlFor="law-subject-filter">Disciplina</label>
-              <select id="law-subject-filter" className="input" value={filters.subject} onChange={(event) => setFilters((current) => ({ ...current, subject: event.target.value }))}>
+              <select id="law-subject-filter" className="input" value={filters.subject} onChange={(event) => setFilters((current) => ({ ...current, subject: event.target.value, topic: 'all' }))}>
                 <option value="all">Todas as disciplinas</option>
                 {subjects.map((subject) => <option key={subject.id} value={subject.slug}>{subject.name}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="law-topic-filter">Tópico</label>
+              <select id="law-topic-filter" className="input" value={filters.topic} onChange={(event) => setFilters((current) => ({ ...current, topic: event.target.value }))}>
+                <option value="all">Todos os tópicos</option>
+                {availableTopics.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
               </select>
             </div>
             <div className="field">
@@ -247,6 +338,13 @@ export default function LawQuestions() {
               </select>
             </div>
           </div>
+          <label className={`law-ai-toggle ${!hasAIKey ? 'is-disabled' : ''}`}>
+            <input type="checkbox" checked={generateContinuously} disabled={!hasAIKey} onChange={(event) => setGenerateContinuously(event.target.checked)} />
+            <span>
+              <strong>Gerar uma questão inédita após cada resposta</strong>
+              <small>{hasAIKey ? 'Usa a chave de API configurada em Convest IA e gera uma questão por vez.' : 'Configure uma chave de API em Convest IA para habilitar a geração contínua.'}</small>
+            </span>
+          </label>
           <div className="law-practice-footer">
             <span>{filteredQuestions.length} {filteredQuestions.length === 1 ? 'questão disponível' : 'questões disponíveis'}</span>
             <button type="button" className="btn btn-primary" onClick={startPractice} disabled={!filteredQuestions.length}>
