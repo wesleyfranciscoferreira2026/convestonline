@@ -2047,6 +2047,40 @@ select.input {
   font-family: 'Consolas', 'Menlo', monospace;
 }
 
+/* Matemática (KaTeX) */
+.md-math {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.md-math-block {
+  margin: var(--space-3) 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-2) 0;
+}
+
+.md-math-block .katex-display {
+  margin: 0;
+}
+
+.md-math-raw {
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  background: var(--color-primary-softer);
+  border-radius: var(--radius-sm, 8px);
+  font-family: 'Consolas', 'Menlo', monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.md-hr {
+  border: 0;
+  border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+  margin: var(--space-4) 0;
+}
+
 /* Exercícios */
 .question-card {
   max-width: 720px;
