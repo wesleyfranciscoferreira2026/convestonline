@@ -173,6 +173,20 @@ Regras:
     }))
   }
 
+  function prevQuestion() {
+    setSession((s) => {
+      if (s.index <= 0) return s
+      const prevIndex = s.index - 1
+      const prevAnswer = s.answers[prevIndex]
+      return {
+        ...s,
+        index: prevIndex,
+        selected: prevAnswer ? prevAnswer.selected : null,
+        confirmed: Boolean(prevAnswer),
+      }
+    })
+  }
+
   function skipQuestion() {
     setSession((s) => {
       const nextIndex = s.index + 1
@@ -488,6 +502,11 @@ Regras:
 
         {!session.confirmed ? (
           <div className="question-actions">
+            {session.index > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevQuestion}>
+                ← Anterior
+              </button>
+            )}
             <button
               type="button"
               className="btn btn-primary"
@@ -501,7 +520,13 @@ Regras:
             </button>
           </div>
         ) : (
-          <div className="question-feedback">
+          <div className="question-actions">
+            {session.index > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevQuestion}>
+                ← Anterior
+              </button>
+            )}
+            <div className="question-feedback">
             {session.selected === q.correct_index ? (
               <p className="feedback-ok">
                 <CheckCircle2 size={16} aria-hidden="true" /> Resposta correta!
@@ -515,6 +540,7 @@ Regras:
             <button type="button" className="btn btn-primary" onClick={nextQuestion}>
               {isLast ? 'Ver resultado' : 'Próxima questão'} <ArrowRight size={16} aria-hidden="true" />
             </button>
+          </div>
           </div>
         )}
       </Card>

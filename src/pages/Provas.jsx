@@ -202,6 +202,20 @@ Regras:
     setSession((s) => ({ ...s, confirmed: true, answers: [...s.answers, { selected: s.selected, correct }] }))
   }
 
+  function prevQuestion() {
+    setSession((s) => {
+      if (s.index <= 0) return s
+      const prevIndex = s.index - 1
+      const prevAnswer = s.answers[prevIndex]
+      return {
+        ...s,
+        index: prevIndex,
+        selected: prevAnswer ? prevAnswer.selected : null,
+        confirmed: Boolean(prevAnswer),
+      }
+    })
+  }
+
   function skipQuestion() {
     setSession((s) => {
       const nextIndex = s.index + 1
@@ -436,11 +450,17 @@ Regras:
         </div>
         {!session.confirmed ? (
           <div className="question-actions">
+            {session.index > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevQuestion}>← Anterior</button>
+            )}
             <button type="button" className="btn btn-primary" disabled={session.selected === null} onClick={confirmAnswer}>Confirmar resposta</button>
             <button type="button" className="btn btn-ghost" onClick={skipQuestion}>Pular questão</button>
           </div>
         ) : (
           <div className="question-feedback">
+            {session.index > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevQuestion} style={{ alignSelf: 'flex-start' }}>← Anterior</button>
+            )}
             {session.selected === q.correct_index ? <p className="feedback-ok"><CheckCircle2 size={16} aria-hidden="true" /> Correta!</p> : <p className="feedback-bad"><XCircle size={16} aria-hidden="true" /> Incorreta.</p>}
             {q.explanation && <p className="feedback-expl">{q.explanation}</p>}
             <button type="button" className="btn btn-primary" onClick={nextQuestion}>

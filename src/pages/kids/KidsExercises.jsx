@@ -99,6 +99,21 @@ export default function KidsExercises() {
     }))
   }
 
+  function prevQuestion() {
+    setShowEffect(null)
+    setSession((s) => {
+      if (s.index <= 0) return s
+      const prevIndex = s.index - 1
+      const prevAnswer = s.answers[prevIndex]
+      return {
+        ...s,
+        index: prevIndex,
+        selected: prevAnswer ? prevAnswer.selected : null,
+        confirmed: Boolean(prevAnswer),
+      }
+    })
+  }
+
   function skipQuestion() {
     setShowEffect(null)
     setSession((s) => {
@@ -252,6 +267,9 @@ export default function KidsExercises() {
 
         {!session.confirmed ? (
           <div className="question-actions">
+            {session.index > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevQuestion}>← Anterior</button>
+            )}
             <button type="button" className="btn btn-primary kids-confirm-btn" disabled={session.selected === null} onClick={confirmAnswer}>
               Confirmar
             </button>
@@ -261,6 +279,9 @@ export default function KidsExercises() {
           </div>
         ) : (
           <div className="kids-feedback">
+            {session.index > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={prevQuestion} style={{ alignSelf: 'flex-start' }}>← Anterior</button>
+            )}
             {session.selected === q.correct_index ? (
               <p className="kid-feedback-ok">🎉 Muito bem! Você acertou!</p>
             ) : (
