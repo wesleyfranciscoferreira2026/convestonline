@@ -52,6 +52,7 @@ export default function AITutor() {
   const [config, setConfig] = useState(() => getAIConfig())
   const [mode, setMode] = useState(() => getAIMode())
   const [draftMode, setDraftMode] = useState(() => getAIMode())
+  const [typedSubtitle, setTypedSubtitle] = useState('')
   const [siteReady, setSiteReady] = useState(null)
   const [messages, setMessages] = useState(() => {
     try {
