@@ -123,6 +123,10 @@ export default function AITutor() {
   async function send(text) {
     const question = (text ?? input).trim()
     if (!question || loading) return
+    if (needsKey) {
+      setConfigOpen(true)
+      return
+    }
 
     const userMsg = { role: 'user', content: question }
     const next = [...messages, userMsg]
@@ -161,7 +165,10 @@ ${result.error.hint}` },
     return () => { active = false }
   }, [])
 
-  const configured = mode === 'own' ? Boolean(config.apiKey) : siteReady !== false
+  // Nunca bloqueia a digitacao por falta de configuracao: se a IA do site
+  // estiver indisponivel, o erro aparece na conversa.
+  const configured = true
+  const needsKey = mode === 'own' && !config.apiKey
 
   return (
     <div className="page ai-page">
@@ -209,7 +216,7 @@ ${result.error.hint}` },
         </Card>
       )}
 
-      {mode === 'site' && siteReady === false && (
+      {mode === 'site' && siteReady === false && needsKey === false && (
         <Card className="ai-setup-card">
           <EmptyState
             icon={Key}
@@ -319,7 +326,7 @@ ${result.error.hint}` },
           <input
             type="text"
             className="input"
-            placeholder={mode === 'own' ? (config.apiKey ? 'Digite sua dúvida.' : 'Cole sua chave em Configurar para começar') : (siteReady === false ? 'IA do site ainda não ativada — use sua chave em Configurar' : 'Digite sua dúvida.')}
+            placeholder={needsKey ? 'Cole sua chave em Configurar para começar' : 'Digite sua dúvida.'}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading || !configured}
           />
