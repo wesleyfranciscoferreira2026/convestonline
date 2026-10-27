@@ -6,25 +6,37 @@ import {
   Briefcase,
   FileText,
   Gavel,
+  Globe2,
+  Landmark,
   Lock,
   Scale,
   Sparkles,
   Target,
+  Users,
 } from 'lucide-react'
 import { Card, SectionHeader } from '../../components/ui'
 import LawQuestions from './LawQuestions'
 
 const LAW_SUBJECTS = [
-  { slug: 'direito-administrativo', name: 'Direito Administrativo', icon: Briefcase, desc: 'Administração pública, atos e serviços públicos.' },
-  { slug: 'direito-constitucional', name: 'Direito Constitucional', icon: Scale, desc: 'Constituição, direitos fundamentais e Estado.' },
-  { slug: 'direito-penal', name: 'Direito Penal', icon: Gavel, desc: 'Teoria do crime, penas e princípios penais.' },
-  { slug: 'direito-civil', name: 'Direito Civil', icon: BookOpen, desc: 'Pessoas, obrigações, contratos e responsabilidade.' },
-  { slug: 'processo-civil', name: 'Processo Civil', icon: FileText, desc: 'Jurisdição, procedimento e tutela de direitos.' },
-  { slug: 'processo-penal', name: 'Processo Penal', icon: Gavel, desc: 'Investigação, ação penal e garantias processuais.' },
-  { slug: 'direito-do-trabalho', name: 'Direito do Trabalho', icon: Briefcase, desc: 'Relações de trabalho e direitos trabalhistas.' },
-  { slug: 'direito-tributario', name: 'Direito Tributário', icon: FileText, desc: 'Tributos, competência e obrigações tributárias.' },
-  { slug: 'direito-do-consumidor', name: 'Direito do Consumidor', icon: Target, desc: 'Relações de consumo e proteção do consumidor.' },
-  { slug: 'direito-ambiental', name: 'Direito Ambiental', icon: Sparkles, desc: 'Proteção ambiental e responsabilidade por danos.' },
+  { slug: 'direito-administrativo', name: 'Direito Administrativo', icon: Briefcase, desc: 'Administracao publica, atos e servicos publicos.' },
+  { slug: 'direito-ambiental', name: 'Direito Ambiental', icon: Sparkles, desc: 'Protecao ambiental e responsabilidade por danos.' },
+  { slug: 'direito-civil', name: 'Direito Civil', icon: BookOpen, desc: 'Pessoas, obrigacoes, contratos e responsabilidade.' },
+  { slug: 'direito-constitucional', name: 'Direito Constitucional', icon: Scale, desc: 'Constituicao, direitos fundamentais e Estado.' },
+  { slug: 'direito-do-consumidor', name: 'Direito do Consumidor', icon: Target, desc: 'Relacoes de consumo e protecao do consumidor.' },
+  { slug: 'direito-eleitoral', name: 'Direito Eleitoral', icon: Landmark, desc: 'Processo eleitoral, partidos e propaganda.' },
+  { slug: 'direito-empresarial', name: 'Direito Empresarial e Comercial', icon: Briefcase, desc: 'Empresa, titulos de credito e falencia.' },
+  { slug: 'direito-financeiro-e-economico', name: 'Direito Financeiro e Economico', icon: Landmark, desc: 'Financas publicas, orcamento e ordem economica.' },
+  { slug: 'direito-do-trabalho', name: 'Direito do Trabalho', icon: Briefcase, desc: 'Relacoes de trabalho e direitos trabalhistas.' },
+  { slug: 'direito-internacional', name: 'Direito Internacional', icon: Globe2, desc: 'Relacoes internacionais e conflitos de leis.' },
+  { slug: 'direito-penal', name: 'Direito Penal', icon: Gavel, desc: 'Teoria do crime, penas e principios penais.' },
+  { slug: 'direito-previdenciario', name: 'Direito Previdenciario', icon: Users, desc: 'Beneficios previdenciarios e seguridade social.' },
+  { slug: 'processo-civil', name: 'Processo Civil', icon: FileText, desc: 'Jurisdicao, procedimento e tutela de direitos.' },
+  { slug: 'processo-penal', name: 'Processo Penal', icon: Gavel, desc: 'Investigacao, acao penal e garantias processuais.' },
+  { slug: 'direito-tributario', name: 'Direito Tributario', icon: FileText, desc: 'Tributos, competencia e obrigacoes tributarias.' },
+  { slug: 'direitos-difusos-coletivos', name: 'Direitos Difusos e Coletivos', icon: Users, desc: 'Tutela coletiva de interesses difusos.' },
+  { slug: 'direitos-humanos', name: 'Direitos Humanos', icon: Scale, desc: 'Direitos fundamentais e sistemas de protecao.' },
+  { slug: 'estatuto-crianca-adolescente', name: 'Estatuto da Crianca e do Adolescente', icon: Users, desc: 'Protecao integral da crianca e do adolescente.' },
+  { slug: 'etica-legislacao-profissional', name: 'Etica e Legislacao Profissional', icon: Scale, desc: 'Etica profissional e estatuto da OAB.' },
 ]
 
 const CONCURSOS = [

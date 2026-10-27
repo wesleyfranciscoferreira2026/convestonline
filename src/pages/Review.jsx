@@ -118,6 +118,14 @@ export default function Review() {
     })
   }
 
+  function skipQuestion() {
+    setSession((s) => {
+      const nextIndex = s.index + 1
+      if (nextIndex >= questions.length) return { ...s, finished: true, selected: null, confirmed: false }
+      return { ...s, index: nextIndex, selected: null, confirmed: false }
+    })
+  }
+
   function nextQuestion() {
     setSession((s) => {
       const nextIndex = s.index + 1
@@ -221,6 +229,7 @@ export default function Review() {
               <button type="button" className="btn btn-primary" disabled={session.selected === null} onClick={confirmAnswer}>
                 Confirmar
               </button>
+              <button type="button" className="btn btn-ghost" onClick={skipQuestion}>Pular questao</button>
             </div>
           ) : (
             <div className="question-feedback">

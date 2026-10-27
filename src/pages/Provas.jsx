@@ -12,6 +12,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { chat, isAIAvailable, parseAIJson } from '../lib/ai'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
 import SubjectIcon from '../components/SubjectIcon'
@@ -116,8 +117,7 @@ export default function Provas() {
   }
 
   async function generateWithAI() {
-    const aiConfig = (() => { try { return JSON.parse(localStorage.getItem('convest-ai-config') || '{}') } catch { return {} } })()
-    if (!aiConfig.apiKey) { toast('Configure sua chave de API na Convest IA primeiro.', 'error'); return }
+    if (!isAIAvailable()) { toast('A IA nao esta configurada. Abra Convest IA > Configurar.', 'error'); return }
     if (selectedSubjects.length === 0) { toast('Selecione ao menos uma matéria.', 'error'); return }
     const subjectNames = subjects.filter((s) => selectedSubjects.includes(s.id)).map((s) => s.name).join(', ')
     const diffLabel = difficulty === 'all' ? 'variada' : difficulty === 'easy' ? 'fácil' : difficulty === 'medium' ? 'média' : 'difícil'
@@ -154,17 +154,10 @@ Regras:
 - O campo "topic" deve ser o tópico específico (ex.: Eletrodinâmica, Hidrodinâmica, Revolução Francesa).
 - Retorne somente o array JSON, nada mais.`
 
-      const res = await fetch(`${aiConfig.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${aiConfig.apiKey}` },
-        body: JSON.stringify({ model: aiConfig.model || 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: prompt }], temperature: 0.7 }),
-      })
-      if (!res.ok) { const err = await res.text(); throw new Error(`Erro ${res.status}: ${err.slice(0, 150)}`) }
-      const data = await res.json()
-      const raw = data?.choices?.[0]?.message?.content ?? ''
-      const cleaned = raw.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim()
-      const parsed = JSON.parse(cleaned)
-      if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Resposta inválida do modelo.')
+      const result = await chat({ messages: [{ role: 'user', content: prompt }], temperature: 0.7 })
+      if (!result.ok) throw new Error(`${result.error.title} ${result.error.hint}`)
+      const parsed = parseAIJson(result.text)
+      if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Resposta invalida do modelo.')
       const qs = parsed.map((q, i) => ({
         id: `gen-${Date.now()}-${i}`,
         prompt: q.prompt,

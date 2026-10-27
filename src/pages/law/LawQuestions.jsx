@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, ClipboardList, Loader2, XCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { chat, isAIAvailable, parseAIJson } from '../../lib/ai'
 import { useAuth } from '../../lib/auth'
 import { Card, EmptyState, ProgressBar, SectionHeader } from '../../components/ui'
 import Markdown from '../../components/Markdown'
@@ -16,6 +17,15 @@ const SUBJECT_SLUGS = [
   'direito-tributario',
   'direito-do-consumidor',
   'direito-ambiental',
+  'direito-eleitoral',
+  'direito-empresarial',
+  'direito-financeiro-e-economico',
+  'direito-internacional',
+  'direito-previdenciario',
+  'direitos-difusos-coletivos',
+  'direitos-humanos',
+  'estatuto-crianca-adolescente',
+  'etica-legislacao-profissional',
 ]
 
 const BANKS = [
@@ -33,10 +43,6 @@ const CONTEST_PROFILES = [
   'Geral',
 ]
 
-function getStoredAIConfig() {
-  try { return JSON.parse(localStorage.getItem('convest-ai-config') || '{}') } catch { return {} }
-}
-
 export default function LawQuestions() {
   const { user } = useAuth()
   const [subjects, setSubjects] = useState([])
@@ -46,7 +52,7 @@ export default function LawQuestions() {
   const [filters, setFilters] = useState({ subject: 'all', topic: 'all', banca: 'all', concurso: 'all' })
   const [runQuestions, setRunQuestions] = useState(null)
   const [session, setSession] = useState(null)
-  const [hasAIKey, setHasAIKey] = useState(() => Boolean(getStoredAIConfig().apiKey))
+  const [hasAIKey, setHasAIKey] = useState(() => isAIAvailable())
   const [generateContinuously, setGenerateContinuously] = useState(false)
   const [generatingNext, setGeneratingNext] = useState(false)
   const [generationError, setGenerationError] = useState('')
@@ -54,7 +60,7 @@ export default function LawQuestions() {
   useEffect(() => {
     let active = true
     async function load() {
-      setHasAIKey(Boolean(getStoredAIConfig().apiKey))
+      setHasAIKey(isAIAvailable())
       setLoading(true)
       const { data: subjectRows, error: subjectError } = await supabase
         .from('subjects')
@@ -114,7 +120,7 @@ export default function LawQuestions() {
     const selected = [...filteredQuestions].sort(() => Math.random() - 0.5)
     if (selected.length === 0) return
     setRunQuestions(selected)
-    setSession({ index: 0, selected: null, confirmed: false, correct: 0 })
+    setSession({ index: 0, selected: null, confirmed: false, correct: 0, answers: new Array(selected.length).fill(null) })
   }
 
   async function confirmAnswer() {
@@ -129,11 +135,16 @@ export default function LawQuestions() {
         is_correct: isCorrect,
       })
     }
-    setSession((current) => ({
-      ...current,
-      confirmed: true,
-      correct: current.correct + (isCorrect ? 1 : 0),
-    }))
+    setSession((current) => {
+      const newAnswers = [...(current.answers || [])]
+      newAnswers[current.index] = { selected: current.selected, correct: isCorrect }
+      return {
+        ...current,
+        confirmed: true,
+        answers: newAnswers,
+        correct: newAnswers.filter(Boolean).filter((a) => a.correct).length,
+      }
+    })
   }
 
   async function nextQuestion() {
@@ -141,8 +152,7 @@ export default function LawQuestions() {
     const currentQuestion = runQuestions[session.index]
 
     if (generateContinuously) {
-      const config = getStoredAIConfig()
-      if (config.apiKey) {
+      if (isAIAvailable()) {
         setGeneratingNext(true)
         try {
           const previousPrompts = runQuestions
@@ -162,21 +172,9 @@ Evite repetir estes enunciados já usados na sessão:
 ${previousPrompts.map((text, index) => `${index + 1}. ${text}`).join('\n')}
 
 Escreva enunciado claro, cinco alternativas A-E, apenas uma correta e comentário curto explicando a resposta. Evite depender de legislação local ou de informação não indicada no enunciado. Retorne somente JSON válido neste formato: {"prompt":"...","options":["...","...","...","...","..."],"correct_index":0,"explanation":"...","topic":"...","difficulty":"medium"}.`
-          const endpoint = `${(config.baseUrl || 'https://api.openai.com/v1').replace(/\/$/, '')}/chat/completions`
-          const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}` },
-            body: JSON.stringify({
-              model: config.model || 'llama-3.3-70b-versatile',
-              messages: [{ role: 'user', content: prompt }],
-              temperature: 0.8,
-            }),
-          })
-          if (!response.ok) throw new Error(`Erro ${response.status} ao gerar questão.`)
-          const result = await response.json()
-          const raw = result?.choices?.[0]?.message?.content ?? ''
-          const cleaned = raw.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim()
-          const parsed = JSON.parse(cleaned)
+          const result = await chat({ messages: [{ role: 'user', content: prompt }], temperature: 0.8 })
+          if (!result.ok) throw new Error(`${result.error.title} ${result.error.hint}`)
+          const parsed = parseAIJson(result.text)
           if (!parsed.prompt || !Array.isArray(parsed.options) || parsed.options.length !== 5
             || !Number.isInteger(parsed.correct_index) || parsed.correct_index < 0 || parsed.correct_index > 4) {
             throw new Error('A resposta da IA veio em formato inválido.')
@@ -203,13 +201,36 @@ Escreva enunciado claro, cinco alternativas A-E, apenas uma correta e comentári
           setGeneratingNext(false)
         }
       } else {
-        setGenerationError('Configure uma chave de API em Convest IA para gerar questões novas. Vou continuar com o banco autoral.')
+        setGenerationError('Ative a IA em Convest IA > Configurar para gerar questões novas. Vou continuar com o banco autoral.')
       }
     }
 
     setSession((current) => {
       if (current.index + 1 >= runQuestions.length) return { ...current, finished: true }
       return { ...current, index: current.index + 1, selected: null, confirmed: false }
+    })
+  }
+
+  function prevQuestion() {
+    setSession((current) => {
+      if (!current || current.index <= 0) return current
+      const prevIndex = current.index - 1
+      const prevAnswer = (current.answers || [])[prevIndex]
+      return {
+        ...current,
+        index: prevIndex,
+        selected: prevAnswer ? prevAnswer.selected : null,
+        confirmed: Boolean(prevAnswer),
+      }
+    })
+  }
+
+  function skipQuestion() {
+    setSession((current) => {
+      if (!current) return current
+      const nextIndex = current.index + 1
+      if (nextIndex >= runQuestions.length) return { ...current, finished: true, selected: null, confirmed: false }
+      return { ...current, index: nextIndex, selected: null, confirmed: false }
     })
   }
 
@@ -280,13 +301,24 @@ Escreva enunciado claro, cinco alternativas A-E, apenas uma correta e comentári
           {generationError && <p className="form-error" role="status">{generationError}</p>}
           <div className="question-actions">
             {!session.confirmed ? (
-              <button type="button" className="btn btn-primary" onClick={confirmAnswer} disabled={session.selected == null}>
-                Confirmar resposta
-              </button>
+              <>
+                {session.index > 0 && (
+                  <button type="button" className="btn btn-ghost" onClick={prevQuestion}>Anterior</button>
+                )}
+                <button type="button" className="btn btn-primary" onClick={confirmAnswer} disabled={session.selected == null}>
+                  Confirmar resposta
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={skipQuestion}>Pular questao</button>
+              </>
             ) : (
-              <button type="button" className="btn btn-primary" onClick={nextQuestion} disabled={generatingNext}>
+              <>
+                {session.index > 0 && (
+                  <button type="button" className="btn btn-ghost" onClick={prevQuestion}>Anterior</button>
+                )}
+                <button type="button" className="btn btn-primary" onClick={nextQuestion} disabled={generatingNext}>
                 {generatingNext ? <><Loader2 className="spin" size={16} aria-hidden="true" /> Gerando questão…</> : generateContinuously ? 'Gerar próxima questão' : session.index + 1 === runQuestions.length ? 'Ver resultado' : 'Próxima questão'}
               </button>
+              </>
             )}
           </div>
         </Card>
@@ -342,7 +374,7 @@ Escreva enunciado claro, cinco alternativas A-E, apenas uma correta e comentári
             <input type="checkbox" checked={generateContinuously} disabled={!hasAIKey} onChange={(event) => setGenerateContinuously(event.target.checked)} />
             <span>
               <strong>Gerar uma questão inédita após cada resposta</strong>
-              <small>{hasAIKey ? 'Usa a chave de API configurada em Convest IA e gera uma questão por vez.' : 'Configure uma chave de API em Convest IA para habilitar a geração contínua.'}</small>
+              <small>{hasAIKey ? 'Gera uma questão inédita por vez usando a IA configurada em Convest IA.' : 'Ative a IA em Convest IA > Configurar para habilitar a geração contínua.'}</small>
             </span>
           </label>
           <div className="law-practice-footer">

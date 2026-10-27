@@ -13,15 +13,20 @@ import {
 } from 'lucide-react'
 import { Card, EmptyState } from '../components/ui'
 import Markdown from '../components/Markdown'
+import {
+  AI_MODES,
+  DEFAULT_AI_CONFIG,
+  chat,
+  chatWithConfig,
+  getAIConfig,
+  getAIMode,
+  getAIModeLabel,
+  saveAIConfig,
+  setAIMode,
+  testAIConnection,
+} from '../lib/ai'
 
-const STORAGE_KEY = 'convest-ai-config'
 const HISTORY_KEY = 'convest-ai-history'
-
-const DEFAULT_CONFIG = {
-  apiKey: '',
-  baseUrl: 'https://api.groq.com/openai/v1',
-  model: 'llama-3.3-70b-versatile',
-}
 
 const SYSTEM_PROMPT = `Você é a Convest IA, uma tutora educacional especializada em tirar dúvidas de estudantes do ensino fundamental, médio e superior.
 
@@ -43,13 +48,9 @@ const SUGGESTIONS = [
 ]
 
 export default function AITutor() {
-  const [config, setConfig] = useState(() => {
-    try {
-      return { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }
-    } catch {
-      return DEFAULT_CONFIG
-    }
-  })
+  const [config, setConfig] = useState(() => getAIConfig())
+  const [mode, setMode] = useState(() => getAIMode())
+  const [draftMode, setDraftMode] = useState(() => getAIMode())
   const [messages, setMessages] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
@@ -60,7 +61,7 @@ export default function AITutor() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
-  const [draft, setDraft] = useState(config)
+  const [draft, setDraft] = useState(() => ({ ...DEFAULT_AI_CONFIG, ...config }))
   const [testStatus, setTestStatus] = useState('')
   const scrollRef = useRef(null)
 
@@ -72,50 +73,53 @@ export default function AITutor() {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(messages.slice(-40)))
   }, [messages])
 
+  useEffect(() => {
+    const full = 'Sua tutora particular — tire dúvidas de matemática, física, história, geografia e muito mais.'
+    let i = 0
+    setTypedSubtitle('')
+    const timer = setInterval(() => {
+      i++
+      setTypedSubtitle(full.slice(0, i))
+      if (i >= full.length) clearInterval(timer)
+    }, 35)
+    return () => clearInterval(timer)
+  }, [])
+
   function saveConfig() {
+    saveAIConfig(draft)
     setConfig(draft)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
+    setAIMode(draftMode)
+    setMode(draftMode)
     setConfigOpen(false)
   }
 
   async function testConnection() {
-    if (!draft.apiKey) {
-      setTestStatus('Cole uma chave de API primeiro.')
-      return
-    }
-    setTestStatus('Testando…')
-    try {
-      const res = await fetch(`${draft.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${draft.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: draft.model,
-          messages: [{ role: 'user', content: 'Responda apenas: OK' }],
-          temperature: 0,
-          max_tokens: 5,
-        }),
+    setTestStatus('Testando conexao...')
+    if (draftMode === 'own') {
+      const result = await chatWithConfig({
+        messages: [{ role: 'user', content: 'Responda apenas: OK' }],
+        config: draft,
+        temperature: 0,
+        maxTokens: 16,
       })
-      if (!res.ok) {
-        const err = await res.text()
-        setTestStatus(`Falhou (${res.status}): ${err.slice(0, 120)}`)
+      if (!result.ok) {
+        setTestStatus(`${result.error.title} ${result.error.hint}`)
         return
       }
-      setTestStatus('✅ Conexão OK! Chave válida.')
-    } catch (e) {
-      setTestStatus(`⚠️ Erro de rede/CORS: ${e.message}. Use o Groq (suporta navegador).`)
+      setTestStatus(`Conexao OK! Resposta: ${(result.text || 'OK').slice(0, 40)}`)
+      return
     }
+    const result = await testAIConnection()
+    if (!result.ok) {
+      setTestStatus(`${result.title} ${result.hint}`)
+      return
+    }
+    setTestStatus(`Conexao OK! Resposta: ${(result.text || 'OK').slice(0, 40)}`)
   }
 
   async function send(text) {
     const question = (text ?? input).trim()
     if (!question || loading) return
-    if (!config.apiKey) {
-      setConfigOpen(true)
-      return
-    }
 
     const userMsg = { role: 'user', content: question }
     const next = [...messages, userMsg]
@@ -123,39 +127,22 @@ export default function AITutor() {
     setInput('')
     setLoading(true)
 
-    try {
-      const res = await fetch(`${config.baseUrl.replace(/\/$/, '')}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: config.model,
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...next],
-          temperature: 0.4,
-        }),
-      })
-      if (!res.ok) {
-        const err = await res.text()
-        throw new Error(`Erro ${res.status}: ${err.slice(0, 200)}`)
-      }
-      const data = await res.json()
-      const answer = data?.choices?.[0]?.message?.content ?? 'Não consegui gerar uma resposta.'
-      setMessages((m) => [...m, { role: 'assistant', content: answer }])
-    } catch (e) {
-      const msg = e?.message || ''
-      const isNetwork = /failed to fetch|networkerror|load failed/i.test(msg)
-      const hint = isNetwork
-        ? 'Parece um bloqueio de rede/CORS. A OpenAI bloqueia chamadas diretas do navegador — use o Groq (grátis, compatível) em console.groq.com/keys, ou um provedor com CORS habilitado.'
-        : 'Verifique sua chave de API, o endpoint e o nome do modelo.'
+    const result = await chat({
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...next],
+      temperature: 0.4,
+    })
+
+    if (result.ok) {
+      setMessages((m) => [...m, { role: 'assistant', content: result.text || 'Nao consegui gerar uma resposta.' }])
+    } else {
       setMessages((m) => [
         ...m,
-        { role: 'assistant', content: `⚠️ ${msg || 'Erro desconhecido'}\n\n${hint}` },
+        { role: 'assistant', content: `**${result.error.title}**
+
+${result.error.hint}` },
       ])
-    } finally {
-      setLoading(false)
     }
+    setLoading(false)
   }
 
   function clearHistory() {
@@ -163,7 +150,7 @@ export default function AITutor() {
     localStorage.removeItem(HISTORY_KEY)
   }
 
-  const configured = Boolean(config.apiKey)
+  const configured = mode === 'own' ? Boolean(config.apiKey) : true
 
   return (
     <div className="page ai-page">
@@ -175,24 +162,48 @@ export default function AITutor() {
           <h2>
             <Sparkles size={22} aria-hidden="true" /> Convest IA
           </h2>
-          <p>Sua tutora particular — tire dúvidas de matemática, física, história, geografia e muito mais.</p>
+          <p>{typedSubtitle}<span className="typing-caret" aria-hidden="true">|</span></p>
         </div>
         <div className="ai-header-actions">
           <button type="button" className="btn btn-ghost btn-sm" onClick={clearHistory} disabled={messages.length === 0}>
             <Trash2 size={15} aria-hidden="true" /> Limpar
           </button>
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => { setDraft(config); setConfigOpen(true) }}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => { setDraft(config); setDraftMode(mode); setConfigOpen(true) }}>
             <SettingsIcon size={15} aria-hidden="true" /> Configurar
           </button>
         </div>
       </header>
 
-      {!configured && (
+      {mode === 'site' && (
+        <Card className="ai-setup-card">
+          <EmptyState
+            icon={Sparkles}
+            title="Convest IA pronta para usar"
+            description="As respostas usam a IA do proprio Convest+. Nao precisa cadastrar chave nenhuma: e so perguntar."
+            action={
+              <div className="ai-setup-actions">
+                <button type="button" className="btn btn-outline" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
+                  Usar minha propria chave
+                </button>
+                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode('site'); setConfigOpen(true) }}>
+                  Ver configuracoes
+                </button>
+              </div>
+            }
+          />
+          <p className="ai-setup-note">
+            O uso passa pelo servidor e pode respeitar limites de uso do provedor. Se aparecer um aviso de limite,
+            aguarde alguns minutos ou ative o modo "Minha chave".
+          </p>
+        </Card>
+      )}
+
+      {!configured && mode === 'own' && (
         <Card className="ai-setup-card">
           <EmptyState
             icon={Key}
             title="Configure sua chave de API"
-            description="A Convest IA usa um modelo de linguagem para responder. É gratuito: crie uma conta no Groq (recomendado) e cole a chave abaixo."
+            description="Voce escolheu usar sua propria chave. Crie uma conta no Groq (gratuito) e cole a chave abaixo."
             action={
               <div className="ai-setup-actions">
                 <a
@@ -203,14 +214,14 @@ export default function AITutor() {
                 >
                   Criar chave no Groq
                 </a>
-                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setConfigOpen(true) }}>
+                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode(mode); setConfigOpen(true) }}>
                   Colar minha chave
                 </button>
               </div>
             }
           />
           <p className="ai-setup-note">
-            A chave fica salva apenas no seu navegador (localStorage). Nunca é enviada para nossos servidores.
+            A chave fica salva apenas no seu navegador (localStorage). Nunca e enviada para nossos servidores.
           </p>
         </Card>
       )}
@@ -291,41 +302,56 @@ export default function AITutor() {
             </div>
             <div className="form">
               <div className="field">
-                <label htmlFor="ai-key">Chave de API</label>
-                <input
-                  id="ai-key"
-                  type="password"
-                  className="input"
-                  placeholder="gsk_... (Groq) ou sk-... (OpenAI)"
-                  value={draft.apiKey}
-                  onChange={(e) => setDraft({ ...draft, apiKey: e.target.value })}
-                />
+                <label htmlFor="ai-mode">Como usar a IA</label>
+                <select id="ai-mode" className="input" value={draftMode} onChange={(e) => setDraftMode(e.target.value)}>
+                  <option value="site">{AI_MODES.site} (recomendado, nao precisa de chave)</option>
+                  <option value="own">{AI_MODES.own} (usar a chave do provedor)</option>
+                </select>
+                <small className="settings-note">
+                  No modo "{AI_MODES.site}" a chamada passa pelo servidor do Convest+ e qualquer visitante pode usar.
+                  No modo "{AI_MODES.own}" a chave fica apenas no seu navegador.
+                </small>
               </div>
-              <div className="field">
-                <label htmlFor="ai-url">Endpoint (base URL)</label>
-                <input
-                  id="ai-url"
-                  type="url"
-                  className="input"
-                  placeholder="https://api.groq.com/openai/v1"
-                  value={draft.baseUrl}
-                  onChange={(e) => setDraft({ ...draft, baseUrl: e.target.value })}
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="ai-model">Modelo</label>
-                <input
-                  id="ai-model"
-                  type="text"
-                  className="input"
-                  placeholder="llama-3.3-70b-versatile"
-                  value={draft.model}
-                  onChange={(e) => setDraft({ ...draft, model: e.target.value })}
-                />
-              </div>
+              {draftMode === 'own' && (
+                <>
+                <div className="field">
+                  <label htmlFor="ai-key">Chave de API</label>
+                  <input
+                    id="ai-key"
+                    type="password"
+                    className="input"
+                    placeholder="gsk_... (Groq) ou sk-... (OpenAI)"
+                    value={draft.apiKey || ''}
+                    onChange={(e) => setDraft({ ...draft, apiKey: e.target.value })}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="ai-url">Endpoint (base URL)</label>
+                  <input
+                    id="ai-url"
+                    type="url"
+                    className="input"
+                    placeholder="https://api.groq.com/openai/v1"
+                    value={draft.baseUrl || DEFAULT_AI_CONFIG.baseUrl}
+                    onChange={(e) => setDraft({ ...draft, baseUrl: e.target.value })}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="ai-model">Modelo</label>
+                  <input
+                    id="ai-model"
+                    type="text"
+                    className="input"
+                    placeholder="openai/gpt-oss-120b"
+                    value={draft.model || DEFAULT_AI_CONFIG.model}
+                    onChange={(e) => setDraft({ ...draft, model: e.target.value })}
+                  />
+                </div>
+                </>
+              )}
               <p className="settings-note">
-                Compatível com qualquer provedor no formato OpenAI (Groq, OpenAI, Together, OpenRouter…).
-                A chave fica apenas no seu navegador.
+                Modo atual: <strong>{getAIModeLabel()}</strong>. Compatível com provedores no formato OpenAI
+                (Groq, OpenAI, Together, OpenRouter…).
               </p>
               {testStatus && <p className="form-notice">{testStatus}</p>}
               <div className="task-form-actions">
