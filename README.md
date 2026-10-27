@@ -57,6 +57,10 @@ A chave do Groq já está salva em `.env.secrets.local` (arquivo ignorado pelo g
 3. Dê um push na `main`: o workflow publica o secret e a Edge Function automaticamente.
    (Se os secrets não existirem, o job é ignorado e nada quebra.)
 
+> Já configurado: os dois secrets existem no repositório e a função `ai-chat` está publicada.
+> Para rotacionar a chave do Groq: `npm i --no-save libsodium-wrappers` e
+> `node scripts/set-gh-secret.cjs GROQ_API_KEY gsk_...`, depois um push na `main`.
+
 **Opção B — pelo terminal:**
 ```bash
 npm run ai:login    # abre o navegador (uma vez)
