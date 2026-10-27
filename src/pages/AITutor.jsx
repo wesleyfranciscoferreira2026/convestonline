@@ -318,8 +318,7 @@ ${result.error.hint}` },
           <input
             type="text"
             className="input"
-            placeholder={configured ? 'Digite sua dúvida…' : 'Configure sua chave de API para começar'}
-            value={input}
+            placeholder={mode === 'own' ? (config.apiKey ? 'Digite sua dúvida.' : 'Cole sua chave em Configurar para começar') : (siteReady === false ? 'IA do site ainda não ativada — use sua chave em Configurar' : 'Digite sua dúvida.')}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading || !configured}
           />

@@ -144,7 +144,8 @@ function normalizeContent(data) {
   const content = typeof message.content === 'string' ? message.content : ''
   const reasoning = typeof message.reasoning === 'string' ? message.reasoning : ''
   const text = content.trim() || reasoning.trim()
-  return { text, raw: data, usage: data?.usage ?? null }
+  const incomplete = !content.trim() && reasoning.trim().length > 0
+  return { text, incomplete, raw: data, usage: data?.usage ?? null }
 }
 
 async function callOwnProvider({ messages, temperature, maxTokens, config }) {
@@ -157,9 +158,12 @@ async function callOwnProvider({ messages, temperature, maxTokens, config }) {
     top_p: 1,
     stream: false,
   }
+  // Modelos de raciocinio (gpt-oss) precisam de um budget alto: o
+  // "reasoning" consome tokens e o "content" voltaria vazio.
+  const isReasoningModel = /gpt-oss/i.test(model)
+  if (isReasoningModel) body.reasoning_effort = 'medium'
   if (maxTokens) body.max_completion_tokens = maxTokens
-  // Modelos de raciocinio (gpt-oss) aceitam reasoning_effort.
-  if (/gpt-oss/i.test(model)) body.reasoning_effort = 'medium'
+  else if (isReasoningModel) body.max_completion_tokens = 2048
 
   let res
   try {
@@ -308,7 +312,7 @@ export async function chat({ messages, temperature = 0.6, maxTokens = null } = {
 
 /** Testa a conexao usada no momento (site ou chave propria). */
 export async function testAIConnection() {
-  const result = await chat({ messages: [{ role: 'user', content: 'Responda apenas: OK' }], temperature: 0, maxTokens: 8 })
+  const result = await chat({ messages: [{ role: 'user', content: 'Responda apenas: OK' }], temperature: 0, maxTokens: 2048 })
   if (!result.ok) return { ok: false, ...result.error }
   return { ok: true, text: result.text }
 }
