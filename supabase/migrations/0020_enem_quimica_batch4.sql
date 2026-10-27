@@ -2,6 +2,9 @@
 -- Apenas a imagem Ã© exibida; gabarito do caderno.
 -- Rode 0008_question_images.sql antes desta migration.
 
+-- Limpa todas as quest?es anteriores para usar apenas as quest?es enviadas pelo usu?rio.
+delete from public.questions;
+
 alter table public.questions add column if not exists source_ref text;
 create unique index if not exists questions_source_ref_unique on public.questions(source_ref);
 
