@@ -45,12 +45,45 @@ export function ProgressBar({ value, max = 100, label }) {
   )
 }
 
-export function StatCard({ icon: Icon, label, value, hint }) {
+export function CountUp({ value, duration = 850, format }) {
+  const [display, setDisplay] = useState(0)
+  const ref = useRef(null)
+  useEffect(() => {
+    const target = Number(value) || 0
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setDisplay(target)
+      return
+    }
+    let start = null
+    let raf = 0
+    const step = (ts) => {
+      if (!start) start = ts
+      const progress = Math.min(1, (ts - start) / duration)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(eased * target))
+      if (progress < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [value, duration])
+  const formatted = format ? format(display) : display
+  return <span>{formatted}</span>
+}
+
+export function StatCard({ icon: Icon, label, value, suffix = '', format, animated = false, hint }) {
+  const numeric = typeof value === 'number' ? value : null
   return (
     <Card className="stat-card">
       <div className="stat-card-text">
         <span className="stat-label">{label}</span>
-        <strong className="stat-value">{value}</strong>
+        <strong className="stat-value">
+          {animated && numeric !== null ? (
+            <CountUp value={numeric} format={format} />
+          ) : (
+            value
+          )}
+          {suffix}
+        </strong>
         {hint && <span className="stat-hint">{hint}</span>}
       </div>
       {Icon && (

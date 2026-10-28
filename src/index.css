@@ -5482,3 +5482,34 @@ select.input {
   padding: 6px var(--space-3);
   font-size: 12.5px;
 }
+
+/* Card de revelacao das estatisticas gerais */
+.stats-reveal-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stats-reveal-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.stats-reveal-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-reveal-text .section-title {
+  margin: 0;
+}
+
+.stats-reveal-text .settings-note {
+  margin: 0;
+}

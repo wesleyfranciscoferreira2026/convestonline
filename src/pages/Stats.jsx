@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Flame, Loader2, Lock, Sparkles, Target, Zap } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
-import { chat, isAIAvailable } from '../lib/ai'
-import { planName, statsLimitMessage, statsReviewsLimit } from '../lib/plans'
 import { useAuth } from '../lib/auth'
 import { buildWeekBuckets, computeStreak, minutesToHuman, toISODate } from '../utils/date'
 import { Card, EmptyState, ProgressBar, StatCard } from '../components/ui'
-import Markdown from '../components/Markdown'
 import SubjectIcon from '../components/SubjectIcon'
+import Markdown from '../components/Markdown'
+import { chat, isAIAvailable } from '../lib/ai'
+import { planName, statsLimitMessage, statsReviewsLimit } from '../lib/plans'
 
 export default function Stats() {
   const { user, profile } = useAuth()
@@ -22,6 +22,7 @@ export default function Stats() {
   const [reviewText, setReviewText] = useState('')
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState('')
+  const [showStats, setShowStats] = useState(false)
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
@@ -33,13 +34,6 @@ export default function Stats() {
         supabase.from('user_lesson_progress').select('progress_percent, completed_at, lesson_id, lessons(subject_id)'),
         supabase.from('subjects').select('id, name, icon').order('sort_order'),
       ])
-      const today = new Date().toISOString().slice(0, 10)
-      const { data: todayReviews } = await supabase
-        .from('stats_reviews')
-        .select('id, review_date, summary, created_at')
-        .eq('review_date', today)
-        .order('created_at', { ascending: false })
-      setReviews(todayReviews ?? [])
       if (!active) return
       setSessions(sessRes.data ?? [])
       setAttempts(attRes.data ?? [])
@@ -53,6 +47,15 @@ export default function Stats() {
         for (const v of Object.values(raw)) total += v || 0
       } catch { /* ignora */ }
       setActiveMinutes(Math.round(total / 60))
+
+      const today = new Date().toISOString().slice(0, 10)
+      const { data: todayReviews } = await supabase
+        .from('stats_reviews')
+        .select('id, review_date, summary, created_at')
+        .eq('review_date', today)
+        .order('created_at', { ascending: false })
+      if (active) setReviews(todayReviews ?? [])
+
       setLoading(false)
     }
     load()
@@ -147,25 +150,25 @@ export default function Stats() {
     setReviewLoading(true)
     const resumo = [
       `Tempo total estudado: ${minutesToHuman(totalMinutes)}.`,
-      `Questoes resolvidas: ${answered}, com ${correct} acertos (${accuracy}% de acerto).`,
-      `Aulas concluidas: ${completedLessons}. Sequencia atual: ${streak} dias.`,
+      `Questões resolvidas: ${answered}, com ${correct} acertos (${accuracy}% de acerto).`,
+      `Aulas concluídas: ${completedLessons}. Sequência atual: ${streak} dias.`,
       `Dias ativos: ${activeDays}. Tempo ativo no site: ${minutesToHuman(activeMinutes)}.`,
       ...bySubject.map(
-        (s) => `Materia ${s.name}: ${minutesToHuman(s.mins)} estudados, ${s.cor}/${s.ans} acertos${s.acc !== null ? ` (${s.acc}%)` : ''}, ${s.completed} aulas concluidas.`,
+        (s) => `Matéria ${s.name}: ${minutesToHuman(s.mins)} estudados, ${s.cor}/${s.ans} acertos${s.acc !== null ? ` (${s.acc}%)` : ''}, ${s.completed} aulas concluídas.`,
       ),
     ].join(' ')
     const prompt = [
-      'Voce e a tutora de estudos do Convest+. Analise os dados de evolucao deste aluno e escreva uma revisao de estatisticas pessoal.',
-      'Seja encorajador, especifico e pratico, em portugues, usando Markdown.',
-      'Estruture em: 1) Panorama (resumo do desempenho), 2) Pontos fortes, 3) O que melhorar, 4) Plano de acao para os proximos 7 dias.',
-      'Nao invente numeros que nao estejam nos dados. Maximo de 400 palavras.',
+      'Você é a tutora de estudos do Convest+. Analise os dados de evolução deste aluno e escreva uma revisão de estatísticas pessoal.',
+      'Seja encorajador, específico e prático, em português, usando Markdown.',
+      'Estruture em: 1) Panorama (resumo do desempenho), 2) Pontos fortes, 3) O que melhorar, 4) Plano de ação para os próximos 7 dias.',
+      'Não invente números que não estejam nos dados. Máximo de 400 palavras.',
       '',
       'Dados do aluno:',
       `${resumo}`,
     ].join('\n')
     const result = await chat({
       messages: [
-        { role: 'system', content: 'Voce e um tutor de estudos didatico e objetivo. Responda sempre em portugues.' },
+        { role: 'system', content: 'Você é um tutor de estudos didático e objetivo. Responda sempre em português.' },
         { role: 'user', content: prompt },
       ],
       temperature: 0.5,
@@ -201,14 +204,147 @@ export default function Stats() {
         <p>Sua evolução individual — sem rankings, só você contra você.</p>
       </header>
 
-      <div className="stats-grid">
-        <StatCard icon={Clock} label="Tempo total" value={minutesToHuman(totalMinutes)} />
-        <StatCard icon={ClipboardList} label="Questões resolvidas" value={answered} />
-        <StatCard icon={Target} label="Taxa de acerto" value={answered > 0 ? `${accuracy}%` : '—'} />
-        <StatCard icon={BookOpen} label="Aulas concluídas" value={completedLessons} />
-        <StatCard icon={Flame} label="Sequência" value={`${streak} ${streak === 1 ? 'dia' : 'dias'}`} />
-        <StatCard icon={Zap} label="Tempo ativo no site" value={minutesToHuman(activeMinutes)} />
-      </div>
+      {!showStats ? (
+        <Card className="stats-reveal-card">
+          <div className="stats-reveal-inner">
+            <div className="stats-reveal-text">
+              <h3 className="section-title">Ver minhas estatísticas gerais</h3>
+              <p className="settings-note">
+                Clique para carregar seu painel completo: tempo, acertos, sequência, desempenho por matéria e gráficos.
+                Os números surgem com animação de contagem.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowStats(true)}
+            >
+              Ver minhas estatísticas gerais
+            </button>
+          </div>
+        </Card>
+      ) : (
+        <>
+          <div className="stats-grid">
+            <StatCard icon={Clock} label="Tempo total" value={totalMinutes} format={minutesToHuman} animated={showStats} />
+            <StatCard icon={ClipboardList} label="Questões resolvidas" value={answered} animated={showStats} />
+            <StatCard icon={Target} label="Taxa de acerto" value={accuracy} suffix="%" animated={showStats} />
+            <StatCard icon={BookOpen} label="Aulas concluídas" value={completedLessons} animated={showStats} />
+            <StatCard icon={Flame} label="Sequência" value={streak} suffix={streak === 1 ? " dia" : " dias"} animated={showStats} />
+            <StatCard icon={Zap} label="Tempo ativo no site" value={activeMinutes} format={minutesToHuman} animated={showStats} />
+          </div>
+
+          <Card className="best-performance-card">
+            <h3 className="section-title">Melhor desempenho</h3>
+            {bestSubject || bestWeek ? (
+              <div className="best-performance-grid">
+                {bestSubject && (
+                  <div className="best-performance-item">
+                    <span className="best-performance-label">Melhor matéria</span>
+                    <div className="best-performance-value">
+                      <SubjectIcon name={bestSubject.icon} size={20} />
+                      <strong>{bestSubject.name}</strong>
+                    </div>
+                    <span className="best-performance-meta">
+                      {bestSubject.acc}% de acerto · {bestSubject.cor}/{bestSubject.ans} questões
+                    </span>
+                  </div>
+                )}
+                {bestWeek && (
+                  <div className="best-performance-item">
+                    <span className="best-performance-label">Melhor semana</span>
+                    <div className="best-performance-value">
+                      <strong>
+                        {bestWeek.start.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} –{' '}
+                        {new Date(bestWeek.start.getTime() + 6 * 86400000).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </strong>
+                    </div>
+                    <span className="best-performance-meta">
+                      {bestWeek.acc}% de acerto · {bestWeek.correct}/{bestWeek.total} questões
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Target}
+                title="Ainda não há dados suficientes"
+                description="Resolva pelo menos 5 questões em uma matéria para calcular seu melhor desempenho."
+              />
+            )}
+          </Card>
+
+          <Card>
+            <h3 className="section-title">Minutos por dia — última semana</h3>
+            {weekMinutes === 0 ? (
+              <EmptyState icon={Clock} title="Nenhuma sessão esta semana" description="Conclua uma tarefa ou leia uma aula para registrar minutos." />
+            ) : (
+              <div className="week-chart" role="img" aria-label={`Total da semana: ${minutesToHuman(weekMinutes)}`}>
+                {week.map((day) => {
+                  const max = Math.max(...week.map((d) => d.minutes), 1)
+                  return (
+                    <div key={day.key} className={`week-day ${day.isToday ? 'is-today' : ''}`}>
+                      <span className="week-bar-wrap">
+                        <span className="week-bar" style={{ height: `${Math.max(6, Math.round((day.minutes / max) * 100))}%` }} title={minutesToHuman(day.minutes)} />
+                      </span>
+                      <span className="week-label">{day.label}</span>
+                      <span className="week-min">{day.minutes > 0 ? day.minutes : ''}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <h3 className="section-title">Por matéria</h3>
+            {bySubject.length === 0 ? (
+              <EmptyState icon={BarChart3} title="Sem dados por matéria ainda" description="Resolva exercícios e estude aulas para ver o detalhamento." />
+            ) : (
+              <div className="subject-stats">
+                {bySubject.map((s) => (
+                  <div key={s.id} className="subject-stat-row">
+                    <div className="subject-stat-name">
+                      <SubjectIcon name={s.icon} size={16} />
+                      <strong>{s.name}</strong>
+                    </div>
+                    <div className="subject-stat-metrics">
+                      <span><Clock size={13} aria-hidden="true" /> {minutesToHuman(s.mins)}</span>
+                      <span><CheckCircle2 size={13} aria-hidden="true" /> {s.cor}/{s.ans} acertos {s.acc !== null ? `(${s.acc}%)` : ''}</span>
+                      <span><BookOpen size={13} aria-hidden="true" /> {s.completed} aulas</span>
+                    </div>
+                    {s.ans > 0 && <ProgressBar value={s.cor} max={s.ans} label={`Acerto em ${s.name}`} />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <h3 className="section-title">Histórico recente</h3>
+            {recent.length === 0 ? (
+              <EmptyState icon={Clock} title="Sem atividades registradas" description="Suas sessões de estudo aparecerão aqui." />
+            ) : (
+              <ul className="history-list">
+                {recent.map((s, i) => (
+                  <li key={i} className="history-item">
+                    <span className="history-time">{new Date(s.studied_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="history-desc">
+                      {minutesToHuman(s.duration_minutes)} estudados
+                      {s.source ? ` · ${sourceLabel(s.source)}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <p className="settings-note">
+            Dias ativos: {activeDays}. Sem rankings ou comparações — só sua evolução.
+          </p>
+        </>
+      )}
+
       <Card className="stats-review-card">
         <div className="stats-review-head">
           <div>
@@ -284,112 +420,6 @@ export default function Stats() {
               ))}
             </ul>
           </details>
-        )}
-      </Card>
-
-
-      <Card className="best-performance-card">
-        <h3 className="section-title">Melhor desempenho</h3>
-        {bestSubject || bestWeek ? (
-          <div className="best-performance-grid">
-            {bestSubject && (
-              <div className="best-performance-item">
-                <span className="best-performance-label">Melhor matéria</span>
-                <div className="best-performance-value">
-                  <SubjectIcon name={bestSubject.icon} size={20} />
-                  <strong>{bestSubject.name}</strong>
-                </div>
-                <span className="best-performance-meta">
-                  {bestSubject.acc}% de acerto · {bestSubject.cor}/{bestSubject.ans} questões
-                </span>
-              </div>
-            )}
-            {bestWeek && (
-              <div className="best-performance-item">
-                <span className="best-performance-label">Melhor semana</span>
-                <div className="best-performance-value">
-                  <strong>
-                    {bestWeek.start.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} –{' '}
-                    {new Date(bestWeek.start.getTime() + 6 * 86400000).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </strong>
-                </div>
-                <span className="best-performance-meta">
-                  {bestWeek.acc}% de acerto · {bestWeek.correct}/{bestWeek.total} questões
-                </span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <EmptyState
-            icon={Target}
-            title="Ainda não há dados suficientes"
-            description="Resolva pelo menos 5 questões em uma matéria para calcular seu melhor desempenho."
-          />
-        )}
-      </Card>
-
-      <Card>
-        <h3 className="section-title">Minutos por dia — última semana</h3>
-        {weekMinutes === 0 ? (
-          <EmptyState icon={Clock} title="Nenhuma sessão esta semana" description="Conclua uma tarefa ou leia uma aula para registrar minutos." />
-        ) : (
-          <div className="week-chart" role="img" aria-label={`Total da semana: ${minutesToHuman(weekMinutes)}`}>
-            {week.map((day) => {
-              const max = Math.max(...week.map((d) => d.minutes), 1)
-              return (
-                <div key={day.key} className={`week-day ${day.isToday ? 'is-today' : ''}`}>
-                  <span className="week-bar-wrap">
-                    <span className="week-bar" style={{ height: `${Math.max(6, Math.round((day.minutes / max) * 100))}%` }} title={minutesToHuman(day.minutes)} />
-                  </span>
-                  <span className="week-label">{day.label}</span>
-                  <span className="week-min">{day.minutes > 0 ? day.minutes : ''}</span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </Card>
-
-      <Card>
-        <h3 className="section-title">Por matéria</h3>
-        {bySubject.length === 0 ? (
-          <EmptyState icon={BarChart3} title="Sem dados por matéria ainda" description="Resolva exercícios e estude aulas para ver o detalhamento." />
-        ) : (
-          <div className="subject-stats">
-            {bySubject.map((s) => (
-              <div key={s.id} className="subject-stat-row">
-                <div className="subject-stat-name">
-                  <SubjectIcon name={s.icon} size={16} />
-                  <strong>{s.name}</strong>
-                </div>
-                <div className="subject-stat-metrics">
-                  <span><Clock size={13} aria-hidden="true" /> {minutesToHuman(s.mins)}</span>
-                  <span><CheckCircle2 size={13} aria-hidden="true" /> {s.cor}/{s.ans} acertos {s.acc !== null ? `(${s.acc}%)` : ''}</span>
-                  <span><BookOpen size={13} aria-hidden="true" /> {s.completed} aulas</span>
-                </div>
-                {s.ans > 0 && <ProgressBar value={s.cor} max={s.ans} label={`Acerto em ${s.name}`} />}
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      <Card>
-        <h3 className="section-title">Histórico recente</h3>
-        {recent.length === 0 ? (
-          <EmptyState icon={Clock} title="Sem atividades registradas" description="Suas sessões de estudo aparecerão aqui." />
-        ) : (
-          <ul className="history-list">
-            {recent.map((s, i) => (
-              <li key={i} className="history-item">
-                <span className="history-time">{new Date(s.studied_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                <span className="history-desc">
-                  {minutesToHuman(s.duration_minutes)} estudados
-                  {s.source ? ` · ${sourceLabel(s.source)}` : ''}
-                </span>
-              </li>
-            ))}
-          </ul>
         )}
       </Card>
 
