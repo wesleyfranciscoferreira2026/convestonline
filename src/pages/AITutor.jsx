@@ -58,7 +58,8 @@ Regras de resposta:
   ---
   Regras das fontes:
   - Cada fonte fica em uma linha propria, comecando por "- ".
-  - Sempre inclua o link completo (https://...) depois do nome.
+  - Sempre inclua o link completo (https://...) depois do nome, em TODAS as linhas.
+  - Nao escreva frases de encerramento (como "Boa pratica!") depois da secao de fontes.
   - Use fontes confiaveis (Wikipedia, Khan Academy, manuais e livros didaticos, sites oficiais, artigos cientificos).
   - Seja honesta: se nao tiver certeza de uma fonte, diga.
 - Não invente dados ou citações. Se não souber, diga que não sabe e sugira onde pesquisar.
@@ -76,17 +77,31 @@ function splitSources(content) {
     .map((line) => line.trim())
     .filter((line) => line && line !== '---')
     .map((line) => line.replace(/^[-*•]\s*/, ""))
-    .filter(Boolean)
+    .filter((line) => /https?:\/\//i.test(line))
   return { body, sources }
 }
 
-/** Extrai rotulo e url de uma linha de fonte. */
+/** Extrai rotulo e url de uma linha de fonte, removendo marcacao do Markdown. */
 function parseSource(line) {
+  const clean = (s) =>
+    s
+      .replace(/\[([^\]]+)\]\([^)\s]+\)/g, '$1')
+      .replace(/[*_`~]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+
   const link = line.match(/\[([^\]]+)\]\(([^)\s]+)\)/)
-  if (link) return { label: link[1], url: link[2] }
-  const url = line.match(/(https?:\/\/[^\s)]+)/)
-  const label = url ? line.replace(url[1], '').replace(/[\s\-–—:|]+$/, '').trim() : line
-  return { label: label || line, url: url ? url[1] : null }
+  if (link) return { label: clean(link[1]), url: link[2] }
+
+  const url = line.match(/https?:\/\/[^\s)\]]+/)
+  if (!url) return { label: clean(line), url: null }
+
+  let label = line.replace(url[0], '')
+  label = label.replace(/\(\s*\)/g, '')
+  label = label.replace(/[\s\-–—:|,(]+$/, '')
+  label = label.replace(/^[\s\-–—:|,(]+/, '')
+
+  return { label: clean(label) || clean(line), url: url[0] }
 }
 
 const SUGGESTIONS = [
