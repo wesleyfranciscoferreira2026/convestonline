@@ -2724,13 +2724,114 @@ select.input {
   border: 1px solid var(--color-border);
 }
 
+/* Coluna que agrupa balão + ações + fontes */
+.ai-msg-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  max-width: 84%;
+}
+
+.ai-msg-user .ai-msg-body {
+  align-items: flex-end;
+}
+
 .ai-msg-bubble {
-  max-width: 80%;
+  max-width: 100%;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   font-size: 14px;
   line-height: 1.6;
   word-break: break-word;
+}
+
+/* Botão de copiar (estilo discreto, como no ChatGPT) */
+.ai-msg-actions {
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0.55;
+  transition: opacity 180ms ease;
+}
+
+.ai-msg:hover .ai-msg-actions {
+  opacity: 1;
+}
+
+.ai-msg-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.ai-msg-action:hover {
+  color: var(--color-text);
+  background: var(--color-surface, rgba(0, 0, 0, 0.04));
+  border-color: var(--color-border);
+}
+
+/* Fontes: pills discretos no rodape da resposta (estilo ChatGPT) */
+.ai-sources {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-1);
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.ai-sources-label {
+  flex-shrink: 0;
+  padding-top: 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  opacity: 0.85;
+}
+
+.ai-sources-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ai-source-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.ai-source-pill {
+  display: inline-block;
+  max-width: 190px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--color-text-secondary);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.ai-source-link:hover .ai-source-pill {
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary, #66cccc);
+  background: var(--color-primary-softer);
 }
 
 .ai-typing {

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
   Bot,
+  Check,
+  Copy,
   Key,
   Loader2,
   Send,
@@ -48,9 +50,44 @@ Regras de resposta:
   - NUNCA escreva formulas sem os delimitadores $ ... $, e nunca use \\[ ... \\].
   - Antes de responder, confira que toda formula tem os cifreses $.
 - Em calculos, mostre o desenvolvimento passo a passo e destaque o resultado final.
-- Ao final de CADA resposta, inclua uma seção "📚 Fontes" listando fontes confiáveis (Wikipedia, Khan Academy, manuais e livros didáticos, sites oficiais, artigos científicos) que sustentam o que você disse. Seja honesta: se não tiver certeza de uma fonte, diga.
+- Ao final de CADA resposta, inclua uma secao de fontes no formato exato abaixo:
+  ---
+  📚 Fontes
+  - Nome da fonte - https://url.com/da/fonte
+  - Outra fonte - https://outra/url
+  ---
+  Regras das fontes:
+  - Cada fonte fica em uma linha propria, comecando por "- ".
+  - Sempre inclua o link completo (https://...) depois do nome.
+  - Use fontes confiaveis (Wikipedia, Khan Academy, manuais e livros didaticos, sites oficiais, artigos cientificos).
+  - Seja honesta: se nao tiver certeza de uma fonte, diga.
 - Não invente dados ou citações. Se não souber, diga que não sabe e sugira onde pesquisar.
 - Se a pergunta for fora do escopo educacional, responda brevemente e redirecione para estudos.`
+
+/** Separa o corpo da resposta da secao de fontes (no mesmo estilo do ChatGPT). */
+function splitSources(content) {
+  const text = content || ''
+  const marker = text.search(/📚\s*(\*\*)?Fontes?/i)
+  if (marker === -1) return { body: text, sources: [] }
+  const body = text.slice(0, marker).replace(/\n*---\s*$/, '').trimEnd()
+  const tail = text.slice(marker).replace(/^[^\n]*\n?/, '')
+  const sources = tail
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && line !== '---')
+    .map((line) => line.replace(/^[-*•]\s*/, ""))
+    .filter(Boolean)
+  return { body, sources }
+}
+
+/** Extrai rotulo e url de uma linha de fonte. */
+function parseSource(line) {
+  const link = line.match(/\[([^\]]+)\]\(([^)\s]+)\)/)
+  if (link) return { label: link[1], url: link[2] }
+  const url = line.match(/(https?:\/\/[^\s)]+)/)
+  const label = url ? line.replace(url[1], '').replace(/[\s\-–—:|]+$/, '').trim() : line
+  return { label: label || line, url: url ? url[1] : null }
+}
 
 const SUGGESTIONS = [
   'Explique a Lei de Ohm com um exemplo prático.',
@@ -65,6 +102,8 @@ export default function AITutor() {
   const [draftMode, setDraftMode] = useState(() => getAIMode())
   const [typedSubtitle, setTypedSubtitle] = useState('')
   const [siteReady, setSiteReady] = useState(null)
+  const [copiedIndex, setCopiedIndex] = useState(null)
+  const inputRef = useRef(null)
   const [messages, setMessages] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
@@ -142,7 +181,9 @@ export default function AITutor() {
     const userMsg = { role: 'user', content: question }
     const next = [...messages, userMsg]
     setMessages(next)
+    // Limpa o campo imediatamente (estado + DOM) para o aluno ja digitar de novo.
     setInput('')
+    if (inputRef.current) inputRef.current.value = ''
     setLoading(true)
 
     const result = await chat({
@@ -161,6 +202,23 @@ ${result.error.hint}` },
       ])
     }
     setLoading(false)
+  }
+
+  async function copyMessage(text, index) {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const area = document.createElement('textarea')
+      area.value = text
+      area.style.position = 'fixed'
+      area.style.opacity = '0'
+      document.body.appendChild(area)
+      area.select()
+      try { document.execCommand('copy') } catch { /* ignora */ }
+      document.body.removeChild(area)
+    }
+    setCopiedIndex(index)
+    setTimeout(() => setCopiedIndex((current) => (current === index ? null : current)), 1800)
   }
 
   function clearHistory() {
@@ -302,18 +360,65 @@ ${result.error.hint}` },
             </div>
           )}
 
-          {messages.map((m, i) => (
-            <div key={i} className={`ai-msg ai-msg-${m.role}`}>
-              {m.role === 'assistant' && (
-                <span className="ai-msg-avatar">
-                  <Bot size={16} aria-hidden="true" />
-                </span>
-              )}
-              <div className="ai-msg-bubble">
-                <Markdown text={m.content} />
+          {messages.map((m, i) => {
+            const { body, sources } = m.role === 'assistant' ? splitSources(m.content) : { body: m.content, sources: [] }
+            const copied = copiedIndex === i
+            return (
+              <div key={i} className={`ai-msg ai-msg-${m.role}`}>
+                {m.role === 'assistant' && (
+                  <span className="ai-msg-avatar">
+                    <Bot size={16} aria-hidden="true" />
+                  </span>
+                )}
+                <div className="ai-msg-body">
+                  <div className="ai-msg-bubble">
+                    <Markdown text={body} />
+                  </div>
+                  <div className="ai-msg-actions">
+                    <button
+                      type="button"
+                      className="ai-msg-action"
+                      onClick={() => copyMessage(m.role === 'assistant' ? body : m.content, i)}
+                      aria-label={copied ? 'Copiado' : 'Copiar mensagem'}
+                      title={copied ? 'Copiado' : 'Copiar'}
+                    >
+                      {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+                      <span>{copied ? 'Copiado' : 'Copiar'}</span>
+                    </button>
+                  </div>
+                  {sources.length > 0 && (
+                    <div className="ai-sources">
+                      <span className="ai-sources-label">Fontes</span>
+                      <div className="ai-sources-list">
+                        {sources.map((source, k) => {
+                          const parsed = parseSource(source)
+                          const pill = (
+                            <span className="ai-source-pill" title={parsed.label}>
+                              {parsed.label}
+                            </span>
+                          )
+                          return parsed.url ? (
+                            <a
+                              key={k}
+                              className="ai-source-link"
+                              href={parsed.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={parsed.label}
+                            >
+                              {pill}
+                            </a>
+                          ) : (
+                            <span key={k}>{pill}</span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           {loading && (
             <div className="ai-msg ai-msg-assistant">
@@ -335,6 +440,7 @@ ${result.error.hint}` },
           }}
         >
           <input
+            ref={inputRef}
             type="text"
             className="input"
             placeholder={needsKey ? 'Cole sua chave em Configurar para começar' : 'Digite sua dúvida.'}
