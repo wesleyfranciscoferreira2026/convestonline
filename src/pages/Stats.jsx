@@ -22,7 +22,7 @@ export default function Stats() {
   const [reviewText, setReviewText] = useState('')
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState('')
-  const [showStats, setShowStats] = useState(false)
+  const [showStats, setShowStats] = useState(true)
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
@@ -198,28 +198,6 @@ export default function Stats() {
         <p>Sua evolução individual — sem rankings, só você contra você.</p>
       </header>
 
-      <Card className="stats-reveal-card">
-        <div className="stats-reveal-inner">
-          <div className="stats-reveal-text">
-            <h3 className="section-title">Ver minhas estatísticas gerais</h3>
-            <p className="settings-note">
-              Clique para carregar seu painel completo: tempo, acertos, sequência, desempenho por matéria e gráficos.
-              Os números surgem com animação de contagem.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => setShowStats(true)}
-            disabled={showStats}
-          >
-            {showStats ? 'Painel carregado' : 'Ver minhas estatísticas gerais'}
-          </button>
-        </div>
-      </Card>
-
-      {showStats && (
-        <>
           <div className="stats-grid">
             <StatCard icon={Clock} label="Tempo total" value={totalMinutes} format={minutesToHuman} animated={showStats} />
             <StatCard icon={ClipboardList} label="Questões resolvidas" value={answered} animated={showStats} />
@@ -337,8 +315,6 @@ export default function Stats() {
           <p className="settings-note">
             Dias ativos: {activeDays}. Sem rankings ou comparações — só sua evolução.
           </p>
-        </>
-      )}
 
       <Card className="stats-review-card">
         <div className="stats-review-head">
