@@ -4,6 +4,7 @@ import {
   BarChart3,
   Bell,
   BookOpen,
+  Calendar,
   ClipboardList,
   Compass,
   Crown,
@@ -138,6 +139,14 @@ export default function AppLayout() {
               <span>{label}</span>
             </NavLink>
           ))}
+          <div className="nav-section-label">Planejamento</div>
+          <NavLink
+            to="/plano-de-estudos"
+            className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}
+          >
+            <Calendar size={19} aria-hidden="true" />
+            <span>Plano de estudos</span>
+          </NavLink>
           {profile?.role === 'admin' && (
             <NavLink to="/admin" className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}>
               <Shield size={19} aria-hidden="true" />
@@ -292,6 +301,15 @@ export default function AppLayout() {
                   <span>{label}</span>
                 </NavLink>
               ))}
+              <div className="nav-section-label">Planejamento</div>
+              <NavLink
+                to="/plano-de-estudos"
+                className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                <Calendar size={19} aria-hidden="true" />
+                <span>Plano de estudos</span>
+              </NavLink>
               <button type="button" className="nav-item nav-item-btn" onClick={onSignOut}>
                 <LogOut size={19} aria-hidden="true" />
                 <span>Sair</span>

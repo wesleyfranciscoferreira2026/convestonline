@@ -30,7 +30,7 @@ import AdminLessons from './pages/admin/AdminLessons'
 import AdminQuestions from './pages/admin/AdminQuestions'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
-import Settings from './pages/Settings'
+import StudyPlan from './pages/StudyPlan'
 import ComingSoon from './pages/ComingSoon'
 import { BookOpen, ClipboardList, LineChart, RotateCcw } from 'lucide-react'
 
@@ -65,6 +65,7 @@ export default function App() {
         <Route path="/materia/:slug" element={<PageTransition><SubjectLessons /></PageTransition>} />
         <Route path="/aula/:id" element={<PageTransition><LessonReader /></PageTransition>} />
         <Route path="/estudos" element={<PageTransition><MyStudies /></PageTransition>} />
+        <Route path="/plano-de-estudos" element={<PageTransition><StudyPlan /></PageTransition>} />
         <Route path="/exercicios" element={<PageTransition><Exercises /></PageTransition>} />
         <Route path="/provas" element={<PageTransition><Provas /></PageTransition>} />
         <Route path="/planos" element={<PageTransition><Plans /></PageTransition>} />
