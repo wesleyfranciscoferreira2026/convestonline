@@ -11,6 +11,7 @@ import { chat, isAIAvailable } from '../lib/ai'
 import { planName, statsLimitMessage, statsReviewsLimit } from '../lib/plans'
 
 export default function Stats() {
+  // UNIQUE_MARKER_XYZ123
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [sessions, setSessions] = useState([])
