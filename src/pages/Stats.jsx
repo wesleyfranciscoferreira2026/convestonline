@@ -4,7 +4,7 @@ import { ArrowLeft, BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Fla
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/auth'
 import { buildWeekBuckets, computeStreak, minutesToHuman, toISODate } from '../utils/date'
-import { Card, EmptyState, ProgressBar, StatCard } from '../components/ui'
+import { Card, CountUp, EmptyState, ProgressBar, StatCard } from '../components/ui'
 import SubjectIcon from '../components/SubjectIcon'
 import Markdown from '../components/Markdown'
 import { chat, isAIAvailable } from '../lib/ai'
@@ -40,7 +40,6 @@ export default function Stats() {
       setProgress(progRes.data ?? [])
       setSubjects(subjRes.data ?? [])
 
-      // Tempo ativo no site (localStorage, buckets por dia)
       let total = 0
       try {
         const raw = JSON.parse(localStorage.getItem('convest-active') || '{}')
@@ -95,7 +94,6 @@ export default function Stats() {
   const reviewLimit = statsReviewsLimit(plan)
   const reviewsLeft = reviewLimit === Infinity ? Infinity : Math.max(0, reviewLimit - reviewsUsed)
 
-  // Por matéria
   const bySubject = subjects.map((subj) => {
     const subjAttempts = attempts.filter((a) => a.subject_id === subj.id)
     const subjSessions = sessions.filter((s) => s.subject_id === subj.id)
@@ -107,16 +105,14 @@ export default function Stats() {
     return { ...subj, mins, ans, cor, acc, completed }
   }).filter((s) => s.mins > 0 || s.ans > 0 || s.completed > 0)
 
-  // Melhor matéria: maior taxa de acerto (mín. 5 questões), desempate por mais acertos.
   const bestSubject = bySubject
     .filter((s) => s.ans >= 5)
     .sort((a, b) => (b.acc ?? 0) - (a.acc ?? 0) || b.cor - a.cor)[0] || null
 
-  // Melhor período: agrupa tentativas por semana (segunda-feira) e encontra a melhor.
   const weekMap = {}
   for (const a of attempts) {
     const d = new Date(a.answered_at)
-    const day = d.getDay() // 0=dom
+    const day = d.getDay()
     const monday = new Date(d)
     monday.setDate(d.getDate() - ((day + 6) % 7))
     monday.setHours(0, 0, 0, 0)
@@ -136,7 +132,6 @@ export default function Stats() {
     .filter((w) => w.total >= 5)
     .sort((a, b) => b.acc - a.acc || b.correct - a.correct)[0] || null
 
-  // ---------- Revisao de estatisticas (IA, com limite diario por plano) ----------
   async function generateReview() {
     setReviewError('')
     if (reviewsLeft <= 0) {
@@ -191,7 +186,6 @@ export default function Stats() {
     }
   }
 
-  // Histórico recente (últimas 10 atividades)
   const recent = sessions.slice(0, 10)
 
   return (
@@ -204,26 +198,27 @@ export default function Stats() {
         <p>Sua evolução individual — sem rankings, só você contra você.</p>
       </header>
 
-      {!showStats ? (
-        <Card className="stats-reveal-card">
-          <div className="stats-reveal-inner">
-            <div className="stats-reveal-text">
-              <h3 className="section-title">Ver minhas estatísticas gerais</h3>
-              <p className="settings-note">
-                Clique para carregar seu painel completo: tempo, acertos, sequência, desempenho por matéria e gráficos.
-                Os números surgem com animação de contagem.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => setShowStats(true)}
-            >
-              Ver minhas estatísticas gerais
-            </button>
+      <Card className="stats-reveal-card">
+        <div className="stats-reveal-inner">
+          <div className="stats-reveal-text">
+            <h3 className="section-title">Ver minhas estatísticas gerais</h3>
+            <p className="settings-note">
+              Clique para carregar seu painel completo: tempo, acertos, sequência, desempenho por matéria e gráficos.
+              Os números surgem com animação de contagem.
+            </p>
           </div>
-        </Card>
-      ) : (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setShowStats(true)}
+            disabled={showStats}
+          >
+            {showStats ? 'Painel carregado' : 'Ver minhas estatísticas gerais'}
+          </button>
+        </div>
+      </Card>
+
+      {showStats && (
         <>
           <div className="stats-grid">
             <StatCard icon={Clock} label="Tempo total" value={totalMinutes} format={minutesToHuman} animated={showStats} />
