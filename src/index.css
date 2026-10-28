@@ -2618,36 +2618,186 @@ select.input {
 .ai-chat-card {
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  min-height: 0;
+}
+
+/* Layout compacto: chat + coluna lateral */
+.ai-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
   gap: var(--space-4);
-  padding: var(--space-5);
-  min-height: 480px;
+  align-items: start;
+}
+
+.ai-layout-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.ai-layout-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: calc(var(--topbar-height, 64px) + var(--space-3));
+}
+
+.ai-side-card {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ai-side-card-soft {
+  background: var(--color-primary-softer);
+  border-color: transparent;
+}
+
+.ai-side-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.ai-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ai-side-item {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 8px);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.ai-side-item:hover {
+  border-color: var(--color-primary, #66cccc);
+  background: var(--color-primary-softer);
+}
+
+.ai-side-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ai-side-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ai-side-dot.is-site {
+  background: #22c55e;
+}
+
+.ai-side-dot.is-own {
+  background: var(--color-primary, #66cccc);
+}
+
+.ai-side-hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.ai-side-btn {
+  align-self: flex-start;
+}
+
+.ai-side-ul {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* Avisos compactos (substituem os EmptyState grandes) */
+.ai-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  font-size: 12.5px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+}
+
+.ai-banner-ok {
+  border-color: color-mix(in srgb, #22c55e 40%, transparent);
+  background: color-mix(in srgb, #22c55e 10%, transparent);
+}
+
+.ai-banner-warn {
+  border-color: color-mix(in srgb, #f59e0b 45%, transparent);
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+}
+
+.ai-banner-link {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .ai-messages {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  max-height: 520px;
+  gap: var(--space-3);
+  height: clamp(280px, 46vh, 460px);
   overflow-y: auto;
   padding-right: var(--space-2);
 }
 
 .ai-welcome {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-8) var(--space-4);
-  text-align: center;
+  padding: var(--space-4) var(--space-2);
+  text-align: left;
 }
 
 .ai-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   border-radius: 50%;
   color: #ffffff;
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
@@ -2655,12 +2805,12 @@ select.input {
 }
 
 .ai-welcome h3 {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .ai-welcome p {
-  font-size: 14px;
+  font-size: 12.5px;
   color: var(--color-text-secondary);
   max-width: 420px;
 }
@@ -3749,34 +3899,56 @@ select.input {
 .law-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 .law-hero {
-  padding: var(--space-8);
+  padding: var(--space-4) var(--space-5);
   background: linear-gradient(135deg, #1e3a8a, #1e40af);
   border-radius: var(--radius-xl);
   color: #ffffff;
+}
+
+.law-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.law-hero-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.law-hero-sub {
+  font-size: 13px;
+  color: rgb(255 255 255 / 0.85);
+  max-width: 420px;
 }
 
 .law-hero-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 4px var(--space-3);
-  font-size: 11px;
+  padding: 3px var(--space-3);
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   background: rgb(255 255 255 / 0.2);
   border-radius: 999px;
-  margin-bottom: var(--space-3);
+  white-space: nowrap;
 }
 
 .law-hero h1 {
-  font-size: clamp(24px, 4vw, 36px);
+  font-size: clamp(19px, 2.6vw, 24px);
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin-bottom: var(--space-2);
+  margin: 0;
 }
 
 .law-hero p {
@@ -3797,8 +3969,8 @@ select.input {
 .law-tab {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 8px var(--space-4);
+  gap: var(--space-1);
+  padding: 6px var(--space-3);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--color-text-secondary);
@@ -5067,4 +5239,66 @@ select.input {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Layout compacto da Convest IA em telas menores */
+@media (max-width: 900px) {
+  .ai-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-layout-side {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .ai-layout-side > * {
+    flex: 1 1 220px;
+  }
+
+  .ai-messages {
+    height: clamp(240px, 40vh, 380px);
+  }
+}
+
+/* Grade compacta de disciplinas (area de Direito) */
+.law-subject-grid {
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--space-2);
+}
+
+.law-subject-grid .subject-card-lg {
+  gap: var(--space-1);
+  padding: var(--space-3);
+}
+
+.law-subject-grid .subject-card-lg h3 {
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+
+.law-subject-grid .subject-card-lg p {
+  font-size: 11.5px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.law-subject-grid .subject-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.law-subject-grid .subject-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.law-subject-grid .subject-badge {
+  padding: 2px var(--space-2);
+  font-size: 10.5px;
 }

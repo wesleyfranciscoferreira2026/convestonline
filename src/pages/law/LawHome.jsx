@@ -58,12 +58,14 @@ export default function LawHome() {
   return (
     <div className="law-page">
       <header className="law-hero">
-        <div className="law-hero-text">
-          <span className="law-hero-badge">
-            <Scale size={14} aria-hidden="true" /> Área de Direito
-          </span>
-          <h1>Sou estudante de Direito</h1>
-          <p>
+        <div className="law-hero-row">
+          <div className="law-hero-text">
+            <span className="law-hero-badge">
+              <Scale size={13} aria-hidden="true" /> Área de Direito
+            </span>
+            <h1>Sou estudante de Direito</h1>
+          </div>
+          <p className="law-hero-sub">
             Estude por disciplina e pratique questões autorais organizadas por banca e perfil de concurso.
           </p>
         </div>
@@ -87,7 +89,7 @@ export default function LawHome() {
       {/* ---------- Conceitos ---------- */}
       {section === 'conceitos' && (
         <div className="law-section">
-          <div className="subject-grid subject-grid-lg">
+          <div className="subject-grid subject-grid-lg law-subject-grid">
             {LAW_SUBJECTS.map((s) => (
               <Link key={s.slug} to={`/materia/${s.slug}`} className="subject-card-link">
                 <Card className="subject-card-lg" as="article">

@@ -277,100 +277,53 @@ ${result.error.hint}` },
       </header>
 
       {mode === 'site' && siteReady === true && (
-        <Card className="ai-setup-card">
-          <EmptyState
-            icon={Sparkles}
-            title="Convest IA pronta para usar"
-            description="As respostas usam a IA do proprio Convest+. Nao precisa cadastrar chave nenhuma: e so perguntar."
-            action={
-              <div className="ai-setup-actions">
-                <button type="button" className="btn btn-outline" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
-                  Usar minha propria chave
-                </button>
-                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode('site'); setConfigOpen(true) }}>
-                  Ver configuracoes
-                </button>
-              </div>
-            }
-          />
-          <p className="ai-setup-note">
-            O uso passa pelo servidor e pode respeitar limites de uso do provedor. Se aparecer um aviso de limite,
-            aguarde alguns minutos ou ative o modo "Minha chave".
-          </p>
-        </Card>
+        <div className="ai-banner ai-banner-ok">
+          <Sparkles size={15} aria-hidden="true" />
+          <span>IA do Convest+ ativa. Sem limite de chave: e so perguntar.</span>
+          <button type="button" className="ai-banner-link" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
+            Usar minha chave
+          </button>
+        </div>
       )}
 
       {mode === 'site' && siteReady === false && needsKey === false && (
-        <Card className="ai-setup-card">
-          <EmptyState
-            icon={Key}
-            title="IA do site ainda nao ativada"
-            description="A funcao de IA do site ainda nao foi publicada no Supabase. Enquanto isso, use sua propria chave do Groq (gratuita) e tudo funciona normalmente."
-            action={
-              <div className="ai-setup-actions">
-                <a
-                  href="https://console.groq.com/keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline"
-                >
-                  Criar chave no Groq
-                </a>
-                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
-                  Colar minha chave
-                </button>
-              </div>
-            }
-          />
-          <p className="ai-setup-note">
-            A chave fica salva apenas no seu navegador (localStorage). Nunca e enviada para nossos servidores.
-          </p>
-        </Card>
+        <div className="ai-banner ai-banner-warn">
+          <Key size={15} aria-hidden="true" />
+          <span>IA do site ainda nao ativada. Use sua chave do Groq (gratuita) enquanto isso.</span>
+          <a className="ai-banner-link" href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">
+            Criar chave
+          </a>
+          <button type="button" className="ai-banner-link" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
+            Colar chave
+          </button>
+        </div>
       )}
 
       {mode === 'own' && !config.apiKey && (
-        <Card className="ai-setup-card">
-          <EmptyState
-            icon={Key}
-            title="Configure sua chave de API"
-            description="Voce escolheu usar sua propria chave. Crie uma conta no Groq (gratuito) e cole a chave abaixo."
-            action={
-              <div className="ai-setup-actions">
-                <a
-                  href="https://console.groq.com/keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline"
-                >
-                  Criar chave no Groq
-                </a>
-                <button type="button" className="btn btn-primary" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
-                  Colar minha chave
-                </button>
-              </div>
-            }
-          />
-          <p className="ai-setup-note">
-            A chave fica salva apenas no seu navegador (localStorage). Nunca e enviada para nossos servidores.
-          </p>
-        </Card>
+        <div className="ai-banner ai-banner-warn">
+          <Key size={15} aria-hidden="true" />
+          <span>Cole sua chave de API para usar a IA com sua conta.</span>
+          <a className="ai-banner-link" href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">
+            Criar chave no Groq
+          </a>
+          <button type="button" className="ai-banner-link" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
+            Colar chave
+          </button>
+        </div>
       )}
 
+      <div className="ai-layout">
+        <div className="ai-layout-main">
       <Card className="ai-chat-card">
         <div className="ai-messages" ref={scrollRef}>
           {messages.length === 0 && (
             <div className="ai-welcome">
               <span className="ai-avatar">
-                <Bot size={26} aria-hidden="true" />
+                <Bot size={22} aria-hidden="true" />
               </span>
-              <h3>Olá! Eu sou a Convest IA.</h3>
-              <p>Pergunte o que quiser sobre suas matérias. Explico passo a passo e cito as fontes que usei.</p>
-              <div className="ai-suggestions">
-                {SUGGESTIONS.map((s) => (
-                  <button key={s} type="button" className="ai-suggestion" onClick={() => send(s)}>
-                    {s}
-                  </button>
-                ))}
+              <div>
+                <h3>Ola! Eu sou a Convest IA.</h3>
+                <p>Pergunte o que quiser sobre suas materias. Explico passo a passo e cito as fontes.</p>
               </div>
             </div>
           )}
@@ -467,6 +420,50 @@ ${result.error.hint}` },
           </button>
         </form>
       </Card>
+        </div>
+
+        <aside className="ai-layout-side">
+          <Card className="ai-side-card">
+            <h3 className="ai-side-title">Sugestoes</h3>
+            <div className="ai-side-list">
+              {SUGGESTIONS.map((s) => (
+                <button key={s} type="button" className="ai-side-item" onClick={() => send(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="ai-side-card">
+            <h3 className="ai-side-title">Sua IA</h3>
+            <p className="ai-side-text">
+              <span className={`ai-side-dot ${mode === 'site' ? 'is-site' : 'is-own'}`} />
+              {mode === 'site' ? 'IA do Convest+ (no servidor)' : 'Sua chave pessoal'}
+            </p>
+            <p className="ai-side-hint">
+              {mode === 'site'
+                ? 'Nao precisa cadastrar chave. Se aparecer um aviso de limite, aguarde alguns minutos ou use sua propria chave.'
+                : 'A chave fica so neste navegador e nunca e enviada aos nossos servidores.'}
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm ai-side-btn"
+              onClick={() => { setDraft(config); setDraftMode(mode); setConfigOpen(true) }}
+            >
+              <SettingsIcon size={14} aria-hidden="true" /> Configurar
+            </button>
+          </Card>
+
+          <Card className="ai-side-card ai-side-card-soft">
+            <h3 className="ai-side-title">Como perguntar</h3>
+            <ul className="ai-side-ul">
+              <li>Escreva a Formula em LaTeX: $x^2 + y^2$.</li>
+              <li>Peça os passos: “mostre o desenvolvimento”.</li>
+              <li>Diga o nivel: fundamental, medio ou superior.</li>
+            </ul>
+          </Card>
+        </aside>
+      </div>
 
       {configOpen && (
         <div className="sheet-overlay" onClick={() => setConfigOpen(false)}>
