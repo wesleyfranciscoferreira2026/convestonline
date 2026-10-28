@@ -1,5 +1,7 @@
 /** Primitivos de UI reutilizáveis do Convest+. */
 
+import { useState, useRef, useEffect } from 'react'
+
 export function FullPageLoader() {
   return (
     <div className="fullpage-loader" role="status" aria-label="Carregando">
