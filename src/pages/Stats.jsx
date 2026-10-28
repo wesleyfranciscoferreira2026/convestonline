@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+console.log("STATS_LOADED_CHECK")
 import { Link } from 'react-router-dom'
 import { ArrowLeft, BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Flame, Loader2, Lock, Sparkles, Target, Zap } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
