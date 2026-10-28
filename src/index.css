@@ -5306,3 +5306,179 @@ select.input {
   padding: 2px var(--space-2);
   font-size: 10.5px;
 }
+
+/* Painel de revisao de estatisticas (IA, com limite diario por plano) */
+.stats-review-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stats-review-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.stats-review-head .section-title {
+  margin: 0;
+}
+
+.stats-review-sub {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.stats-review-badge {
+  flex-shrink: 0;
+  padding: 4px var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.stats-review-badge.is-free {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-soft);
+}
+
+.stats-review-badge.is-locked {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.stats-review-limits {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+}
+
+.stats-review-plan strong {
+  color: var(--color-text);
+}
+
+.stats-review-locked {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: 12.5px;
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-md);
+}
+
+.stats-review-link {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.stats-review-actions {
+  align-items: center;
+  margin-top: 0;
+}
+
+.stats-review-count {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.stats-review-output {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.stats-review-history {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.stats-review-history > summary {
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.stats-review-history-list {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-review-history-list li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.stats-review-time {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.stats-review-summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Admin: gestao de planos dos alunos */
+.admin-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.admin-plan-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.admin-plan-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-plan-info strong {
+  font-size: 13px;
+}
+
+.admin-plan-info span {
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-plan-select {
+  width: auto;
+  min-width: 130px;
+  padding: 6px var(--space-3);
+  font-size: 12.5px;
+}

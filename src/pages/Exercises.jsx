@@ -12,6 +12,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { QUESTION_COUNT_OPTIONS, premiumCountMessage, questionCountLabel } from '../lib/questionCounts'
 import { chat, isAIAvailable, parseAIJson } from '../lib/ai'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
@@ -332,12 +333,16 @@ Regras:
                   value={genConfig.count}
                   onChange={(e) => setGenConfig({ ...genConfig, count: Number(e.target.value) })}
                 >
-                  <option value={5}>5 questões</option>
-                  <option value={10}>10 questões</option>
-                  <option value={15}>15 questões</option>
-                  <option value={20}>20 questões</option>
+                  {QUESTION_COUNT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {questionCountLabel(option)}
+                    </option>
+                  ))}
                 </select>
               </div>
+              {premiumCountMessage(genConfig.count) && (
+                <p className="gen-hint">{premiumCountMessage(genConfig.count)}</p>
+              )}
             </div>
             {genError && <p className="form-error" role="alert">{genError}</p>}
             <button

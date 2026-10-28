@@ -1,20 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Flame, Target, Zap } from 'lucide-react'
+import { ArrowLeft, BarChart3, BookOpen, CheckCircle2, ClipboardList, Clock, Flame, Loader2, Lock, Sparkles, Target, Zap } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { chat, isAIAvailable } from '../lib/ai'
+import { planName, statsLimitMessage, statsReviewsLimit } from '../lib/plans'
 import { useAuth } from '../lib/auth'
 import { buildWeekBuckets, computeStreak, minutesToHuman, toISODate } from '../utils/date'
 import { Card, EmptyState, ProgressBar, StatCard } from '../components/ui'
+import Markdown from '../components/Markdown'
 import SubjectIcon from '../components/SubjectIcon'
 
 export default function Stats() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [sessions, setSessions] = useState([])
   const [attempts, setAttempts] = useState([])
   const [progress, setProgress] = useState([])
   const [subjects, setSubjects] = useState([])
   const [activeMinutes, setActiveMinutes] = useState(0)
+  const [reviews, setReviews] = useState([])
+  const [reviewText, setReviewText] = useState('')
+  const [reviewLoading, setReviewLoading] = useState(false)
+  const [reviewError, setReviewError] = useState('')
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
@@ -26,6 +33,13 @@ export default function Stats() {
         supabase.from('user_lesson_progress').select('progress_percent, completed_at, lesson_id, lessons(subject_id)'),
         supabase.from('subjects').select('id, name, icon').order('sort_order'),
       ])
+      const today = new Date().toISOString().slice(0, 10)
+      const { data: todayReviews } = await supabase
+        .from('stats_reviews')
+        .select('id, review_date, summary, created_at')
+        .eq('review_date', today)
+        .order('created_at', { ascending: false })
+      setReviews(todayReviews ?? [])
       if (!active) return
       setSessions(sessRes.data ?? [])
       setAttempts(attRes.data ?? [])
@@ -73,6 +87,11 @@ export default function Stats() {
   const completedLessons = progress.filter((p) => p.completed_at).length
   const activeDays = new Set(sessions.map((s) => toISODate(new Date(s.studied_at)))).size
 
+  const plan = profile?.plan || 'free'
+  const reviewsUsed = reviews.length
+  const reviewLimit = statsReviewsLimit(plan)
+  const reviewsLeft = reviewLimit === Infinity ? Infinity : Math.max(0, reviewLimit - reviewsUsed)
+
   // Por matéria
   const bySubject = subjects.map((subj) => {
     const subjAttempts = attempts.filter((a) => a.subject_id === subj.id)
@@ -114,6 +133,61 @@ export default function Stats() {
     .filter((w) => w.total >= 5)
     .sort((a, b) => b.acc - a.acc || b.correct - a.correct)[0] || null
 
+  // ---------- Revisao de estatisticas (IA, com limite diario por plano) ----------
+  async function generateReview() {
+    setReviewError('')
+    if (reviewsLeft <= 0) {
+      setReviewError(statsLimitMessage(plan, reviewsUsed))
+      return
+    }
+    if (!isAIAvailable()) {
+      setReviewError('A IA nao esta configurada. Abra Convest IA > Configurar para ativar.')
+      return
+    }
+    setReviewLoading(true)
+    const resumo = [
+      `Tempo total estudado: ${minutesToHuman(totalMinutes)}.`,
+      `Questoes resolvidas: ${answered}, com ${correct} acertos (${accuracy}% de acerto).`,
+      `Aulas concluidas: ${completedLessons}. Sequencia atual: ${streak} dias.`,
+      `Dias ativos: ${activeDays}. Tempo ativo no site: ${minutesToHuman(activeMinutes)}.`,
+      ...bySubject.map(
+        (s) => `Materia ${s.name}: ${minutesToHuman(s.mins)} estudados, ${s.cor}/${s.ans} acertos${s.acc !== null ? ` (${s.acc}%)` : ''}, ${s.completed} aulas concluidas.`,
+      ),
+    ].join(' ')
+    const prompt = [
+      'Voce e a tutora de estudos do Convest+. Analise os dados de evolucao deste aluno e escreva uma revisao de estatisticas pessoal.',
+      'Seja encorajador, especifico e pratico, em portugues, usando Markdown.',
+      'Estruture em: 1) Panorama (resumo do desempenho), 2) Pontos fortes, 3) O que melhorar, 4) Plano de acao para os proximos 7 dias.',
+      'Nao invente numeros que nao estejam nos dados. Maximo de 400 palavras.',
+      '',
+      'Dados do aluno:',
+      `${resumo}`,
+    ].join('\n')
+    const result = await chat({
+      messages: [
+        { role: 'system', content: 'Voce e um tutor de estudos didatico e objetivo. Responda sempre em portugues.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.5,
+    })
+    if (!result.ok) {
+      setReviewError(`${result.error.title} ${result.error.hint}`)
+      setReviewLoading(false)
+      return
+    }
+    const text = result.text || ''
+    setReviewText(text)
+    setReviewLoading(false)
+    if (user) {
+      const { data: inserted } = await supabase
+        .from('stats_reviews')
+        .insert({ user_id: user.id, summary: text.slice(0, 4000) })
+        .select('id, review_date, summary, created_at')
+        .maybeSingle()
+      if (inserted) setReviews((current) => [inserted, ...current])
+    }
+  }
+
   // Histórico recente (últimas 10 atividades)
   const recent = sessions.slice(0, 10)
 
@@ -135,6 +209,84 @@ export default function Stats() {
         <StatCard icon={Flame} label="Sequência" value={`${streak} ${streak === 1 ? 'dia' : 'dias'}`} />
         <StatCard icon={Zap} label="Tempo ativo no site" value={minutesToHuman(activeMinutes)} />
       </div>
+      <Card className="stats-review-card">
+        <div className="stats-review-head">
+          <div>
+            <h3 className="section-title">Revisão das minhas estatísticas</h3>
+            <p className="stats-review-sub">
+              Um relatório pessoal sobre sua evolução, escrito pela Convest IA.
+            </p>
+          </div>
+          <span className={`stats-review-badge ${reviewsLeft > 0 ? 'is-free' : 'is-locked'}`}>
+            {reviewsLeft === Infinity
+              ? 'Ilimitado'
+              : `${reviewsLeft} de ${reviewLimit} hoje`}
+          </span>
+        </div>
+
+        <div className="stats-review-limits">
+          <span className="stats-review-plan">Plano atual: <strong>{planName(plan)}</strong></span>
+          <span className="stats-review-hint">
+            {reviewLimit === Infinity
+              ? 'Seu plano dá acesso ilimitado às revisões de estatísticas.'
+              : `Plano Gratuito: 1 revisão por dia. Básico: até 5. Pro: até 10. Premium: ilimitado.`}
+          </span>
+        </div>
+
+        {reviewsLeft <= 0 && (
+          <div className="stats-review-locked">
+            <Lock size={15} aria-hidden="true" />
+            <span>
+              {statsLimitMessage(plan, reviewsUsed)}{" "}
+              <Link to="/planos" className="stats-review-link">
+                Ver planos
+              </Link>
+            </span>
+          </div>
+        )}
+
+        <div className="task-form-actions stats-review-actions">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={generateReview}
+            disabled={reviewLoading || reviewsLeft <= 0}
+          >
+            {reviewLoading ? <Loader2 size={16} className="spin" aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
+            {reviewLoading ? 'Analisando...' : 'Ver minhas estatísticas'}
+          </button>
+          <span className="stats-review-count">
+            {reviewsUsed} revisão(ões) hoje
+          </span>
+        </div>
+
+        {reviewError && <p className="form-error" role="alert">{reviewError}</p>}
+
+        {reviewText && (
+          <div className="stats-review-output">
+            <Markdown text={reviewText} />
+          </div>
+        )}
+
+        {reviews.length > 0 && (
+          <details className="stats-review-history">
+            <summary>Revisões de hoje ({reviews.length})</summary>
+            <ul className="stats-review-history-list">
+              {reviews.map((r) => (
+                <li key={r.id}>
+                  <span className="stats-review-time">
+                    {new Date(r.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <span className="stats-review-summary">
+                    {(r.summary || '').slice(0, 160)}...
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+      </Card>
+
 
       <Card className="best-performance-card">
         <h3 className="section-title">Melhor desempenho</h3>

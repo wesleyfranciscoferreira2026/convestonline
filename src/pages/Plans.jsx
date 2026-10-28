@@ -12,6 +12,7 @@ const PLANS = [
     features: [
       'Acesso a todas as matérias e aulas',
       'Exercícios de múltipla escolha',
+      'Revisão de estatísticas: 1 por dia',
       'Convest IA (tutor) — perguntas diárias',
       'Planejamento de estudos e metas',
       'Estatísticas básicas',
@@ -31,6 +32,7 @@ const PLANS = [
     features: [
       'Tudo do Básico, mais:',
       'Coleções de exercícios e simulados',
+      'Revisão de estatísticas: até 5 por dia',
       'Gerador de questões por banca (IA) ilimitado',
       'Revisão inteligente com repetição espaçada',
       'Estatísticas detalhadas e comparativos',
@@ -52,6 +54,7 @@ const PLANS = [
       'Tudo do Pro, mais:',
       'Acesso a todos os conteúdos premium',
       'Simulados completos com cronômetro',
+      'Revisão de estatísticas ilimitada',
       'Correção detalhada de redações (IA)',
       'Planos de estudo personalizados',
       'Mentoria e acompanhamento',

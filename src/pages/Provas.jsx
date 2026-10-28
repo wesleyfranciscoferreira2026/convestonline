@@ -12,6 +12,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
+import { QUESTION_COUNT_OPTIONS, premiumCountMessage, questionCountLabel } from '../lib/questionCounts'
 import { chat, isAIAvailable, parseAIJson } from '../lib/ai'
 import { useAuth } from '../lib/auth'
 import { useToast } from '../components/Toast'
@@ -341,12 +342,16 @@ Regras:
           <div className="field">
             <label htmlFor="pv-qty">Quantidade</label>
             <select id="pv-qty" className="input" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))}>
-              <option value={5}>5 questões</option>
-              <option value={10}>10 questões</option>
-              <option value={15}>15 questões</option>
-              <option value={20}>20 questões</option>
+              {QUESTION_COUNT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {questionCountLabel(option)}
+                </option>
+              ))}
             </select>
           </div>
+          {premiumCountMessage(quantity) && (
+            <p className="gen-hint">{premiumCountMessage(quantity)}</p>
+          )}
           <p className="gen-desc">
             {counts[selectedExam.id]
               ? `${counts[selectedExam.id]} questões no banco para esta prova${selectedTopic ? ` (tópico: ${selectedTopic})` : ''}${difficulty !== 'all' ? ` · dificuldade ${difficulty}` : ''}.`
