@@ -50,16 +50,31 @@ export default function Provas() {
   useEffect(() => {
     let active = true
     async function load() {
-      const [{ data: ex }, { data: subs }, { data: qs }] = await Promise.all([
+      const [{ data: ex }, { data: subs }] = await Promise.all([
         supabase.from('exams').select('id, slug, name, category, description').order('sort_order'),
         supabase.from('subjects').select('id, name, icon').order('sort_order'),
-        supabase.from('questions').select('exam_id, subject_id').eq('status', 'published').not('exam_id', 'is', null).limit(10000),
       ])
       if (!active) return
       setExams(ex ?? [])
       setSubjects(subs ?? [])
+      // Busca todas as questões publicadas com exam_id (paginado, pois o limite padrão é 1000)
+      const allQs = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data: batch } = await supabase
+          .from('questions')
+          .select('exam_id, subject_id')
+          .eq('status', 'published')
+          .not('exam_id', 'is', null)
+          .range(from, from + PAGE - 1)
+        if (!batch || batch.length === 0) break
+        allQs.push(...batch)
+        if (batch.length < PAGE) break
+        from += PAGE
+      }
       const c = {}
-      for (const q of qs ?? []) c[q.exam_id] = (c[q.exam_id] || 0) + 1
+      for (const q of allQs) c[q.exam_id] = (c[q.exam_id] || 0) + 1
       setCounts(c)
     }
     load()
