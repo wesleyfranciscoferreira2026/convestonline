@@ -43,7 +43,7 @@ export default function Exercises() {
       if (!active) return
       setSubjects(subs ?? [])
       // Contagem de questões por matéria
-      const { data: qs } = await supabase.from('questions').select('subject_id, year').eq('status', 'published')
+      const { data: qs } = await supabase.from('questions').select('subject_id, year').eq('status', 'published').limit(10000)
       const c = {}
       const years = new Set()
       for (const q of qs ?? []) {

@@ -53,7 +53,7 @@ export default function Provas() {
       const [{ data: ex }, { data: subs }, { data: qs }] = await Promise.all([
         supabase.from('exams').select('id, slug, name, category, description').order('sort_order'),
         supabase.from('subjects').select('id, name, icon').order('sort_order'),
-        supabase.from('questions').select('exam_id, subject_id').eq('status', 'published').not('exam_id', 'is', null),
+        supabase.from('questions').select('exam_id, subject_id').eq('status', 'published').not('exam_id', 'is', null).limit(10000),
       ])
       if (!active) return
       setExams(ex ?? [])
