@@ -254,6 +254,8 @@ Regras:
             </select>
           </div>
         )}
+        {mode === 'bank' && (
+          !subjects ? (
             <div className="subject-grid subject-grid-lg">
               {[0, 1, 2, 3].map((i) => (
                 <Card key={i}><div style={{ height: 80 }} /></Card>
