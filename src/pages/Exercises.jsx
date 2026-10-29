@@ -30,6 +30,8 @@ export default function Exercises() {
   const [loadingQ, setLoadingQ] = useState(false)
   const [session, setSession] = useState(null) // { index, answers: [{selected, correct}], finished }
   const [mode, setMode] = useState('bank') // 'bank' | 'generate'
+  const [selectedYear, setSelectedYear] = useState('') // '' = todos os anos
+  const [availableYears, setAvailableYears] = useState([])
   const [genConfig, setGenConfig] = useState({ banca: 'ENEM', subjectId: '', topic: '', difficulty: 'medium', count: 5 })
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
@@ -41,10 +43,15 @@ export default function Exercises() {
       if (!active) return
       setSubjects(subs ?? [])
       // Contagem de questões por matéria
-      const { data: qs } = await supabase.from('questions').select('subject_id').eq('status', 'published')
+      const { data: qs } = await supabase.from('questions').select('subject_id, year').eq('status', 'published')
       const c = {}
-      for (const q of qs ?? []) c[q.subject_id] = (c[q.subject_id] || 0) + 1
+      const years = new Set()
+      for (const q of qs ?? []) {
+        c[q.subject_id] = (c[q.subject_id] || 0) + 1
+        if (q.year) years.add(q.year)
+      }
       setCounts(c)
+      setAvailableYears(Array.from(years).sort((a, b) => b - a))
     }
     load()
     return () => { active = false }
@@ -54,16 +61,20 @@ export default function Exercises() {
     // Visitantes podem resolver; o progresso só é salvo para usuários logados.
     setActiveSubject(subject)
     setLoadingQ(true)
-    const { data } = await supabase
+    let query = supabase
       .from('questions')
-      .select('id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, difficulty')
+      .select('id, prompt, options, option_images, stem_image_url, source_images, correct_index, explanation, difficulty, year')
       .eq('subject_id', subject.id)
       .eq('status', 'published')
       .order('sort_order')
+    if (selectedYear) {
+      query = query.eq('year', Number(selectedYear))
+    }
+    const { data } = await query
     setLoadingQ(false)
     const qs = (data ?? []).sort(() => Math.random() - 0.5)
     if (qs.length === 0) {
-      toast('Esta matéria ainda não tem exercícios.', 'error')
+      toast('Esta matéria ainda não tem exercícios' + (selectedYear ? ' para ' + selectedYear : '') + '.', 'error')
       setActiveSubject(null)
       return
     }
@@ -226,8 +237,23 @@ Regras:
           </button>
         </div>
 
-        {mode === 'bank' && (
-          !subjects ? (
+        {mode === 'bank' && availableYears.length > 1 && (
+          <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label htmlFor="year-filter" style={{ fontSize: 13, fontWeight: 600 }}>Ano da prova:</label>
+            <select
+              id="year-filter"
+              className="input"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              style={{ width: 'auto' }}
+            >
+              <option value="">Todos os anos</option>
+              {availableYears.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        )}
             <div className="subject-grid subject-grid-lg">
               {[0, 1, 2, 3].map((i) => (
                 <Card key={i}><div style={{ height: 80 }} /></Card>
