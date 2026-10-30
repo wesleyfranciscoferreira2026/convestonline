@@ -10,5 +10,5 @@ where subject_id in (
   where slug not in ('matematica', 'fisica', 'quimica')
 );
 
--- Remove subjects nao-exatas (opcional, mas limpa o catalogo)
--- delete from public.subjects where slug not in ('matematica', 'fisica', 'quimica');
+-- Remove subjects nao-exatas (limpa o catalogo)
+delete from public.subjects where slug not in ('matematica', 'fisica', 'quimica');

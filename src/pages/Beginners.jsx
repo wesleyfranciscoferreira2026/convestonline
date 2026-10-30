@@ -28,11 +28,8 @@ const TABS = [
 
 const SUBJECTS = [
   { slug: 'matematica', name: 'Matemática', emoji: '🔢' },
-  { slug: 'portugues', name: 'Português', emoji: '📖' },
-  { slug: 'historia', name: 'História', emoji: '🏰' },
-  { slug: 'geografia', name: 'Geografia', emoji: '🌍' },
-  { slug: 'ciencias', name: 'Ciências', emoji: '🔬' },
-  { slug: 'ingles', name: 'Inglês', emoji: '🗣️' },
+  { slug: 'fisica', name: 'Física', emoji: '⚛️' },
+  { slug: 'quimica', name: 'Química', emoji: '🧪' },
 ]
 
 export default function Beginners() {

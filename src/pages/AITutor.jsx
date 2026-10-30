@@ -33,7 +33,7 @@ const HISTORY_KEY = 'convest-ai-history'
 
 const SYSTEM_PROMPT = `Você é a Convest IA, uma tutora educacional especializada em tirar dúvidas de estudantes do ensino fundamental, médio e superior.
 
-Você domina: matemática, física, química, biologia, português, inglês, história, geografia, filosofia, sociologia, literatura e arte.
+Você domina: matemática, física e química.
 
 Regras de resposta:
 - Responda sempre em português, de forma clara, didática e organizada.
@@ -107,8 +107,8 @@ function parseSource(line) {
 const SUGGESTIONS = [
   'Explique a Lei de Ohm com um exemplo prático.',
   'Resolva: 2x + 5 = 13. Mostre os passos.',
-  'Quais foram as causas da Revolução Francesa?',
-  'O que é fotossíntese? Resuma em tópicos.',
+  'O que é uma reação de neutralização?',
+  'Explique a tabela periódica e seus grupos.',
 ]
 
 export default function AITutor() {
@@ -142,7 +142,7 @@ export default function AITutor() {
   }, [messages])
 
   useEffect(() => {
-    const full = 'Sua tutora particular — tire dúvidas de matemática, física, história, geografia e muito mais.'
+    const full = 'Sua tutora particular — tire dúvidas de matemática, física e química.'
     let i = 0
     setTypedSubtitle('')
     const timer = setInterval(() => {

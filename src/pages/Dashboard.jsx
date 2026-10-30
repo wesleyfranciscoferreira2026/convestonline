@@ -200,7 +200,7 @@ export default function Dashboard() {
             <Sparkles size={14} aria-hidden="true" /> NOVO
           </span>
           <h3>Convest IA — sua tutora particular</h3>
-          <p>Tire dúvidas de matemática, física, história, geografia e mais. Explico passo a passo e cito as fontes.</p>
+          <p>Tire dúvidas de matemática, física e química. Explico passo a passo e cito as fontes.</p>
         </div>
         <span className="ai-hero-cta">
           Perguntar à IA <ArrowRight size={16} aria-hidden="true" />
