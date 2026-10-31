@@ -9,7 +9,6 @@ import {
   Compass,
   Flame,
   Loader2,
-  Scale,
   Sparkles,
   Plus,
   Target,
@@ -401,61 +400,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ---------- Sou estudante de Direito ---------- */}
-      <LawPromo />
     </div>
-  )
-}
-
-/* =================== Promo Direito (typewriter) =================== */
-
-function LawPromo() {
-  const fullText = 'Se você estuda Direito, temos conteúdos, questões e concursos preparados para você. Direito Constitucional, Direito Penal, questões por tópico e lista de concursos que exigem direito.'
-  const [displayed, setDisplayed] = useState('')
-  const [started, setStarted] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !started) setStarted(true)
-      },
-      { threshold: 0.3 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [started])
-
-  useEffect(() => {
-    if (!started) return
-    let i = 0
-    const id = setInterval(() => {
-      i += 1
-      setDisplayed(fullText.slice(0, i))
-      if (i >= fullText.length) clearInterval(id)
-    }, 28)
-    return () => clearInterval(id)
-  }, [started])
-
-  return (
-    <Link to="/direito" className="law-promo-card" ref={ref}>
-      <div className="law-promo-icon">
-        <Scale size={28} aria-hidden="true" />
-      </div>
-      <div className="law-promo-body">
-        <span className="law-promo-badge">NOVO</span>
-        <h3>Sou estudante de Direito</h3>
-        <p className="law-promo-text">
-          {displayed}
-          {started && displayed.length < fullText.length && <span className="typewriter-cursor" />}
-        </p>
-      </div>
-      <span className="law-promo-cta">
-        Explorar Direito <ArrowRight size={16} aria-hidden="true" />
-      </span>
-    </Link>
   )
 }
 

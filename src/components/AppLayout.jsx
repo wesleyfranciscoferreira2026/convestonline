@@ -11,7 +11,6 @@ import {
   GraduationCap,
   Home,
   Rocket,
-  Scale,
   LogOut,
   Menu,
   RotateCcw,
@@ -28,7 +27,6 @@ import PageTransition from './PageTransition'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: Home, end: true },
-  { to: '/direito', label: 'Direito', icon: Scale, variant: 'blue' },
   { to: '/kids', label: 'Kids 🧒', icon: Sparkles, variant: 'orange' },
   { to: '/iniciantes', label: 'Iniciantes', icon: Rocket, variant: 'neutral' },
   { to: '/ia', label: 'Convest IA', icon: Sparkles },

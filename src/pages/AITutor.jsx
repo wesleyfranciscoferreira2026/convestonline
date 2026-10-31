@@ -276,16 +276,6 @@ ${result.error.hint}` },
         </div>
       </header>
 
-      {mode === 'site' && siteReady === true && (
-        <div className="ai-banner ai-banner-ok">
-          <Sparkles size={15} aria-hidden="true" />
-          <span>IA do Convest+ ativa. Sem limite de chave: e so perguntar.</span>
-          <button type="button" className="ai-banner-link" onClick={() => { setDraft(config); setDraftMode('own'); setConfigOpen(true) }}>
-            Usar minha chave
-          </button>
-        </div>
-      )}
-
       {mode === 'site' && siteReady === false && needsKey === false && (
         <div className="ai-banner ai-banner-warn">
           <Key size={15} aria-hidden="true" />
