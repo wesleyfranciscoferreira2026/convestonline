@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Sparkles,
   Wand2,
+  X,
   XCircle,
 } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -21,7 +22,7 @@ import Markdown from '../components/Markdown'
 import { Card, EmptyState, ProgressBar } from '../components/ui'
 
 export default function Exercises() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const toast = useToast()
   const [subjects, setSubjects] = useState(null)
   const [counts, setCounts] = useState({})
@@ -480,6 +481,24 @@ Regras:
       </header>
 
       <Card className="question-card">
+        {profile?.role === 'admin' && (
+          <button
+            type="button"
+            className="icon-btn icon-btn-danger"
+            style={{ position: 'absolute', top: 8, right: 8 }}
+            aria-label="Excluir questão"
+            onClick={async () => {
+              if (!confirm('Excluir esta questão?')) return
+              const { error } = await supabase.from('questions').delete().eq('id', q.id)
+              if (error) { toast('Erro: ' + error.message, 'error'); return }
+              toast('Questão excluída.')
+              // Remove from list
+              setQuestions((prev) => prev.filter((x) => x.id !== q.id))
+            }}
+          >
+            <X size={16} />
+          </button>
+        )}
         <div className="question-prompt">
           <Markdown text={q.prompt} />
           {sourceImages.map((url, i) => (

@@ -2209,6 +2209,7 @@ select.input {
 /* Exercícios */
 .question-card {
   max-width: 720px;
+  position: relative;
 }
 
 .question-prompt {
