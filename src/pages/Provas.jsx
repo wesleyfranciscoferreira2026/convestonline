@@ -22,7 +22,6 @@ import { Card, EmptyState, ProgressBar } from '../components/ui'
 
 const CATEGORIES = [
   { key: 'enem', label: 'ENEM' },
-  { key: 'vestibular', label: 'Vestibulares' },
   { key: 'militar', label: 'Cursos Militares' },
 ]
 

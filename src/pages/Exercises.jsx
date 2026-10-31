@@ -321,7 +321,6 @@ Regras:
                   <option>ITA</option>
                   <option>IME</option>
                   <option>Concursos</option>
-                  <option>Vestibular geral</option>
                 </select>
               </div>
               <div className="field">
