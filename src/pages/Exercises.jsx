@@ -314,10 +314,6 @@ Regras:
                   onChange={(e) => setGenConfig({ ...genConfig, banca: e.target.value })}
                 >
                   <option>ENEM</option>
-                  <option>UERJ</option>
-                  <option>FUVEST</option>
-                  <option>UNICAMP</option>
-                  <option>UNESP</option>
                   <option>ITA</option>
                   <option>IME</option>
                   <option>Concursos</option>
