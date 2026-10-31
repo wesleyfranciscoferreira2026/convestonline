@@ -18,7 +18,7 @@ import {
   Settings,
   Shield,
   Sparkles,
-  X,
+  Trash2,
 } from 'lucide-react'
 import QuickAddButton from './QuickAddButton'
 import { useAuth } from '../lib/auth'
@@ -34,6 +34,7 @@ const NAV_ITEMS = [
   { to: '/explorar', label: 'Explorar', icon: Compass },
   { to: '/estudos', label: 'Meus estudos', icon: BookOpen },
   { to: '/exercicios', label: 'Exercícios', icon: ClipboardList },
+  { to: '/gerenciar', label: 'Gerenciar', icon: Trash2 },
   { to: '/provas', label: 'Provas', icon: GraduationCap },
   { to: '/revisao', label: 'Revisão', icon: RotateCcw },
   { to: '/estatisticas', label: 'Estatísticas', icon: BarChart3 },
@@ -46,6 +47,7 @@ const BOTTOM_ITEMS = [
   { to: '/ia', label: 'IA', icon: Sparkles },
   { to: '/explorar', label: 'Explorar', icon: Compass },
   { to: '/exercicios', label: 'Exercícios', icon: ClipboardList },
+  { to: '/gerenciar', label: 'Gerenciar', icon: Trash2 },
 ]
 
 export default function AppLayout() {
