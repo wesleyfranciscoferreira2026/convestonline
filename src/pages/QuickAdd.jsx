@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { ClipboardList, Loader2, Plus, X, Upload, Crop, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useToast } from '../components/Toast'
@@ -18,12 +17,11 @@ async function uploadImage(file) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
-// Simple crop modal using canvas
 function CropModal({ file, onConfirm, onCancel }) {
   const canvasRef = useRef(null)
   const imgRef = useRef(null)
   const [img, setImg] = useState(null)
-  const [crop, setCrop] = useState(null) // {x, y, w, h}
+  const [crop, setCrop] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [start, setStart] = useState(null)
 
@@ -67,7 +65,6 @@ function CropModal({ file, onConfirm, onCancel }) {
     const w = Math.abs(pos.x - start.x)
     const h = Math.abs(pos.y - start.y)
     setCrop({ x, y, w, h })
-    // Redraw
     const c = canvasRef.current
     const ctx = c.getContext('2d')
     ctx.drawImage(img, 0, 0)
@@ -84,7 +81,6 @@ function CropModal({ file, onConfirm, onCancel }) {
 
   function confirm() {
     if (!crop || crop.w < 10 || crop.h < 10) {
-      // No crop selected, use full image
       onConfirm(file)
       return
     }
@@ -132,12 +128,12 @@ function CropModal({ file, onConfirm, onCancel }) {
   )
 }
 
-export default function QuickAdd() {
+export default function QuickAdd({ onClose }) {
   const toast = useToast()
   const [subjects, setSubjects] = useState([])
   const [exams, setExams] = useState([])
   const [saving, setSaving] = useState(false)
-  const [files, setFiles] = useState([]) // {file, preview, croppedFile}
+  const [files, setFiles] = useState([])
   const [cropIndex, setCropIndex] = useState(null)
   const [form, setForm] = useState({
     subject_id: '',
@@ -208,6 +204,108 @@ export default function QuickAdd() {
     setSaving(false)
     toast(`${done} questão(ões) criada(s)${errors > 0 ? `, ${errors} erro(s)` : ''}.`)
     setFiles([])
+    if (onClose) onClose()
+  }
+
+  // If used as modal (onClose provided), wrap in overlay
+  const content = (
+    <div className="form">
+      <div className="field">
+        <label>Matéria *</label>
+        <select className="input" value={form.subject_id} onChange={(e) => setForm((f) => ({ ...f, subject_id: e.target.value }))}>
+          <option value="">Selecione…</option>
+          {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      </div>
+      <div className="task-form-row">
+        <div className="field">
+          <label>Prova / banca</label>
+          <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
+            <option value="">Nenhuma</option>
+            {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label>Ano</label>
+          <input type="number" className="input" placeholder="ex.: 2023" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
+        </div>
+        <div className="field">
+          <label>Tópico</label>
+          <input className="input" placeholder="ex.: Cinemática" value={form.topic} onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))} />
+        </div>
+      </div>
+
+      <div className="field">
+        <label>Alternativa correta (aplicada a todas)</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {['A', 'B', 'C', 'D', 'E'].map((letter, i) => (
+            <button
+              key={letter}
+              type="button"
+              className={`btn btn-sm ${form.correct_index === i ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setForm((f) => ({ ...f, correct_index: i }))}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <label>Imagens das questões (selecione quantas quiser)</label>
+        <input type="file" accept="image/*" multiple onChange={handleFiles} />
+      </div>
+
+      {files.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
+          {files.map((f, idx) => (
+            <div key={idx} style={{ position: 'relative', width: 120, textAlign: 'center' }}>
+              <img src={f.preview} alt="" style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--color-border)' }} />
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                style={{ marginTop: 4, fontSize: 11 }}
+                onClick={() => setCropIndex(idx)}
+              >
+                <Crop size={12} /> Recortar
+              </button>
+              <button
+                type="button"
+                className="icon-btn icon-btn-danger"
+                style={{ position: 'absolute', top: 2, right: 2 }}
+                onClick={() => removeFile(idx)}
+              >
+                <X size={14} />
+              </button>
+              {f.croppedFile && <span style={{ fontSize: 10, color: 'green' }}>✓ recortado</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="task-form-actions" style={{ marginTop: 16 }}>
+        <button type="button" className="btn btn-primary btn-sm" onClick={saveAll} disabled={saving || files.length === 0}>
+          {saving && <Loader2 size={15} className="spin" aria-hidden="true" />}
+          {saving ? 'Enviando…' : `Criar ${files.length} questão(ões)`}
+        </button>
+      </div>
+    </div>
+  )
+
+  if (onClose) {
+    return (
+      <div className="sheet-overlay" onClick={onClose}>
+        <div className="sheet admin-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+          <div className="sheet-header">
+            <strong>Adicionar Questões</strong>
+            <button type="button" className="icon-btn" aria-label="Fechar" onClick={onClose}>
+              <X size={19} />
+            </button>
+          </div>
+          {content}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -221,89 +319,8 @@ export default function QuickAdd() {
           <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
         </Link>
       </header>
-
       <Card>
-        <div className="form">
-          <div className="field">
-            <label>Matéria *</label>
-            <select className="input" value={form.subject_id} onChange={(e) => setForm((f) => ({ ...f, subject_id: e.target.value }))}>
-              <option value="">Selecione…</option>
-              {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <div className="task-form-row">
-            <div className="field">
-              <label>Prova / banca</label>
-              <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
-                <option value="">Nenhuma</option>
-                {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-              </select>
-            </div>
-            <div className="field">
-              <label>Ano</label>
-              <input type="number" className="input" placeholder="ex.: 2023" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
-            </div>
-            <div className="field">
-              <label>Tópico</label>
-              <input className="input" placeholder="ex.: Cinemática" value={form.topic} onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))} />
-            </div>
-          </div>
-
-          <div className="field">
-            <label>Alternativa correta (aplicada a todas)</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {['A', 'B', 'C', 'D', 'E'].map((letter, i) => (
-                <button
-                  key={letter}
-                  type="button"
-                  className={`btn btn-sm ${form.correct_index === i ? 'btn-primary' : 'btn-ghost'}`}
-                  onClick={() => setForm((f) => ({ ...f, correct_index: i }))}
-                >
-                  {letter}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="field">
-            <label>Imagens das questões (selecione quantas quiser)</label>
-            <input type="file" accept="image/*" multiple onChange={handleFiles} />
-          </div>
-
-          {files.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
-              {files.map((f, idx) => (
-                <div key={idx} style={{ position: 'relative', width: 120, textAlign: 'center' }}>
-                  <img src={f.preview} alt="" style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--color-border)' }} />
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    style={{ marginTop: 4, fontSize: 11 }}
-                    onClick={() => setCropIndex(idx)}
-                  >
-                    <Crop size={12} /> Recortar
-                  </button>
-                  <button
-                    type="button"
-                    className="icon-btn icon-btn-danger"
-                    style={{ position: 'absolute', top: 2, right: 2 }}
-                    onClick={() => removeFile(idx)}
-                  >
-                    <X size={14} />
-                  </button>
-                  {f.croppedFile && <span style={{ fontSize: 10, color: 'green' }}>✓ recortado</span>}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="task-form-actions" style={{ marginTop: 16 }}>
-            <button type="button" className="btn btn-primary btn-sm" onClick={saveAll} disabled={saving || files.length === 0}>
-              {saving && <Loader2 size={15} className="spin" aria-hidden="true" />}
-              {saving ? 'Enviando…' : `Criar ${files.length} questão(ões)`}
-            </button>
-          </div>
-        </div>
+        {content}
       </Card>
 
       {cropIndex !== null && files[cropIndex] && (

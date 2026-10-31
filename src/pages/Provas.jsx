@@ -6,11 +6,13 @@ import {
   CheckCircle2,
   ClipboardList,
   Loader2,
+  Plus,
   RotateCcw,
   Sparkles,
   Wand2,
   XCircle,
 } from 'lucide-react'
+import QuickAdd from '../pages/QuickAdd'
 import { supabase } from '../lib/supabaseClient'
 import { QUESTION_COUNT_OPTIONS, premiumCountMessage, questionCountLabel } from '../lib/questionCounts'
 import { chat, isAIAvailable, parseAIJson } from '../lib/ai'
@@ -32,6 +34,7 @@ export default function Provas() {
   const [subjects, setSubjects] = useState([])
   const [counts, setCounts] = useState({})
   const [category, setCategory] = useState('enem')
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
   const [selectedSubjects, setSelectedSubjects] = useState([])
   const [selectedTopic, setSelectedTopic] = useState('')
@@ -302,6 +305,9 @@ Regras:
         <header className="page-header">
           <h2>{selectedExam.name}</h2>
           <p>{selectedExam.description}</p>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setQuickAddOpen(true)} style={{ marginTop: 8 }}>
+            <Plus size={16} aria-hidden="true" /> Adicionar questão
+          </button>
         </header>
 
         <Card className="gen-card">
@@ -481,6 +487,9 @@ Regras:
           </div>
         )}
       </Card>
+      {quickAddOpen && (
+        <QuickAdd onClose={() => setQuickAddOpen(false)} />
+      )}
     </div>
   )
 }
