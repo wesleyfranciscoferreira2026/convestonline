@@ -32,7 +32,7 @@ export default function Exercises() {
   const [mode, setMode] = useState('bank') // 'bank' | 'generate'
   const [selectedYear, setSelectedYear] = useState('') // '' = todos os anos
   const [availableYears, setAvailableYears] = useState([])
-  const [genConfig, setGenConfig] = useState({ banca: 'ENEM', subjectId: '', topic: '', difficulty: 'medium', count: 5 })
+  const [genConfig, setGenConfig] = useState({ banca: 'ITA', subjectId: '', topic: '', difficulty: 'medium', count: 5 })
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
 
@@ -313,7 +313,6 @@ Regras:
                   value={genConfig.banca}
                   onChange={(e) => setGenConfig({ ...genConfig, banca: e.target.value })}
                 >
-                  <option>ENEM</option>
                   <option>ITA</option>
                   <option>IME</option>
                   <option>Concursos</option>
