@@ -20,33 +20,37 @@ async function uploadImage(file) {
 
 function CropModal({ file, onConfirm, onCancel }) {
   const canvasRef = useRef(null)
-  const [img, setImg] = useState(null)
+  const imgRef = useRef(null)
   const [ready, setReady] = useState(false)
   const [crop, setCrop] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [start, setStart] = useState(null)
+  const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
 
   useEffect(() => {
     const image = new Image()
+    imgRef.current = image
     image.onload = () => {
-      setImg(image)
+      setImgSize({ w: image.width, h: image.height })
       setReady(true)
     }
     image.src = URL.createObjectURL(file)
   }, [file])
 
   useEffect(() => {
-    if (!ready || !img || !canvasRef.current) return
+    if (!ready || !imgRef.current || !canvasRef.current) return
     const c = canvasRef.current
+    const img = imgRef.current
     c.width = img.width
     c.height = img.height
     const ctx = c.getContext('2d')
     ctx.drawImage(img, 0, 0)
-  }, [ready, img])
+  }, [ready])
 
   useEffect(() => {
-    if (!ready || !img || !canvasRef.current || !crop) return
+    if (!ready || !imgRef.current || !canvasRef.current || !crop) return
     const c = canvasRef.current
+    const img = imgRef.current
     const ctx = c.getContext('2d')
     ctx.drawImage(img, 0, 0)
     if (crop.w > 0 && crop.h > 0) {
@@ -56,7 +60,7 @@ function CropModal({ file, onConfirm, onCancel }) {
       ctx.fillStyle = 'rgba(102, 204, 204, 0.2)'
       ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
     }
-  }, [crop, ready, img])
+  }, [crop, ready])
 
   function getPos(e) {
     const c = canvasRef.current
@@ -91,6 +95,7 @@ function CropModal({ file, onConfirm, onCancel }) {
   function onMouseUp() { setDragging(false) }
 
   function confirm() {
+    const img = imgRef.current
     if (!crop || crop.w < 10 || crop.h < 10 || !img) {
       onConfirm(file)
       return
@@ -265,7 +270,7 @@ export default function QuickAdd({ onClose }) {
                 style={{ marginTop: 4, fontSize: 11 }}
                 onClick={() => setCropIndex(idx)}
               >
-                <Scissors size={12} /> Recortar
+                <Crop size={12} /> Recortar
               </button>
               <button
                 type="button"
