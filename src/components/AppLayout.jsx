@@ -20,7 +20,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react'
-import { useAuth } from '../lib/auth'
+import QuickAddButton from './QuickAddButton'
 import { getGreeting, formatToday } from '../utils/date'
 import { Avatar } from './ui'
 import PageTransition from './PageTransition'

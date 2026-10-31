@@ -1412,7 +1412,29 @@ select.input {
   color: var(--color-text-secondary);
 }
 
-/* --------------------------------- Auth --------------------------------- */
+.quick-add-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary, #66cccc);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quick-add-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
 .auth-screen {
   display: grid;
   grid-template-columns: minmax(380px, 44%) 1fr;
