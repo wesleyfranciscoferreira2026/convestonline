@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ClipboardList, Loader2, Plus, X, Upload, Crop } from 'lucide-react'
+import { ClipboardList, Loader2, Plus, X, Upload, Crop, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useToast } from '../components/Toast'
 import { Card } from '../components/ui'
@@ -217,6 +217,9 @@ export default function QuickAdd() {
           <h2>Adicionar Questões</h2>
           <p>Adicione questões com imagem e selecione a alternativa correta. Você pode recortar cada imagem antes de enviar.</p>
         </div>
+        <Link to="/" className="btn btn-ghost btn-sm">
+          <ArrowLeft size={16} aria-hidden="true" /> Voltar ao início
+        </Link>
       </header>
 
       <Card>
