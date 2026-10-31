@@ -484,7 +484,7 @@ Regras:
         <button
           type="button"
           className="icon-btn icon-btn-danger"
-          style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}
+          style={{ position: 'absolute', top: 8, right: 8, zIndex: 10, background: 'rgba(220, 38, 38, 0.9)', color: 'white', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           aria-label="Excluir questão"
           onClick={async () => {
             if (!confirm('Excluir esta questão?')) return
