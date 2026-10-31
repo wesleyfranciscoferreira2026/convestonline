@@ -36,6 +36,19 @@ export default function Dashboard() {
   const [inProgress, setInProgress] = useState([])
   const [attempts, setAttempts] = useState([])
   const [completedLessons, setCompletedLessons] = useState(0)
+  const [typedHeroText, setTypedHeroText] = useState('')
+  const fullHeroText = 'Tire dúvidas de matemática, física e química. Explico passo a passo e cito as fontes.'
+
+  useEffect(() => {
+    let i = 0
+    setTypedHeroText('')
+    const timer = setInterval(() => {
+      i++
+      setTypedHeroText(fullHeroText.slice(0, i))
+      if (i >= fullHeroText.length) clearInterval(timer)
+    }, 35)
+    return () => clearInterval(timer)
+  }, [])
 
   const dailyGoal = profile?.daily_goal_minutes ?? 60
   const todayISO = toISODate()
@@ -199,7 +212,10 @@ export default function Dashboard() {
             <Sparkles size={14} aria-hidden="true" /> NOVO
           </span>
           <h3>Convest IA — sua tutora particular</h3>
-          <p>Tire dúvidas de matemática, física e química. Explico passo a passo e cito as fontes.</p>
+          <p>
+            {typedHeroText}
+            {typedHeroText.length < fullHeroText.length && <span className="typing-caret" aria-hidden="true">|</span>}
+          </p>
         </div>
         <span className="ai-hero-cta">
           Perguntar à IA <ArrowRight size={16} aria-hidden="true" />
