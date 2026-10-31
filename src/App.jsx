@@ -47,7 +47,8 @@ export default function App() {
       </Route>
       <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
       <Route path="/iniciantes" element={<PageTransition><Beginners /></PageTransition>} />
-      {/* Law route removed - only exact sciences remain */}
+      <Route
+        path="/"
         element={
           <ProtectedRoute>
             <AppLayout />
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/revisao" element={<PageTransition><Review /></PageTransition>} />
         <Route path="/estatisticas" element={<PageTransition><Stats /></PageTransition>} />
         <Route path="/perfil" element={<Settings />} />
+      </Route>
 
 
       <Route path="*" element={<Navigate to="/" replace />} />
