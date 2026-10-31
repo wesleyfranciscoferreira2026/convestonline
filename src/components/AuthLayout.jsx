@@ -13,18 +13,22 @@ const HIGHLIGHTS = [
 export default function AuthLayout({ title, subtitle, children, footer }) {
   const [typedTagline, setTypedTagline] = useState('')
   const [typedHighlights, setTypedHighlights] = useState([])
-  const [currentHighlight, setCurrentHighlight] = useState(0)
   const [typingHighlight, setTypingHighlight] = useState('')
+  const [currentHi, setCurrentHi] = useState(0)
 
   useEffect(() => {
     let i = 0
     setTypedTagline('')
+    setTypedHighlights([])
+    setTypingHighlight('')
+    setCurrentHi(0)
+
     const timer = setInterval(() => {
       i++
       setTypedTagline(TAGLINE.slice(0, i))
       if (i >= TAGLINE.length) {
         clearInterval(timer)
-        // Start typing highlights
+        // Start typing highlights one by one
         let hi = 0
         let ci = 0
         const hTimer = setInterval(() => {
@@ -73,6 +77,13 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
               {typingHighlight}
               <span className="typing-caret" aria-hidden="true">|</span>
             </li>
+          )}
+          {typedHighlights.length === 0 && !typingHighlight && (
+            <>
+              <li style={{ opacity: 0.3 }}>Rotina de estudos organizada em poucos cliques</li>
+              <li style={{ opacity: 0.3 }}>Progresso e consistência sempre visíveis</li>
+              <li style={{ opacity: 0.3 }}>Conteúdo, exercícios e revisão em um só lugar</li>
+            </>
           )}
         </ul>
       </div>
