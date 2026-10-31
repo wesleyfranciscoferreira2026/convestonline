@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ClipboardList, Loader2, Plus, X, Upload, Crop, ArrowLeft } from 'lucide-react'
+import { ClipboardList, Loader2, Plus, X, Upload, Crop, ArrowLeft, Scissors } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useToast } from '../components/Toast'
 import { Card } from '../components/ui'
@@ -20,7 +20,7 @@ async function uploadImage(file) {
 
 function CropModal({ file, onConfirm, onCancel }) {
   const canvasRef = useRef(null)
-  const imgRef = useRef(null)
+  const [img, setImg] = useState(null)
   const [ready, setReady] = useState(false)
   const [crop, setCrop] = useState(null)
   const [dragging, setDragging] = useState(false)
@@ -28,20 +28,35 @@ function CropModal({ file, onConfirm, onCancel }) {
 
   useEffect(() => {
     const image = new Image()
-    imgRef.current = image
     image.onload = () => {
+      setImg(image)
       setReady(true)
-      const c = canvasRef.current
-      if (c) {
-        c.width = image.width
-        c.height = image.height
-        const ctx = c.getContext('2d')
-        ctx.drawImage(image, 0, 0)
-      }
     }
     image.src = URL.createObjectURL(file)
-    return () => { URL.revokeObjectURL(image.src) }
   }, [file])
+
+  useEffect(() => {
+    if (!ready || !img || !canvasRef.current) return
+    const c = canvasRef.current
+    c.width = img.width
+    c.height = img.height
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+  }, [ready, img])
+
+  useEffect(() => {
+    if (!ready || !img || !canvasRef.current || !crop) return
+    const c = canvasRef.current
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    if (crop.w > 0 && crop.h > 0) {
+      ctx.strokeStyle = '#66cccc'
+      ctx.lineWidth = 3
+      ctx.strokeRect(crop.x, crop.y, crop.w, crop.h)
+      ctx.fillStyle = 'rgba(102, 204, 204, 0.2)'
+      ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
+    }
+  }, [crop, ready, img])
 
   function getPos(e) {
     const c = canvasRef.current
@@ -55,21 +70,6 @@ function CropModal({ file, onConfirm, onCancel }) {
     }
   }
 
-  function redraw() {
-    const c = canvasRef.current
-    const image = imgRef.current
-    if (!c || !image) return
-    const ctx = c.getContext('2d')
-    ctx.drawImage(image, 0, 0)
-    if (crop && crop.w > 0 && crop.h > 0) {
-      ctx.strokeStyle = '#66cccc'
-      ctx.lineWidth = 2
-      ctx.strokeRect(crop.x, crop.y, crop.w, crop.h)
-      ctx.fillStyle = 'rgba(102, 204, 204, 0.15)'
-      ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
-    }
-  }
-
   function onMouseDown(e) {
     if (!ready) return
     setDragging(true)
@@ -80,21 +80,18 @@ function CropModal({ file, onConfirm, onCancel }) {
   function onMouseMove(e) {
     if (!dragging || !start) return
     const pos = getPos(e)
-    const x = Math.min(start.x, pos.x)
-    const y = Math.min(start.y, pos.y)
-    const w = Math.abs(pos.x - start.x)
-    const h = Math.abs(pos.y - start.y)
-    setCrop({ x, y, w, h })
+    setCrop({
+      x: Math.min(start.x, pos.x),
+      y: Math.min(start.y, pos.y),
+      w: Math.abs(pos.x - start.x),
+      h: Math.abs(pos.y - start.y),
+    })
   }
-
-  // Redraw when crop changes
-  useEffect(() => { redraw() }, [crop, ready])
 
   function onMouseUp() { setDragging(false) }
 
   function confirm() {
-    const image = imgRef.current
-    if (!crop || crop.w < 10 || crop.h < 10 || !image) {
+    if (!crop || crop.w < 10 || crop.h < 10 || !img) {
       onConfirm(file)
       return
     }
@@ -102,7 +99,7 @@ function CropModal({ file, onConfirm, onCancel }) {
     c.width = crop.w
     c.height = crop.h
     const ctx = c.getContext('2d')
-    ctx.drawImage(image, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
+    ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
     c.toBlob((blob) => {
       if (!blob) { onConfirm(file); return }
       const croppedFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })
@@ -111,7 +108,7 @@ function CropModal({ file, onConfirm, onCancel }) {
   }
 
   return (
-    <div className="sheet-overlay" onClick={onCancel} style={{ zIndex: 70 }}>
+    <div className="sheet-overlay" onClick={onCancel} style={{ zIndex: 100 }}>
       <div className="sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700 }}>
         <div className="sheet-header">
           <strong>Recortar imagem</strong>
@@ -122,8 +119,8 @@ function CropModal({ file, onConfirm, onCancel }) {
         <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
           Arraste para selecionar a área da questão. Se não selecionar, a imagem inteira será usada.
         </p>
-        <div style={{ overflow: 'auto', maxHeight: 400, border: '1px solid var(--color-border)', borderRadius: 8 }}>
-          {!ready && <p style={{ padding: 20, textAlign: 'center' }}>Carregando imagem…</p>}
+        <div style={{ overflow: 'auto', maxHeight: 400, border: '1px solid var(--color-border)', borderRadius: 8, background: '#111' }}>
+          {!ready && <p style={{ padding: 20, textAlign: 'center', color: '#fff' }}>Carregando imagem…</p>}
           <canvas
             ref={canvasRef}
             style={{ maxWidth: '100%', cursor: 'crosshair', display: ready ? 'block' : 'none' }}
@@ -136,7 +133,7 @@ function CropModal({ file, onConfirm, onCancel }) {
         <div className="task-form-actions" style={{ marginTop: 12 }}>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>Cancelar</button>
           <button type="button" className="btn btn-primary btn-sm" onClick={confirm} disabled={!ready}>
-            <Crop size={15} aria-hidden="true" /> Confirmar recorte
+            <Scissors size={15} aria-hidden="true" /> Confirmar recorte
           </button>
         </div>
       </div>
@@ -147,27 +144,18 @@ function CropModal({ file, onConfirm, onCancel }) {
 export default function QuickAdd({ onClose }) {
   const toast = useToast()
   const [subjects, setSubjects] = useState([])
-  const [exams, setExams] = useState([])
   const [saving, setSaving] = useState(false)
   const [files, setFiles] = useState([])
   const [cropIndex, setCropIndex] = useState(null)
   const [form, setForm] = useState({
     subject_id: '',
-    exam_id: '',
     year: '',
     correct_index: 0,
   })
 
   useEffect(() => {
-    Promise.all([
-      supabase.from('subjects').select('id, name').order('sort_order'),
-      supabase.from('exams').select('id, name').order('sort_order'),
-    ]).then(([subs, ex]) => {
-      setSubjects(subs.data ?? [])
-      setExams(ex.data ?? [])
-      // Default to ENEM exam
-      const enem = (ex.data ?? []).find((e) => e.name.toLowerCase().includes('enem'))
-      if (enem) setForm((f) => ({ ...f, exam_id: enem.id }))
+    supabase.from('subjects').select('id, name').order('sort_order').then(({ data }) => {
+      setSubjects(data ?? [])
     })
   }, [])
 
@@ -200,7 +188,6 @@ export default function QuickAdd({ onClose }) {
         const url = await uploadImage(fileToUpload)
         const { error } = await supabase.from('questions').insert({
           subject_id: form.subject_id,
-          exam_id: form.exam_id || null,
           year: form.year ? Number(form.year) : null,
           question_type: 'multiple_choice',
           prompt: '',
@@ -224,9 +211,7 @@ export default function QuickAdd({ onClose }) {
     if (errors > 0) {
       toast(`${done} criada(s), ${errors} erro(s): ${errorMessages[0]}`, 'error')
     } else {
-      const subjectName = subjects.find((s) => s.id === form.subject_id)?.name || 'Matéria'
-      const examName = exams.find((x) => x.id === form.exam_id)?.name || ''
-      toast(`${done} questão(ões) criada(s) em ${subjectName}${examName ? ' · ' + examName : ''}${form.year ? ' · ' + form.year : ''}!`)
+      toast(`${done} questão(ões) criada(s) com sucesso!`)
     }
     if (done > 0) {
       setFiles([])
@@ -241,13 +226,6 @@ export default function QuickAdd({ onClose }) {
         <select className="input" value={form.subject_id} onChange={(e) => setForm((f) => ({ ...f, subject_id: e.target.value }))}>
           <option value="">Selecione…</option>
           {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-      </div>
-      <div className="field">
-        <label>Prova / banca</label>
-        <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
-          <option value="">Nenhuma</option>
-          {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
         </select>
       </div>
       <div className="field">
@@ -287,7 +265,7 @@ export default function QuickAdd({ onClose }) {
                 style={{ marginTop: 4, fontSize: 11 }}
                 onClick={() => setCropIndex(idx)}
               >
-                <Crop size={12} /> Recortar
+                <Scissors size={12} /> Recortar
               </button>
               <button
                 type="button"
@@ -314,7 +292,7 @@ export default function QuickAdd({ onClose }) {
 
   if (onClose) {
     return (
-      <div className="sheet-overlay" onClick={onClose}>
+      <div className="sheet-overlay" onClick={onClose} style={{ zIndex: 50 }}>
         <div className="sheet admin-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-header">
             <strong>Adicionar Questões</strong>
