@@ -17,6 +17,7 @@ import {
   Search,
   Settings,
   Shield,
+  Plus,
   Sparkles,
   X,
 } from 'lucide-react'
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { to: '/kids', label: 'Kids 🧒', icon: Sparkles, variant: 'orange' },
   { to: '/iniciantes', label: 'Iniciantes', icon: Rocket, variant: 'neutral' },
   { to: '/ia', label: 'Convest IA', icon: Sparkles },
+  { to: '/adicionar', label: 'Adicionar', icon: Plus },
   { to: '/explorar', label: 'Explorar', icon: Compass },
   { to: '/estudos', label: 'Meus estudos', icon: BookOpen },
   { to: '/exercicios', label: 'Exercícios', icon: ClipboardList },

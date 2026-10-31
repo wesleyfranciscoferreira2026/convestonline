@@ -10,7 +10,7 @@ import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
-import AITutor from './pages/AITutor'
+import QuickAdd from './pages/QuickAdd'
 import Beginners from './pages/Beginners'
 import KidsLayout from './pages/kids/KidsLayout'
 import KidsHome from './pages/kids/KidsHome'
@@ -51,6 +51,7 @@ export default function App() {
         <Route path="exercicios" element={<PageTransition><KidsExercises /></PageTransition>} />
       </Route>
       <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
+        <Route path="/adicionar" element={<PageTransition><QuickAdd /></PageTransition>} />
       <Route path="/iniciantes" element={<PageTransition><Beginners /></PageTransition>} />
       {/* Law route removed - only exact sciences remain */}
       <Route
