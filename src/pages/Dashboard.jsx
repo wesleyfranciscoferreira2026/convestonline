@@ -39,6 +39,30 @@ export default function Dashboard() {
   const [completedLessons, setCompletedLessons] = useState(0)
   const [typedHeroText, setTypedHeroText] = useState('')
   const fullHeroText = 'Tire dúvidas de matemática, física e química. Explico passo a passo e cito as fontes.'
+  const [typedBeginnerText, setTypedBeginnerText] = useState('')
+  const fullBeginnerText = 'Você está começando agora? Fortaleça sua base para não ter dificuldades nos assuntos mais avançados.'
+
+  useEffect(() => {
+    let i = 0
+    setTypedHeroText('')
+    const timer = setInterval(() => {
+      i++
+      setTypedHeroText(fullHeroText.slice(0, i))
+      if (i >= fullHeroText.length) clearInterval(timer)
+    }, 35)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    let i = 0
+    setTypedBeginnerText('')
+    const timer = setInterval(() => {
+      i++
+      setTypedBeginnerText(fullBeginnerText.slice(0, i))
+      if (i >= fullBeginnerText.length) clearInterval(timer)
+    }, 35)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     let i = 0
@@ -220,6 +244,22 @@ export default function Dashboard() {
         </div>
         <span className="ai-hero-cta">
           Perguntar à IA <ArrowRight size={16} aria-hidden="true" />
+        </span>
+      </Link>
+
+      <Link to="/iniciantes" className="ai-hero-card beginner-hero-card">
+        <div className="ai-hero-text">
+          <span className="ai-hero-badge">
+            <Rocket size={14} aria-hidden="true" /> INICIANTE
+          </span>
+          <h3>Sou iniciante</h3>
+          <p>
+            {typedBeginnerText}
+            {typedBeginnerText.length < fullBeginnerText.length && <span className="typing-caret" aria-hidden="true">|</span>}
+          </p>
+        </div>
+        <span className="ai-hero-cta">
+          Começar <ArrowRight size={16} aria-hidden="true" />
         </span>
       </Link>
 

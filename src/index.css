@@ -2681,6 +2681,21 @@ select.input {
   transform: translateX(2px);
 }
 
+.beginner-hero-card {
+  background:
+    radial-gradient(600px 200px at 100% 0%, color-mix(in srgb, #3b82f6 22%, transparent), transparent 60%),
+    linear-gradient(135deg, #1e40af, #2563eb);
+  border: 2px solid #3b82f6;
+}
+
+.beginner-hero-card .ai-hero-cta {
+  color: #1e40af;
+}
+
+.beginner-hero-card:hover .ai-hero-cta {
+  transform: translateX(2px);
+}
+
 .ai-header {
   display: flex;
   align-items: flex-start;
