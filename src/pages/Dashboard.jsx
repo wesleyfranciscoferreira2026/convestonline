@@ -417,6 +417,9 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ---------- Iniciante ---------- */}
+      <BeginnerPromo />
+
     </div>
   )
 }
@@ -611,6 +614,7 @@ function TodayPlan({ tasks, subjects, doneCount, onAdd, onToggle, onDelete }) {
 
 /* =================== Skeleton =================== */
 
+
 function DashboardSkeleton() {
   return (
     <div className="page dashboard" aria-busy="true" aria-label="Carregando sua página inicial">
@@ -641,9 +645,6 @@ function DashboardSkeleton() {
           <Skeleton height={90} radius={14} />
         </Card>
       </div>
-      {/* ---------- Iniciante ---------- */}
-      <BeginnerPromo />
-
     </div>
   )
 }
