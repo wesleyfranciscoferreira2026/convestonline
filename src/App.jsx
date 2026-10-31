@@ -9,7 +9,7 @@ import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
-import Beginners from './pages/Beginners'
+import AITutor from './pages/AITutor'
 import Gerenciar from './pages/Gerenciar'
 import KidsLayout from './pages/kids/KidsLayout'
 import KidsHome from './pages/kids/KidsHome'
@@ -47,6 +47,7 @@ export default function App() {
         <Route path="materia/:slug" element={<PageTransition><KidsSubjects /></PageTransition>} />
         <Route path="exercicios" element={<PageTransition><KidsExercises /></PageTransition>} />
       </Route>
+      <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
       <Route path="/iniciantes" element={<PageTransition><Beginners /></PageTransition>} />
       <Route path="/gerenciar" element={<PageTransition><Gerenciar /></PageTransition>} />
       <Route
