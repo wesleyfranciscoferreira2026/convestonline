@@ -31,13 +31,6 @@ function CropModal({ file, onConfirm, onCancel }) {
     image.onload = () => {
       setImg(image)
       setReady(true)
-      if (canvasRef.current) {
-        const c = canvasRef.current
-        c.width = image.width
-        c.height = image.height
-        const ctx = c.getContext('2d')
-        ctx.drawImage(image, 0, 0)
-      }
     }
     image.onerror = () => {
       console.error('Failed to load image')
@@ -45,6 +38,16 @@ function CropModal({ file, onConfirm, onCancel }) {
     }
     image.src = URL.createObjectURL(file)
   }, [file])
+
+  // Draw image to canvas when both img and canvas are ready
+  useEffect(() => {
+    if (!img || !canvasRef.current) return
+    const c = canvasRef.current
+    c.width = img.width
+    c.height = img.height
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+  }, [img, ready])
 
   function getPos(e) {
     const c = canvasRef.current
@@ -59,14 +62,14 @@ function CropModal({ file, onConfirm, onCancel }) {
   }
 
   function onMouseDown(e) {
-    if (!img) return
+    if (!img || !ready) return
     setDragging(true)
     setStart(getPos(e))
     setCrop(null)
   }
 
   function onMouseMove(e) {
-    if (!dragging || !start || !img) return
+    if (!dragging || !start || !img || !ready) return
     const pos = getPos(e)
     const x = Math.min(start.x, pos.x)
     const y = Math.min(start.y, pos.y)
@@ -190,7 +193,7 @@ export default function QuickAdd({ onClose }) {
       try {
         const fileToUpload = f.croppedFile || f.file
         const url = await uploadImage(fileToUpload)
-        const { error } = await supabase.from('questions').insert({
+        const { data, error } = await supabase.from('questions').insert({
           subject_id: form.subject_id,
           exam_id: form.exam_id || null,
           year: form.year ? Number(form.year) : null,
@@ -201,23 +204,22 @@ export default function QuickAdd({ onClose }) {
           option_images: [null, null, null, null, null],
           correct_index: Number(form.correct_index),
           difficulty: 'medium',
-          status: 'draft',
+          status: 'published',
           sort_order: 0,
-        })
+        }).select()
         if (error) throw new Error(error.message)
         done++
       } catch (err) {
         errors++
         errorMessages.push(err.message)
+        console.error('Insert error:', err)
       }
     }
     setSaving(false)
-    const subjectName = subjects.find((s) => s.id === form.subject_id)?.name || 'Matéria'
-    const examName = exams.find((x) => x.id === form.exam_id)?.name || ''
     if (errors > 0) {
       toast(`${done} criada(s), ${errors} erro(s): ${errorMessages[0]}`, 'error')
     } else {
-      toast(`${done} questão(ões) criada(s) em ${subjectName}${examName ? ' · ' + examName : ''}${form.year ? ' · ' + form.year : ''}!`)
+      toast(`${done} questão(ões) criada(s) em ${form.year ? form.year + ' ' : ''}com sucesso!`)
     }
     if (done > 0) {
       setFiles([])
@@ -234,18 +236,16 @@ export default function QuickAdd({ onClose }) {
           {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </div>
-      <div className="task-form-row">
-        <div className="field">
-          <label>Prova / banca</label>
-          <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
-            <option value="">Nenhuma</option>
-            {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-          </select>
-        </div>
-        <div className="field">
-          <label>Ano</label>
-          <input type="number" className="input" placeholder="ex.: 2023" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
-        </div>
+      <div className="field">
+        <label>Prova / banca</label>
+        <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
+          <option value="">Nenhuma</option>
+          {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label>Ano</label>
+        <input type="number" className="input" placeholder="ex.: 2023" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
       </div>
 
       <div className="field">
