@@ -157,6 +157,9 @@ export default function QuickAdd({ onClose }) {
     ]).then(([subs, ex]) => {
       setSubjects(subs.data ?? [])
       setExams(ex.data ?? [])
+      // Default to ENEM exam
+      const enem = (ex.data ?? []).find((e) => e.name.toLowerCase().includes('enem'))
+      if (enem) setForm((f) => ({ ...f, exam_id: enem.id }))
     })
   }, [])
 
