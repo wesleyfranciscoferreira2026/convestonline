@@ -373,7 +373,10 @@ export default function Dashboard() {
             </Card>
           ) : (
             <>
-              {/* ---------- Plano de hoje ---------- */}
+              {/* ---------- Iniciante ---------- */}
+      <BeginnerPromo />
+
+      {/* ---------- Plano de hoje ---------- */}
               <TodayPlan
                 tasks={tasks}
                 subjects={subjects}
@@ -420,7 +423,57 @@ export default function Dashboard() {
   )
 }
 
-/* =================== Plano de hoje =================== */
+/* =================== Promo Iniciante (typewriter) =================== */
+
+function BeginnerPromo() {
+  const fullText = 'Você está começando agora? Fortaleça sua base para não ter dificuldades nos assuntos mais avançados.'
+  const [displayed, setDisplayed] = useState('')
+  const [started, setStarted] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !started) setStarted(true)
+      },
+      { threshold: 0.3 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [started])
+
+  useEffect(() => {
+    if (!started) return
+    let i = 0
+    const id = setInterval(() => {
+      i += 1
+      setDisplayed(fullText.slice(0, i))
+      if (i >= fullText.length) clearInterval(id)
+    }, 28)
+    return () => clearInterval(id)
+  }, [started])
+
+  return (
+    <Link to="/iniciantes" className="beginner-promo-card" ref={ref}>
+      <div className="beginner-promo-icon">
+        <Rocket size={28} aria-hidden="true" />
+      </div>
+      <div className="beginner-promo-body">
+        <span className="beginner-promo-badge">INICIANTE</span>
+        <h3>Sou iniciante</h3>
+        <p className="beginner-promo-text">
+          {displayed}
+          {started && displayed.length < fullText.length && <span className="typewriter-cursor" />}
+        </p>
+      </div>
+      <span className="beginner-promo-cta">
+        Começar <ArrowRight size={16} aria-hidden="true" />
+      </span>
+    </Link>
+  )
+}
 
 function TodayPlan({ tasks, subjects, doneCount, onAdd, onToggle, onDelete }) {
   const [formOpen, setFormOpen] = useState(false)

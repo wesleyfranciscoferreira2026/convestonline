@@ -4443,6 +4443,91 @@ select.input {
   .law-promo-card {
     flex-direction: column;
     align-items: flex-start;
+/* -------------------------- Promo Iniciante (Dashboard) ------------------ */
+.beginner-promo-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  color: #ffffff;
+  text-decoration: none;
+  transition: transform var(--duration-base) var(--easing), box-shadow var(--duration-base) var(--easing);
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #3b82f6;
+}
+.beginner-promo-card:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.beginner-promo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 0.18);
+  color: #ffffff;
+}
+.beginner-promo-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.beginner-promo-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px var(--space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+}
+.beginner-promo-body h3 {
+  font-size: 20px;
+  font-weight: 800;
+}
+.beginner-promo-text {
+  font-size: 14px;
+  color: rgb(255 255 255 / 0.9);
+  min-height: 44px;
+  line-height: 1.6;
+}
+.beginner-promo-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-5);
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e40af;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  transition: transform var(--duration-fast) var(--easing);
+}
+.beginner-promo-card:hover .beginner-promo-cta {
+  transform: translateX(2px);
+}
+@media (max-width: 860px) {
+  .beginner-promo-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .beginner-promo-cta {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
   }
   .law-promo-cta {
     align-self: stretch;
