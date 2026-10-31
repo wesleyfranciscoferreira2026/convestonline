@@ -21,6 +21,7 @@ import Markdown from '../components/Markdown'
 import { Card, EmptyState, ProgressBar } from '../components/ui'
 
 const CATEGORIES = [
+  { key: 'enem', label: 'ENEM' },
   { key: 'militar', label: 'Cursos Militares' },
 ]
 
@@ -30,7 +31,7 @@ export default function Provas() {
   const [exams, setExams] = useState(null)
   const [subjects, setSubjects] = useState([])
   const [counts, setCounts] = useState({})
-  const [category, setCategory] = useState('militar')
+  const [category, setCategory] = useState('enem')
   const [selectedExam, setSelectedExam] = useState(null)
   const [selectedSubjects, setSelectedSubjects] = useState([])
   const [selectedTopic, setSelectedTopic] = useState('')
