@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react'
 import QuickAddButton from './QuickAddButton'
+import { useAuth } from '../lib/auth'
 import { getGreeting, formatToday } from '../utils/date'
 import { Avatar } from './ui'
 import PageTransition from './PageTransition'
