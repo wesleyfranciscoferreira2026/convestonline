@@ -18,134 +18,6 @@ async function uploadImage(file) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
-function CropModal({ file, onConfirm, onCancel }) {
-  const canvasRef = useRef(null)
-  const imgRef = useRef(null)
-  const [ready, setReady] = useState(false)
-  const [crop, setCrop] = useState(null)
-  const [dragging, setDragging] = useState(false)
-  const [start, setStart] = useState(null)
-  const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
-
-  useEffect(() => {
-    const image = new Image()
-    imgRef.current = image
-    image.onload = () => {
-      setImgSize({ w: image.width, h: image.height })
-      setReady(true)
-    }
-    image.src = URL.createObjectURL(file)
-  }, [file])
-
-  useEffect(() => {
-    if (!ready || !imgRef.current || !canvasRef.current) return
-    const c = canvasRef.current
-    const img = imgRef.current
-    c.width = img.width
-    c.height = img.height
-    const ctx = c.getContext('2d')
-    ctx.drawImage(img, 0, 0)
-  }, [ready])
-
-  useEffect(() => {
-    if (!ready || !imgRef.current || !canvasRef.current || !crop) return
-    const c = canvasRef.current
-    const img = imgRef.current
-    const ctx = c.getContext('2d')
-    ctx.drawImage(img, 0, 0)
-    if (crop.w > 0 && crop.h > 0) {
-      ctx.strokeStyle = '#66cccc'
-      ctx.lineWidth = 3
-      ctx.strokeRect(crop.x, crop.y, crop.w, crop.h)
-      ctx.fillStyle = 'rgba(102, 204, 204, 0.2)'
-      ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
-    }
-  }, [crop, ready])
-
-  function getPos(e) {
-    const c = canvasRef.current
-    if (!c) return { x: 0, y: 0 }
-    const rect = c.getBoundingClientRect()
-    const scaleX = c.width / rect.width
-    const scaleY = c.height / rect.height
-    return {
-      x: Math.round((e.clientX - rect.left) * scaleX),
-      y: Math.round((e.clientY - rect.top) * scaleY),
-    }
-  }
-
-  function onMouseDown(e) {
-    if (!ready) return
-    setDragging(true)
-    setStart(getPos(e))
-    setCrop(null)
-  }
-
-  function onMouseMove(e) {
-    if (!dragging || !start) return
-    const pos = getPos(e)
-    setCrop({
-      x: Math.min(start.x, pos.x),
-      y: Math.min(start.y, pos.y),
-      w: Math.abs(pos.x - start.x),
-      h: Math.abs(pos.y - start.y),
-    })
-  }
-
-  function onMouseUp() { setDragging(false) }
-
-  function confirm() {
-    const img = imgRef.current
-    if (!crop || crop.w < 10 || crop.h < 10 || !img) {
-      onConfirm(file)
-      return
-    }
-    const c = document.createElement('canvas')
-    c.width = crop.w
-    c.height = crop.h
-    const ctx = c.getContext('2d')
-    ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
-    c.toBlob((blob) => {
-      if (!blob) { onConfirm(file); return }
-      const croppedFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })
-      onConfirm(croppedFile)
-    }, 'image/jpeg', 0.92)
-  }
-
-  return (
-    <div className="sheet-overlay" onClick={(e) => { e.stopPropagation(); onCancel() }} style={{ zIndex: 100 }}>
-      <div className="sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700 }}>
-        <div className="sheet-header">
-          <strong>Recortar imagem</strong>
-          <button type="button" className="icon-btn" aria-label="Fechar" onClick={onCancel}>
-            <X size={19} />
-          </button>
-        </div>
-        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
-          Arraste para selecionar a área da questão. Se não selecionar, a imagem inteira será usada.
-        </p>
-        <div style={{ overflow: 'auto', maxHeight: 400, border: '1px solid var(--color-border)', borderRadius: 8, background: '#111' }}>
-          {!ready && <p style={{ padding: 20, textAlign: 'center', color: '#fff' }}>Carregando imagem…</p>}
-          <canvas
-            ref={canvasRef}
-            style={{ maxWidth: '100%', cursor: 'crosshair', display: ready ? 'block' : 'none' }}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
-          />
-        </div>
-        <div className="task-form-actions" style={{ marginTop: 12 }}>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>Cancelar</button>
-          <button type="button" className="btn btn-primary btn-sm" onClick={confirm} disabled={!ready}>
-            <Scissors size={15} aria-hidden="true" /> Confirmar recorte
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function QuickAdd({ onClose }) {
   const toast = useToast()
   const [subjects, setSubjects] = useState([])
@@ -171,6 +43,7 @@ export default function QuickAdd({ onClose }) {
       file: f,
       preview: URL.createObjectURL(f),
       croppedFile: null,
+      crop: null,
     }))
     setFiles((prev) => [...prev, ...newFiles])
     e.target.value = ''
@@ -178,6 +51,7 @@ export default function QuickAdd({ onClose }) {
 
   function removeFile(idx) {
     setFiles((prev) => prev.filter((_, i) => i !== idx))
+    if (cropIndex === idx) setCropIndex(null)
   }
 
   async function saveAll() {
@@ -262,26 +136,14 @@ export default function QuickAdd({ onClose }) {
       {files.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
           {files.map((f, idx) => (
-            <div key={idx} style={{ position: 'relative', width: 120, textAlign: 'center' }}>
-              <img src={f.preview} alt="" style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--color-border)' }} />
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm"
-                style={{ marginTop: 4, fontSize: 11 }}
-                onClick={() => setCropIndex(idx)}
-              >
-                <Crop size={12} /> Recortar
-              </button>
-              <button
-                type="button"
-                className="icon-btn icon-btn-danger"
-                style={{ position: 'absolute', top: 2, right: 2 }}
-                onClick={() => removeFile(idx)}
-              >
-                <X size={14} />
-              </button>
-              {f.croppedFile && <span style={{ fontSize: 10, color: 'green' }}>✓ recortado</span>}
-            </div>
+            <InlineCrop
+              key={idx}
+              file={f}
+              onCrop={(cropped) => {
+                setFiles((prev) => prev.map((x, i) => i === idx ? { ...x, croppedFile: cropped, preview: URL.createObjectURL(cropped) } : x))
+              }}
+              onRemove={() => removeFile(idx)}
+            />
           ))}
         </div>
       )}
@@ -297,7 +159,7 @@ export default function QuickAdd({ onClose }) {
 
   if (onClose) {
     return (
-      <div className="sheet-overlay" onClick={cropIndex === null ? onClose : undefined} style={{ zIndex: 50 }}>
+      <div className="sheet-overlay" onClick={onClose} style={{ zIndex: 50 }}>
         <div className="sheet admin-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-header">
             <strong>Adicionar Questões</strong>
@@ -325,17 +187,153 @@ export default function QuickAdd({ onClose }) {
       <Card>
         {content}
       </Card>
+    </div>
+  )
+}
 
-      {cropIndex !== null && files[cropIndex] && (
-        <CropModal
-          file={files[cropIndex].croppedFile || files[cropIndex].file}
-          onConfirm={(cropped) => {
-            setFiles((prev) => prev.map((f, i) => i === cropIndex ? { ...f, croppedFile: cropped, preview: URL.createObjectURL(cropped) } : f))
-            setCropIndex(null)
-          }}
-          onCancel={() => setCropIndex(null)}
+// Inline crop component - shows image with drag-to-crop
+function InlineCrop({ file, onCrop, onRemove }) {
+  const canvasRef = useRef(null)
+  const imgRef = useRef(null)
+  const [ready, setReady] = useState(false)
+  const [crop, setCrop] = useState(null)
+  const [dragging, setDragging] = useState(false)
+  const [start, setStart] = useState(null)
+  const [cropped, setCropped] = useState(false)
+
+  useEffect(() => {
+    const image = new Image()
+    imgRef.current = image
+    image.onload = () => {
+      setReady(true)
+      const c = canvasRef.current
+      if (c) {
+        c.width = image.width
+        c.height = image.height
+        const ctx = c.getContext('2d')
+        ctx.drawImage(image, 0, 0)
+      }
+    }
+    image.src = URL.createObjectURL(file.file || file)
+    return () => URL.revokeObjectURL(image.src)
+  }, [file])
+
+  function getPos(e) {
+    const c = canvasRef.current
+    if (!c) return { x: 0, y: 0 }
+    const rect = c.getBoundingClientRect()
+    const scaleX = c.width / rect.width
+    const scaleY = c.height / rect.height
+    return {
+      x: Math.round((e.clientX - rect.left) * scaleX),
+      y: Math.round((e.clientY - rect.top) * scaleY),
+    }
+  }
+
+  function onMouseDown(e) {
+    if (!ready) return
+    setDragging(true)
+    setStart(getPos(e))
+    setCrop(null)
+  }
+
+  function onMouseMove(e) {
+    if (!dragging || !start) return
+    const pos = getPos(e)
+    setCrop({
+      x: Math.min(start.x, pos.x),
+      y: Math.min(start.y, pos.y),
+      w: Math.abs(pos.x - start.x),
+      h: Math.abs(pos.y - start.y),
+    })
+  }
+
+  function onMouseUp() {
+    setDragging(false)
+    // Redraw with crop selection
+    const c = canvasRef.current
+    const img = imgRef.current
+    if (!c || !img) return
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    if (crop && crop.w > 0 && crop.h > 0) {
+      ctx.strokeStyle = '#66cccc'
+      ctx.lineWidth = 3
+      ctx.strokeRect(crop.x, crop.y, crop.w, crop.h)
+      ctx.fillStyle = 'rgba(102, 204, 204, 0.2)'
+      ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
+    }
+  }
+
+  // Redraw when crop changes
+  useEffect(() => {
+    const c = canvasRef.current
+    const img = imgRef.current
+    if (!c || !img || !ready) return
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    if (crop && crop.w > 0 && crop.h > 0) {
+      ctx.strokeStyle = '#66cccc'
+      ctx.lineWidth = 3
+      ctx.strokeRect(crop.x, crop.y, crop.w, crop.h)
+      ctx.fillStyle = 'rgba(102, 204, 204, 0.2)'
+      ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
+    }
+  }, [crop, ready])
+
+  function confirmCrop() {
+    const img = imgRef.current
+    if (!crop || crop.w < 10 || crop.h < 10 || !img) {
+      onCrop(file.file || file)
+      setCropped(true)
+      return
+    }
+    const c = document.createElement('canvas')
+    c.width = crop.w
+    c.height = crop.h
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
+    c.toBlob((blob) => {
+      if (!blob) { onCrop(file.file || file); return }
+      const croppedFile = new File([blob], (file.file || file).name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })
+      onCrop(croppedFile)
+      setCropped(true)
+    }, 'image/jpeg', 0.92)
+  }
+
+  return (
+    <div style={{ position: 'relative', width: 160, textAlign: 'center' }}>
+      <div style={{ overflow: 'auto', maxHeight: 200, border: '1px solid var(--color-border)', borderRadius: 6, background: '#111' }}>
+        {!ready && <p style={{ padding: 10, textAlign: 'center', color: '#fff', fontSize: 11 }}>Carregando…</p>}
+        <canvas
+          ref={canvasRef}
+          style={{ maxWidth: '100%', cursor: 'crosshair', display: ready ? 'block' : 'none' }}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
         />
-      )}
+      </div>
+      <div style={{ display: 'flex', gap: 4, marginTop: 4, justifyContent: 'center' }}>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          style={{ fontSize: 10, padding: '2px 6px' }}
+          onClick={confirmCrop}
+          disabled={!ready}
+        >
+          <Scissors size={10} /> Recortar
+        </button>
+        <button
+          type="button"
+          className="icon-btn icon-btn-danger"
+          style={{ width: 20, height: 20 }}
+          onClick={onRemove}
+        >
+          <X size={12} />
+        </button>
+      </div>
+      {cropped && <span style={{ fontSize: 10, color: 'green' }}>✓ recortado</span>}
     </div>
   )
 }
