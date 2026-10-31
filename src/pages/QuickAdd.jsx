@@ -20,34 +20,28 @@ async function uploadImage(file) {
 
 function CropModal({ file, onConfirm, onCancel }) {
   const canvasRef = useRef(null)
-  const [img, setImg] = useState(null)
+  const imgRef = useRef(null)
+  const [ready, setReady] = useState(false)
   const [crop, setCrop] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [start, setStart] = useState(null)
-  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const image = new Image()
+    imgRef.current = image
     image.onload = () => {
-      setImg(image)
       setReady(true)
-    }
-    image.onerror = () => {
-      console.error('Failed to load image')
-      setReady(false)
+      const c = canvasRef.current
+      if (c) {
+        c.width = image.width
+        c.height = image.height
+        const ctx = c.getContext('2d')
+        ctx.drawImage(image, 0, 0)
+      }
     }
     image.src = URL.createObjectURL(file)
+    return () => { URL.revokeObjectURL(image.src) }
   }, [file])
-
-  // Draw image to canvas when both img and canvas are ready
-  useEffect(() => {
-    if (!img || !canvasRef.current) return
-    const c = canvasRef.current
-    c.width = img.width
-    c.height = img.height
-    const ctx = c.getContext('2d')
-    ctx.drawImage(img, 0, 0)
-  }, [img, ready])
 
   function getPos(e) {
     const c = canvasRef.current
@@ -61,35 +55,46 @@ function CropModal({ file, onConfirm, onCancel }) {
     }
   }
 
+  function redraw() {
+    const c = canvasRef.current
+    const image = imgRef.current
+    if (!c || !image) return
+    const ctx = c.getContext('2d')
+    ctx.drawImage(image, 0, 0)
+    if (crop && crop.w > 0 && crop.h > 0) {
+      ctx.strokeStyle = '#66cccc'
+      ctx.lineWidth = 2
+      ctx.strokeRect(crop.x, crop.y, crop.w, crop.h)
+      ctx.fillStyle = 'rgba(102, 204, 204, 0.15)'
+      ctx.fillRect(crop.x, crop.y, crop.w, crop.h)
+    }
+  }
+
   function onMouseDown(e) {
-    if (!img || !ready) return
+    if (!ready) return
     setDragging(true)
     setStart(getPos(e))
     setCrop(null)
   }
 
   function onMouseMove(e) {
-    if (!dragging || !start || !img || !ready) return
+    if (!dragging || !start) return
     const pos = getPos(e)
     const x = Math.min(start.x, pos.x)
     const y = Math.min(start.y, pos.y)
     const w = Math.abs(pos.x - start.x)
     const h = Math.abs(pos.y - start.y)
     setCrop({ x, y, w, h })
-    const c = canvasRef.current
-    const ctx = c.getContext('2d')
-    ctx.drawImage(img, 0, 0)
-    ctx.strokeStyle = '#66cccc'
-    ctx.lineWidth = 2
-    ctx.strokeRect(x, y, w, h)
-    ctx.fillStyle = 'rgba(102, 204, 204, 0.15)'
-    ctx.fillRect(x, y, w, h)
   }
+
+  // Redraw when crop changes
+  useEffect(() => { redraw() }, [crop, ready])
 
   function onMouseUp() { setDragging(false) }
 
   function confirm() {
-    if (!crop || crop.w < 10 || crop.h < 10 || !img) {
+    const image = imgRef.current
+    if (!crop || crop.w < 10 || crop.h < 10 || !image) {
       onConfirm(file)
       return
     }
@@ -97,7 +102,7 @@ function CropModal({ file, onConfirm, onCancel }) {
     c.width = crop.w
     c.height = crop.h
     const ctx = c.getContext('2d')
-    ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
+    ctx.drawImage(image, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
     c.toBlob((blob) => {
       if (!blob) { onConfirm(file); return }
       const croppedFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })
@@ -193,7 +198,7 @@ export default function QuickAdd({ onClose }) {
       try {
         const fileToUpload = f.croppedFile || f.file
         const url = await uploadImage(fileToUpload)
-        const { data, error } = await supabase.from('questions').insert({
+        const { error } = await supabase.from('questions').insert({
           subject_id: form.subject_id,
           exam_id: form.exam_id || null,
           year: form.year ? Number(form.year) : null,
@@ -206,7 +211,7 @@ export default function QuickAdd({ onClose }) {
           difficulty: 'medium',
           status: 'published',
           sort_order: 0,
-        }).select()
+        })
         if (error) throw new Error(error.message)
         done++
       } catch (err) {
@@ -219,7 +224,9 @@ export default function QuickAdd({ onClose }) {
     if (errors > 0) {
       toast(`${done} criada(s), ${errors} erro(s): ${errorMessages[0]}`, 'error')
     } else {
-      toast(`${done} questão(ões) criada(s) em ${form.year ? form.year + ' ' : ''}com sucesso!`)
+      const subjectName = subjects.find((s) => s.id === form.subject_id)?.name || 'Matéria'
+      const examName = exams.find((x) => x.id === form.exam_id)?.name || ''
+      toast(`${done} questão(ões) criada(s) em ${subjectName}${examName ? ' · ' + examName : ''}${form.year ? ' · ' + form.year : ''}!`)
     }
     if (done > 0) {
       setFiles([])
