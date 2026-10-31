@@ -11,7 +11,6 @@ import {
   Loader2,
   Sparkles,
   Plus,
-  Rocket,
   Target,
   Trash2,
 } from 'lucide-react'
@@ -39,8 +38,6 @@ export default function Dashboard() {
   const [completedLessons, setCompletedLessons] = useState(0)
   const [typedHeroText, setTypedHeroText] = useState('')
   const fullHeroText = 'Tire dúvidas de matemática, física e química. Explico passo a passo e cito as fontes.'
-  const [typedBeginnerText, setTypedBeginnerText] = useState('')
-  const fullBeginnerText = 'Você está começando agora? Fortaleça sua base para não ter dificuldades nos assuntos mais avançados.'
 
   useEffect(() => {
     let i = 0
@@ -49,17 +46,6 @@ export default function Dashboard() {
       i++
       setTypedHeroText(fullHeroText.slice(0, i))
       if (i >= fullHeroText.length) clearInterval(timer)
-    }, 35)
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    let i = 0
-    setTypedBeginnerText('')
-    const timer = setInterval(() => {
-      i++
-      setTypedBeginnerText(fullBeginnerText.slice(0, i))
-      if (i >= fullBeginnerText.length) clearInterval(timer)
     }, 35)
     return () => clearInterval(timer)
   }, [])
@@ -244,22 +230,6 @@ export default function Dashboard() {
         </div>
         <span className="ai-hero-cta">
           Perguntar à IA <ArrowRight size={16} aria-hidden="true" />
-        </span>
-      </Link>
-
-      <Link to="/iniciantes" className="ai-hero-card beginner-hero-card">
-        <div className="ai-hero-text">
-          <span className="ai-hero-badge">
-            <Rocket size={14} aria-hidden="true" /> INICIANTE
-          </span>
-          <h3>Sou iniciante</h3>
-          <p>
-            {typedBeginnerText}
-            {typedBeginnerText.length < fullBeginnerText.length && <span className="typing-caret" aria-hidden="true">|</span>}
-          </p>
-        </div>
-        <span className="ai-hero-cta">
-          Começar <ArrowRight size={16} aria-hidden="true" />
         </span>
       </Link>
 
@@ -457,7 +427,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <BeginnerPromo />
 
     </div>
   )
@@ -465,55 +434,6 @@ export default function Dashboard() {
 
 /* =================== Promo Iniciante (typewriter) =================== */
 
-function BeginnerPromo() {
-  const fullText = 'Você está começando agora? Fortaleça sua base para não ter dificuldades nos assuntos mais avançados.'
-  const [displayed, setDisplayed] = useState('')
-  const [started, setStarted] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !started) setStarted(true)
-      },
-      { threshold: 0.3 },
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [started])
-
-  useEffect(() => {
-    if (!started) return
-    let i = 0
-    const id = setInterval(() => {
-      i += 1
-      setDisplayed(fullText.slice(0, i))
-      if (i >= fullText.length) clearInterval(id)
-    }, 28)
-    return () => clearInterval(id)
-  }, [started])
-
-  return (
-    <Link to="/iniciantes" className="beginner-promo-card" ref={ref}>
-      <div className="beginner-promo-icon">
-        <Rocket size={28} aria-hidden="true" />
-      </div>
-      <div className="beginner-promo-body">
-        <span className="beginner-promo-badge">INICIANTE</span>
-        <h3>Sou iniciante</h3>
-        <p className="beginner-promo-text">
-          {displayed}
-          {started && displayed.length < fullText.length && <span className="typewriter-cursor" />}
-        </p>
-      </div>
-      <span className="beginner-promo-cta">
-        Começar <ArrowRight size={16} aria-hidden="true" />
-      </span>
-    </Link>
-  )
-}
 
 function TodayPlan({ tasks, subjects, doneCount, onAdd, onToggle, onDelete }) {
   const [formOpen, setFormOpen] = useState(false)
