@@ -12,15 +12,12 @@ const HIGHLIGHTS = [
 /** Layout das telas públicas (login, cadastro, recuperar senha). */
 export default function AuthLayout({ title, subtitle, children, footer }) {
   const [typedTagline, setTypedTagline] = useState('')
-  const [typedHighlights, setTypedHighlights] = useState([false, false, false])
   const [taglineDone, setTaglineDone] = useState(false)
 
   useEffect(() => {
     let i = 0
     setTypedTagline('')
-    setTypedHighlights([false, false, false])
     setTaglineDone(false)
-
     const timer = setInterval(() => {
       i++
       setTypedTagline(TAGLINE.slice(0, i))
@@ -31,22 +28,6 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
     }, 45)
     return () => clearInterval(timer)
   }, [])
-
-  useEffect(() => {
-    if (!taglineDone) return
-    const timers = []
-    HIGHLIGHTS.forEach((h, idx) => {
-      const t = setTimeout(() => {
-        setTypedHighlights((prev) => {
-          const next = [...prev]
-          next[idx] = true
-          return next
-        })
-      }, idx * 600 + 200)
-      timers.push(t)
-    })
-    return () => timers.forEach(clearTimeout)
-  }, [taglineDone])
 
   return (
     <main className="auth-screen">
@@ -70,11 +51,7 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
           {HIGHLIGHTS.map((h, i) => (
             <li
               key={i}
-              style={{
-                opacity: typedHighlights[i] ? 1 : 0.2,
-                transform: typedHighlights[i] ? 'translateY(0)' : 'translateY(6px)',
-                transition: 'opacity 0.5s ease, transform 0.5s ease',
-              }}
+              className={taglineDone ? 'auth-highlight-visible' : ''}
             >
               {h}
             </li>

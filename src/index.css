@@ -1471,7 +1471,14 @@ select.input {
 .auth-highlights li {
   position: relative;
   padding-left: var(--space-5);
+  opacity: 0.25;
+  transform: translateY(6px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
+
+.auth-highlights li.auth-highlight-visible:nth-child(1) { transition-delay: 0.1s; }
+.auth-highlights li.auth-highlight-visible:nth-child(2) { transition-delay: 0.7s; }
+.auth-highlights li.auth-highlight-visible:nth-child(3) { transition-delay: 1.3s; }
 
 .auth-highlights li::before {
   content: '';
