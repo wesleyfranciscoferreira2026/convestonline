@@ -4450,7 +4450,7 @@ select.input {
   gap: var(--space-5);
   padding: var(--space-6);
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, #1e40af, #2563eb);
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
   color: #ffffff;
   text-decoration: none;
   transition: transform var(--duration-base) var(--easing), box-shadow var(--duration-base) var(--easing);
