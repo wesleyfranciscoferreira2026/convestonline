@@ -12,43 +12,49 @@ const HIGHLIGHTS = [
 /** Layout das telas públicas (login, cadastro, recuperar senha). */
 export default function AuthLayout({ title, subtitle, children, footer }) {
   const [typedTagline, setTypedTagline] = useState('')
-  const [typedHighlights, setTypedHighlights] = useState([])
-  const [typingHighlight, setTypingHighlight] = useState('')
-  const [currentHi, setCurrentHi] = useState(0)
+  const [visibleHighlights, setVisibleHighlights] = useState([])
+  const [currentHighlight, setCurrentHighlight] = useState('')
+  const [taglineDone, setTaglineDone] = useState(false)
 
   useEffect(() => {
     let i = 0
     setTypedTagline('')
-    setTypedHighlights([])
-    setTypingHighlight('')
-    setCurrentHi(0)
+    setVisibleHighlights([])
+    setCurrentHighlight('')
+    setTaglineDone(false)
 
     const timer = setInterval(() => {
       i++
       setTypedTagline(TAGLINE.slice(0, i))
       if (i >= TAGLINE.length) {
         clearInterval(timer)
-        // Start typing highlights one by one
-        let hi = 0
-        let ci = 0
-        const hTimer = setInterval(() => {
-          if (hi >= HIGHLIGHTS.length) {
-            clearInterval(hTimer)
-            return
-          }
-          ci++
-          setTypingHighlight(HIGHLIGHTS[hi].slice(0, ci))
-          if (ci >= HIGHLIGHTS[hi].length) {
-            setTypedHighlights((prev) => [...prev, HIGHLIGHTS[hi]])
-            setTypingHighlight('')
-            hi++
-            ci = 0
-          }
-        }, 30)
+        setTaglineDone(true)
       }
     }, 45)
+
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!taglineDone) return
+    let hi = 0
+    let ci = 0
+    const hTimer = setInterval(() => {
+      if (hi >= HIGHLIGHTS.length) {
+        clearInterval(hTimer)
+        return
+      }
+      ci++
+      setCurrentHighlight(HIGHLIGHTS[hi].slice(0, ci))
+      if (ci >= HIGHLIGHTS[hi].length) {
+        setVisibleHighlights((prev) => [...prev, HIGHLIGHTS[hi]])
+        setCurrentHighlight('')
+        hi++
+        ci = 0
+      }
+    }, 30)
+    return () => clearInterval(hTimer)
+  }, [taglineDone])
 
   return (
     <main className="auth-screen">
@@ -66,23 +72,23 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
         <p className="auth-tagline">
           <Sparkles size={16} aria-hidden="true" />
           {typedTagline}
-          {typedTagline.length < TAGLINE.length && <span className="typing-caret" aria-hidden="true">|</span>}
+          {!taglineDone && <span className="typing-caret" aria-hidden="true">|</span>}
         </p>
         <ul className="auth-highlights">
-          {typedHighlights.map((h, i) => (
+          {visibleHighlights.map((h, i) => (
             <li key={i}>{h}</li>
           ))}
-          {typingHighlight && (
+          {currentHighlight && (
             <li>
-              {typingHighlight}
+              {currentHighlight}
               <span className="typing-caret" aria-hidden="true">|</span>
             </li>
           )}
-          {typedHighlights.length === 0 && !typingHighlight && (
+          {visibleHighlights.length === 0 && !currentHighlight && (
             <>
-              <li style={{ opacity: 0.3 }}>Rotina de estudos organizada em poucos cliques</li>
-              <li style={{ opacity: 0.3 }}>Progresso e consistência sempre visíveis</li>
-              <li style={{ opacity: 0.3 }}>Conteúdo, exercícios e revisão em um só lugar</li>
+              <li style={{ opacity: 0.25 }}>Rotina de estudos organizada em poucos cliques</li>
+              <li style={{ opacity: 0.25 }}>Progresso e consistência sempre visíveis</li>
+              <li style={{ opacity: 0.25 }}>Conteúdo, exercícios e revisão em um só lugar</li>
             </>
           )}
         </ul>
