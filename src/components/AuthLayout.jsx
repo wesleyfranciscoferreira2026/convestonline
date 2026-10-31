@@ -2,18 +2,46 @@ import { Link } from 'react-router-dom'
 import { Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+const TAGLINE = 'Seu próximo nível começa com o que você aprende hoje.'
+const HIGHLIGHTS = [
+  'Rotina de estudos organizada em poucos cliques',
+  'Progresso e consistência sempre visíveis',
+  'Conteúdo, exercícios e revisão em um só lugar',
+]
+
 /** Layout das telas públicas (login, cadastro, recuperar senha). */
 export default function AuthLayout({ title, subtitle, children, footer }) {
   const [typedTagline, setTypedTagline] = useState('')
-  const tagline = 'Seu próximo nível começa com o que você aprende hoje.'
+  const [typedHighlights, setTypedHighlights] = useState([])
+  const [currentHighlight, setCurrentHighlight] = useState(0)
+  const [typingHighlight, setTypingHighlight] = useState('')
 
   useEffect(() => {
     let i = 0
     setTypedTagline('')
     const timer = setInterval(() => {
       i++
-      setTypedTagline(tagline.slice(0, i))
-      if (i >= tagline.length) clearInterval(timer)
+      setTypedTagline(TAGLINE.slice(0, i))
+      if (i >= TAGLINE.length) {
+        clearInterval(timer)
+        // Start typing highlights
+        let hi = 0
+        let ci = 0
+        const hTimer = setInterval(() => {
+          if (hi >= HIGHLIGHTS.length) {
+            clearInterval(hTimer)
+            return
+          }
+          ci++
+          setTypingHighlight(HIGHLIGHTS[hi].slice(0, ci))
+          if (ci >= HIGHLIGHTS[hi].length) {
+            setTypedHighlights((prev) => [...prev, HIGHLIGHTS[hi]])
+            setTypingHighlight('')
+            hi++
+            ci = 0
+          }
+        }, 30)
+      }
     }, 45)
     return () => clearInterval(timer)
   }, [])
@@ -34,12 +62,18 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
         <p className="auth-tagline">
           <Sparkles size={16} aria-hidden="true" />
           {typedTagline}
-          <span className="typing-caret" aria-hidden="true">|</span>
+          {typedTagline.length < TAGLINE.length && <span className="typing-caret" aria-hidden="true">|</span>}
         </p>
         <ul className="auth-highlights">
-          <li>Rotina de estudos organizada em poucos cliques</li>
-          <li>Progresso e consistência sempre visíveis</li>
-          <li>Conteúdo, exercícios e revisão em um só lugar</li>
+          {typedHighlights.map((h, i) => (
+            <li key={i}>{h}</li>
+          ))}
+          {typingHighlight && (
+            <li>
+              {typingHighlight}
+              <span className="typing-caret" aria-hidden="true">|</span>
+            </li>
+          )}
         </ul>
       </div>
 
