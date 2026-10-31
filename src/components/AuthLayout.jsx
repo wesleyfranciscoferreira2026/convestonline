@@ -12,15 +12,13 @@ const HIGHLIGHTS = [
 /** Layout das telas públicas (login, cadastro, recuperar senha). */
 export default function AuthLayout({ title, subtitle, children, footer }) {
   const [typedTagline, setTypedTagline] = useState('')
-  const [visibleHighlights, setVisibleHighlights] = useState([])
-  const [currentHighlight, setCurrentHighlight] = useState('')
+  const [typedHighlights, setTypedHighlights] = useState([false, false, false])
   const [taglineDone, setTaglineDone] = useState(false)
 
   useEffect(() => {
     let i = 0
     setTypedTagline('')
-    setVisibleHighlights([])
-    setCurrentHighlight('')
+    setTypedHighlights([false, false, false])
     setTaglineDone(false)
 
     const timer = setInterval(() => {
@@ -31,29 +29,23 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
         setTaglineDone(true)
       }
     }, 45)
-
     return () => clearInterval(timer)
   }, [])
 
   useEffect(() => {
     if (!taglineDone) return
-    let hi = 0
-    let ci = 0
-    const hTimer = setInterval(() => {
-      if (hi >= HIGHLIGHTS.length) {
-        clearInterval(hTimer)
-        return
-      }
-      ci++
-      setCurrentHighlight(HIGHLIGHTS[hi].slice(0, ci))
-      if (ci >= HIGHLIGHTS[hi].length) {
-        setVisibleHighlights((prev) => [...prev, HIGHLIGHTS[hi]])
-        setCurrentHighlight('')
-        hi++
-        ci = 0
-      }
-    }, 30)
-    return () => clearInterval(hTimer)
+    const timers = []
+    HIGHLIGHTS.forEach((h, idx) => {
+      const t = setTimeout(() => {
+        setTypedHighlights((prev) => {
+          const next = [...prev]
+          next[idx] = true
+          return next
+        })
+      }, idx * 600 + 200)
+      timers.push(t)
+    })
+    return () => timers.forEach(clearTimeout)
   }, [taglineDone])
 
   return (
@@ -75,22 +67,18 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
           {!taglineDone && <span className="typing-caret" aria-hidden="true">|</span>}
         </p>
         <ul className="auth-highlights">
-          {visibleHighlights.map((h, i) => (
-            <li key={i}>{h}</li>
-          ))}
-          {currentHighlight && (
-            <li>
-              {currentHighlight}
-              <span className="typing-caret" aria-hidden="true">|</span>
+          {HIGHLIGHTS.map((h, i) => (
+            <li
+              key={i}
+              style={{
+                opacity: typedHighlights[i] ? 1 : 0.2,
+                transform: typedHighlights[i] ? 'translateY(0)' : 'translateY(6px)',
+                transition: 'opacity 0.5s ease, transform 0.5s ease',
+              }}
+            >
+              {h}
             </li>
-          )}
-          {visibleHighlights.length === 0 && !currentHighlight && (
-            <>
-              <li style={{ opacity: 0.25 }}>Rotina de estudos organizada em poucos cliques</li>
-              <li style={{ opacity: 0.25 }}>Progresso e consistência sempre visíveis</li>
-              <li style={{ opacity: 0.25 }}>Conteúdo, exercícios e revisão em um só lugar</li>
-            </>
-          )}
+          ))}
         </ul>
       </div>
 
