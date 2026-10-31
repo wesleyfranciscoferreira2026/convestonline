@@ -111,7 +111,7 @@ function CropModal({ file, onConfirm, onCancel }) {
   }
 
   return (
-    <div className="sheet-overlay" onClick={onCancel}>
+    <div className="sheet-overlay" onClick={onCancel} style={{ zIndex: 70 }}>
       <div className="sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700 }}>
         <div className="sheet-header">
           <strong>Recortar imagem</strong>

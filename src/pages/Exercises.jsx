@@ -481,24 +481,21 @@ Regras:
       </header>
 
       <Card className="question-card">
-        {user && (
-          <button
-            type="button"
-            className="icon-btn icon-btn-danger"
-            style={{ position: 'absolute', top: 8, right: 8 }}
-            aria-label="Excluir questão"
-            onClick={async () => {
-              if (!confirm('Excluir esta questão?')) return
-              const { error } = await supabase.from('questions').delete().eq('id', q.id)
-              if (error) { toast('Erro: ' + error.message, 'error'); return }
-              toast('Questão excluída.')
-              // Remove from list
-              setQuestions((prev) => prev.filter((x) => x.id !== q.id))
-            }}
-          >
-            <X size={16} />
-          </button>
-        )}
+        <button
+          type="button"
+          className="icon-btn icon-btn-danger"
+          style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}
+          aria-label="Excluir questão"
+          onClick={async () => {
+            if (!confirm('Excluir esta questão?')) return
+            const { error } = await supabase.from('questions').delete().eq('id', q.id)
+            if (error) { toast('Erro: ' + error.message, 'error'); return }
+            toast('Questão excluída.')
+            setQuestions((prev) => prev.filter((x) => x.id !== q.id))
+          }}
+        >
+          <X size={16} />
+        </button>
         <div className="question-prompt">
           <Markdown text={q.prompt} />
           {sourceImages.map((url, i) => (
