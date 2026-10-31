@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import ProtectedRoute from './components/ProtectedRoute'
+import FloatingQuickAdd from './components/FloatingQuickAdd'
 import AppLayout from './components/AppLayout'
 import PageTransition from './components/PageTransition'
 import SetupNotice from './components/SetupNotice'
@@ -32,7 +33,8 @@ export default function App() {
   if (!isSupabaseConfigured) return <SetupNotice />
 
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
       <Route path="/cadastro" element={<PageTransition><Signup /></PageTransition>} />
       <Route path="/recuperar" element={<PageTransition><ForgotPassword /></PageTransition>} />
@@ -70,7 +72,9 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  )
+    <FloatingQuickAdd />
+  </>
+)
 }
 
 // APP_MARKER_QWERTY987654321
