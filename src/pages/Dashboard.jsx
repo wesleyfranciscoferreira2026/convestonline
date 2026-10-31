@@ -11,6 +11,7 @@ import {
   Loader2,
   Sparkles,
   Plus,
+  Rocket,
   Target,
   Trash2,
 } from 'lucide-react'
