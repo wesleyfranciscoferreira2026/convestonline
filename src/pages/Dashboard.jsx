@@ -374,7 +374,7 @@ export default function Dashboard() {
             </Card>
           ) : (
             <>
-      {/* ---------- Plano de hoje ---------- */}
+              {/* ---------- Plano de hoje ---------- */}
               <TodayPlan
                 tasks={tasks}
                 subjects={subjects}
@@ -417,7 +417,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ---------- Iniciante ---------- */}
       <BeginnerPromo />
 
     </div>
@@ -613,7 +612,6 @@ function TodayPlan({ tasks, subjects, doneCount, onAdd, onToggle, onDelete }) {
 }
 
 /* =================== Skeleton =================== */
-
 
 function DashboardSkeleton() {
   return (
