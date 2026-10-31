@@ -21,18 +21,26 @@ async function uploadImage(file) {
 export default function QuickAdd({ onClose }) {
   const toast = useToast()
   const [subjects, setSubjects] = useState([])
+  const [exams, setExams] = useState([])
   const [saving, setSaving] = useState(false)
   const [files, setFiles] = useState([])
   const [cropIndex, setCropIndex] = useState(null)
   const [form, setForm] = useState({
     subject_id: '',
+    exam_id: '',
     year: '',
     correct_index: 0,
   })
 
   useEffect(() => {
-    supabase.from('subjects').select('id, name').order('sort_order').then(({ data }) => {
-      setSubjects(data ?? [])
+    Promise.all([
+      supabase.from('subjects').select('id, name').order('sort_order'),
+      supabase.from('exams').select('id, name').order('sort_order'),
+    ]).then(([subs, ex]) => {
+      setSubjects(subs.data ?? [])
+      setExams(ex.data ?? [])
+      const enem = (ex.data ?? []).find((e) => e.name.toLowerCase().includes('enem'))
+      if (enem) setForm((f) => ({ ...f, exam_id: enem.id }))
     })
   }, [])
 
@@ -67,6 +75,7 @@ export default function QuickAdd({ onClose }) {
         const url = await uploadImage(fileToUpload)
         const { error } = await supabase.from('questions').insert({
           subject_id: form.subject_id,
+          exam_id: form.exam_id || null,
           year: form.year ? Number(form.year) : null,
           question_type: 'multiple_choice',
           prompt: '',
@@ -105,6 +114,13 @@ export default function QuickAdd({ onClose }) {
         <select className="input" value={form.subject_id} onChange={(e) => setForm((f) => ({ ...f, subject_id: e.target.value }))}>
           <option value="">Selecione…</option>
           {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      </div>
+      <div className="field">
+        <label>Prova / banca</label>
+        <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
+          <option value="">Nenhuma</option>
+          {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
         </select>
       </div>
       <div className="field">
