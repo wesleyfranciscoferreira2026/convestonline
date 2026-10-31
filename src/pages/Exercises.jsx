@@ -481,7 +481,7 @@ Regras:
       </header>
 
       <Card className="question-card">
-        {profile?.role === 'admin' && (
+        {user && (
           <button
             type="button"
             className="icon-btn icon-btn-danger"
