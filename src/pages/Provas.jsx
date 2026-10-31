@@ -12,7 +12,6 @@ import {
   Wand2,
   XCircle,
 } from 'lucide-react'
-import QuickAdd from '../pages/QuickAdd'
 import { supabase } from '../lib/supabaseClient'
 import { QUESTION_COUNT_OPTIONS, premiumCountMessage, questionCountLabel } from '../lib/questionCounts'
 import { chat, isAIAvailable, parseAIJson } from '../lib/ai'
@@ -487,9 +486,6 @@ Regras:
           </div>
         )}
       </Card>
-      {quickAddOpen && (
-        <QuickAdd onClose={() => setQuickAddOpen(false)} />
-      )}
     </div>
   )
 }
