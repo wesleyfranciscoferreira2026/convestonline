@@ -374,9 +374,6 @@ export default function Dashboard() {
             </Card>
           ) : (
             <>
-              {/* ---------- Iniciante ---------- */}
-      <BeginnerPromo />
-
       {/* ---------- Plano de hoje ---------- */}
               <TodayPlan
                 tasks={tasks}
@@ -644,6 +641,9 @@ function DashboardSkeleton() {
           <Skeleton height={90} radius={14} />
         </Card>
       </div>
+      {/* ---------- Iniciante ---------- */}
+      <BeginnerPromo />
+
     </div>
   )
 }
