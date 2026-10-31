@@ -1,9 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 import ProtectedRoute from './components/ProtectedRoute'
-import AdminRoute from './components/AdminRoute'
 import AppLayout from './components/AppLayout'
-import AdminLayout from './pages/admin/AdminLayout'
 import PageTransition from './components/PageTransition'
 import SetupNotice from './components/SetupNotice'
 import Login from './pages/auth/Login'
@@ -24,9 +22,6 @@ import Stats from './pages/Stats'
 import Review from './pages/Review'
 import Provas from './pages/Provas'
 import Plans from './pages/Plans'
-import AdminDashboard from './pages/admin/AdminDashboard'
-import AdminLessons from './pages/admin/AdminLessons'
-import AdminQuestions from './pages/admin/AdminQuestions'
 import Dashboard from './pages/Dashboard'
 import Explore from './pages/Explore'
 import Settings from './pages/Settings'
@@ -53,7 +48,6 @@ export default function App() {
       <Route path="/ia" element={<PageTransition><AITutor /></PageTransition>} />
       <Route path="/iniciantes" element={<PageTransition><Beginners /></PageTransition>} />
       {/* Law route removed - only exact sciences remain */}
-      <Route
         element={
           <ProtectedRoute>
             <AppLayout />
@@ -72,20 +66,7 @@ export default function App() {
         <Route path="/revisao" element={<PageTransition><Review /></PageTransition>} />
         <Route path="/estatisticas" element={<PageTransition><Stats /></PageTransition>} />
         <Route path="/perfil" element={<Settings />} />
-      </Route>
 
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminLayout />
-          </AdminRoute>
-        }
-      >
-        <Route index element={<AdminDashboard />} />
-        <Route path="aulas" element={<AdminLessons />} />
-        <Route path="questoes" element={<AdminQuestions />} />
-      </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

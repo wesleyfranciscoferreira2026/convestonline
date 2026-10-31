@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ClipboardList, Loader2, Plus, X, Upload, Crop, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useToast } from '../components/Toast'
@@ -19,7 +20,6 @@ async function uploadImage(file) {
 
 function CropModal({ file, onConfirm, onCancel }) {
   const canvasRef = useRef(null)
-  const imgRef = useRef(null)
   const [img, setImg] = useState(null)
   const [crop, setCrop] = useState(null)
   const [dragging, setDragging] = useState(false)
@@ -75,9 +75,7 @@ function CropModal({ file, onConfirm, onCancel }) {
     ctx.fillRect(x, y, w, h)
   }
 
-  function onMouseUp() {
-    setDragging(false)
-  }
+  function onMouseUp() { setDragging(false) }
 
   function confirm() {
     if (!crop || crop.w < 10 || crop.h < 10) {
@@ -131,25 +129,18 @@ function CropModal({ file, onConfirm, onCancel }) {
 export default function QuickAdd({ onClose }) {
   const toast = useToast()
   const [subjects, setSubjects] = useState([])
-  const [exams, setExams] = useState([])
   const [saving, setSaving] = useState(false)
   const [files, setFiles] = useState([])
   const [cropIndex, setCropIndex] = useState(null)
   const [form, setForm] = useState({
     subject_id: '',
-    exam_id: '',
     year: '',
-    topic: '',
     correct_index: 0,
   })
 
   useEffect(() => {
-    Promise.all([
-      supabase.from('subjects').select('id, name').order('sort_order'),
-      supabase.from('exams').select('id, name').order('sort_order'),
-    ]).then(([subs, ex]) => {
-      setSubjects(subs.data ?? [])
-      setExams(ex.data ?? [])
+    supabase.from('subjects').select('id, name').order('sort_order').then(({ data }) => {
+      setSubjects(data ?? [])
     })
   }, [])
 
@@ -181,9 +172,7 @@ export default function QuickAdd({ onClose }) {
         const url = await uploadImage(fileToUpload)
         const { error } = await supabase.from('questions').insert({
           subject_id: form.subject_id,
-          exam_id: form.exam_id || null,
           year: form.year ? Number(form.year) : null,
-          topic: form.topic.trim() || null,
           question_type: 'multiple_choice',
           prompt: '',
           stem_image_url: url,
@@ -207,7 +196,6 @@ export default function QuickAdd({ onClose }) {
     if (onClose) onClose()
   }
 
-  // If used as modal (onClose provided), wrap in overlay
   const content = (
     <div className="form">
       <div className="field">
@@ -217,22 +205,9 @@ export default function QuickAdd({ onClose }) {
           {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </div>
-      <div className="task-form-row">
-        <div className="field">
-          <label>Prova / banca</label>
-          <select className="input" value={form.exam_id} onChange={(e) => setForm((f) => ({ ...f, exam_id: e.target.value }))}>
-            <option value="">Nenhuma</option>
-            {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-          </select>
-        </div>
-        <div className="field">
-          <label>Ano</label>
-          <input type="number" className="input" placeholder="ex.: 2023" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
-        </div>
-        <div className="field">
-          <label>Tópico</label>
-          <input className="input" placeholder="ex.: Cinemática" value={form.topic} onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))} />
-        </div>
+      <div className="field">
+        <label>Ano</label>
+        <input type="number" className="input" placeholder="ex.: 2023" value={form.year} onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))} />
       </div>
 
       <div className="field">
