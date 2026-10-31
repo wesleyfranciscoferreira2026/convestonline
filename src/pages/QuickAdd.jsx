@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ClipboardList, Loader2, Plus, X, Upload } from 'lucide-react'
+import { ClipboardList, Loader2, Plus, X, Upload, Crop } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
 import { useToast } from '../components/Toast'
-import { Card, EmptyState } from '../components/ui'
+import { Card } from '../components/ui'
 
 const BUCKET = 'question-images'
 
@@ -18,20 +18,133 @@ async function uploadImage(file) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
 }
 
+// Simple crop modal using canvas
+function CropModal({ file, onConfirm, onCancel }) {
+  const canvasRef = useRef(null)
+  const imgRef = useRef(null)
+  const [img, setImg] = useState(null)
+  const [crop, setCrop] = useState(null) // {x, y, w, h}
+  const [dragging, setDragging] = useState(false)
+  const [start, setStart] = useState(null)
+
+  useEffect(() => {
+    const image = new Image()
+    image.onload = () => {
+      setImg(image)
+      if (canvasRef.current) {
+        const c = canvasRef.current
+        c.width = image.width
+        c.height = image.height
+        const ctx = c.getContext('2d')
+        ctx.drawImage(image, 0, 0)
+      }
+    }
+    image.src = URL.createObjectURL(file)
+  }, [file])
+
+  function getPos(e) {
+    const c = canvasRef.current
+    const rect = c.getBoundingClientRect()
+    const scaleX = c.width / rect.width
+    const scaleY = c.height / rect.height
+    return {
+      x: Math.round((e.clientX - rect.left) * scaleX),
+      y: Math.round((e.clientY - rect.top) * scaleY),
+    }
+  }
+
+  function onMouseDown(e) {
+    setDragging(true)
+    setStart(getPos(e))
+    setCrop(null)
+  }
+
+  function onMouseMove(e) {
+    if (!dragging || !start) return
+    const pos = getPos(e)
+    const x = Math.min(start.x, pos.x)
+    const y = Math.min(start.y, pos.y)
+    const w = Math.abs(pos.x - start.x)
+    const h = Math.abs(pos.y - start.y)
+    setCrop({ x, y, w, h })
+    // Redraw
+    const c = canvasRef.current
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    ctx.strokeStyle = '#66cccc'
+    ctx.lineWidth = 2
+    ctx.strokeRect(x, y, w, h)
+    ctx.fillStyle = 'rgba(102, 204, 204, 0.15)'
+    ctx.fillRect(x, y, w, h)
+  }
+
+  function onMouseUp() {
+    setDragging(false)
+  }
+
+  function confirm() {
+    if (!crop || crop.w < 10 || crop.h < 10) {
+      // No crop selected, use full image
+      onConfirm(file)
+      return
+    }
+    const c = document.createElement('canvas')
+    c.width = crop.w
+    c.height = crop.h
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
+    c.toBlob((blob) => {
+      const croppedFile = new File([blob], file.name, { type: 'image/jpeg' })
+      onConfirm(croppedFile)
+    }, 'image/jpeg', 0.92)
+  }
+
+  return (
+    <div className="sheet-overlay" onClick={onCancel}>
+      <div className="sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700 }}>
+        <div className="sheet-header">
+          <strong>Recortar imagem</strong>
+          <button type="button" className="icon-btn" aria-label="Fechar" onClick={onCancel}>
+            <X size={19} />
+          </button>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
+          Arraste para selecionar a área da questão. Se não selecionar, a imagem inteira será usada.
+        </p>
+        <div style={{ overflow: 'auto', maxHeight: 400, border: '1px solid var(--color-border)', borderRadius: 8 }}>
+          <canvas
+            ref={canvasRef}
+            style={{ maxWidth: '100%', cursor: 'crosshair', display: 'block' }}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+          />
+        </div>
+        <div className="task-form-actions" style={{ marginTop: 12 }}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>Cancelar</button>
+          <button type="button" className="btn btn-primary btn-sm" onClick={confirm}>
+            <Crop size={15} aria-hidden="true" /> Confirmar recorte
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function QuickAdd() {
   const toast = useToast()
   const [subjects, setSubjects] = useState([])
   const [exams, setExams] = useState([])
   const [saving, setSaving] = useState(false)
+  const [files, setFiles] = useState([]) // {file, preview, croppedFile}
+  const [cropIndex, setCropIndex] = useState(null)
   const [form, setForm] = useState({
     subject_id: '',
     exam_id: '',
     year: '',
     topic: '',
-    imageFile: null,
-    imagePreview: null,
     correct_index: 0,
-    hasImage: true,
   })
 
   useEffect(() => {
@@ -44,52 +157,65 @@ export default function QuickAdd() {
     })
   }, [])
 
-  function handleFile(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) { toast('Envie uma imagem.', 'error'); return }
-    setForm((f) => ({ ...f, imageFile: file, imagePreview: URL.createObjectURL(file) }))
+  function handleFiles(e) {
+    const selected = Array.from(e.target.files || [])
+    if (selected.length === 0) return
+    const newFiles = selected.map((f) => ({
+      file: f,
+      preview: URL.createObjectURL(f),
+      croppedFile: null,
+    }))
+    setFiles((prev) => [...prev, ...newFiles])
+    e.target.value = ''
   }
 
-  async function save() {
+  function removeFile(idx) {
+    setFiles((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  async function saveAll() {
     if (!form.subject_id) { toast('Selecione a matéria.', 'error'); return }
+    if (files.length === 0) { toast('Selecione pelo menos uma imagem.', 'error'); return }
     setSaving(true)
-    try {
-      let imageUrl = null
-      if (form.hasImage && form.imageFile) {
-        imageUrl = await uploadImage(form.imageFile)
+    let done = 0
+    let errors = 0
+    for (const f of files) {
+      try {
+        const fileToUpload = f.croppedFile || f.file
+        const url = await uploadImage(fileToUpload)
+        const { error } = await supabase.from('questions').insert({
+          subject_id: form.subject_id,
+          exam_id: form.exam_id || null,
+          year: form.year ? Number(form.year) : null,
+          topic: form.topic.trim() || null,
+          question_type: 'multiple_choice',
+          prompt: '',
+          stem_image_url: url,
+          options: ['A', 'B', 'C', 'D', 'E'],
+          option_images: [null, null, null, null, null],
+          correct_index: Number(form.correct_index),
+          difficulty: 'medium',
+          status: 'draft',
+          sort_order: 0,
+        })
+        if (error) throw error
+        done++
+      } catch (err) {
+        errors++
+        toast('Erro: ' + err.message, 'error')
       }
-      const { error } = await supabase.from('questions').insert({
-        subject_id: form.subject_id,
-        exam_id: form.exam_id || null,
-        year: form.year ? Number(form.year) : null,
-        topic: form.topic.trim() || null,
-        question_type: 'multiple_choice',
-        prompt: '',
-        stem_image_url: imageUrl,
-        options: ['A', 'B', 'C', 'D', 'E'],
-        option_images: [null, null, null, null, null],
-        correct_index: Number(form.correct_index),
-        difficulty: 'medium',
-        status: 'draft',
-        sort_order: 0,
-      })
-      if (error) throw error
-      toast('Questão criada!')
-      setForm({ subject_id: form.subject_id, exam_id: form.exam_id, year: form.year, topic: form.topic, imageFile: null, imagePreview: null, correct_index: 0, hasImage: true })
-    } catch (err) {
-      toast('Erro: ' + err.message, 'error')
-    } finally {
-      setSaving(false)
     }
+    setSaving(false)
+    toast(`${done} questão(ões) criada(s)${errors > 0 ? `, ${errors} erro(s)` : ''}.`)
+    setFiles([])
   }
 
   return (
     <div className="page">
       <header className="page-header">
         <div>
-          <h2>Adicionar Questão Rápida</h2>
-          <p>Adicione questões com imagem e selecione a alternativa correta.</p>
+          <h2>Adicionar Questões</h2>
+          <p>Adicione questões com imagem e selecione a alternativa correta. Você pode recortar cada imagem antes de enviar.</p>
         </div>
       </header>
 
@@ -121,26 +247,7 @@ export default function QuickAdd() {
           </div>
 
           <div className="field">
-            <label>Imagem da questão (opcional)</label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input type="checkbox" checked={form.hasImage} onChange={(e) => setForm((f) => ({ ...f, hasImage: e.target.checked }))} />
-              Incluir imagem
-            </label>
-            {form.hasImage && (
-              <>
-                <input type="file" accept="image/*" onChange={handleFile} />
-                {form.imagePreview && (
-                  <div className="image-preview" style={{ marginTop: 8 }}>
-                    <img src={form.imagePreview} alt="Preview" style={{ maxWidth: 300, maxHeight: 200 }} />
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setForm((f) => ({ ...f, imageFile: null, imagePreview: null }))}>Remover</button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="field">
-            <label>Alternativa correta</label>
+            <label>Alternativa correta (aplicada a todas)</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {['A', 'B', 'C', 'D', 'E'].map((letter, i) => (
                 <button
@@ -155,14 +262,57 @@ export default function QuickAdd() {
             </div>
           </div>
 
-          <div className="task-form-actions">
-            <button type="button" className="btn btn-primary btn-sm" onClick={save} disabled={saving}>
+          <div className="field">
+            <label>Imagens das questões (selecione quantas quiser)</label>
+            <input type="file" accept="image/*" multiple onChange={handleFiles} />
+          </div>
+
+          {files.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
+              {files.map((f, idx) => (
+                <div key={idx} style={{ position: 'relative', width: 120, textAlign: 'center' }}>
+                  <img src={f.preview} alt="" style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--color-border)' }} />
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    style={{ marginTop: 4, fontSize: 11 }}
+                    onClick={() => setCropIndex(idx)}
+                  >
+                    <Crop size={12} /> Recortar
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-btn icon-btn-danger"
+                    style={{ position: 'absolute', top: 2, right: 2 }}
+                    onClick={() => removeFile(idx)}
+                  >
+                    <X size={14} />
+                  </button>
+                  {f.croppedFile && <span style={{ fontSize: 10, color: 'green' }}>✓ recortado</span>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="task-form-actions" style={{ marginTop: 16 }}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={saveAll} disabled={saving || files.length === 0}>
               {saving && <Loader2 size={15} className="spin" aria-hidden="true" />}
-              {saving ? 'Salvando…' : 'Criar questão'}
+              {saving ? 'Enviando…' : `Criar ${files.length} questão(ões)`}
             </button>
           </div>
         </div>
       </Card>
+
+      {cropIndex !== null && files[cropIndex] && (
+        <CropModal
+          file={files[cropIndex].croppedFile || files[cropIndex].file}
+          onConfirm={(cropped) => {
+            setFiles((prev) => prev.map((f, i) => i === cropIndex ? { ...f, croppedFile: cropped, preview: URL.createObjectURL(cropped) } : f))
+            setCropIndex(null)
+          }}
+          onCancel={() => setCropIndex(null)}
+        />
+      )}
     </div>
   )
 }
