@@ -10,6 +10,7 @@ import Signup from './pages/auth/Signup'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import ResetPassword from './pages/auth/ResetPassword'
 import Beginners from './pages/Beginners'
+import Gerenciar from './pages/Gerenciar'
 import KidsLayout from './pages/kids/KidsLayout'
 import KidsHome from './pages/kids/KidsHome'
 import KidsSubjects from './pages/kids/KidsSubjects'
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="exercicios" element={<PageTransition><KidsExercises /></PageTransition>} />
       </Route>
       <Route path="/iniciantes" element={<PageTransition><Beginners /></PageTransition>} />
+      <Route path="/gerenciar" element={<PageTransition><Gerenciar /></PageTransition>} />
       <Route
         path="/"
         element={

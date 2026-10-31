@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: Home, end: true },
   { to: '/kids', label: 'Kids 🧒', icon: Sparkles, variant: 'orange' },
   { to: '/iniciantes', label: 'Iniciantes', icon: Rocket, variant: 'neutral' },
-  { to: '/ia', label: 'Convest IA', icon: Sparkles },
+  { to: '/gerenciar', label: 'Gerenciar', icon: Trash2 },
   { to: '/explorar', label: 'Explorar', icon: Compass },
   { to: '/estudos', label: 'Meus estudos', icon: BookOpen },
   { to: '/exercicios', label: 'Exercícios', icon: ClipboardList },
