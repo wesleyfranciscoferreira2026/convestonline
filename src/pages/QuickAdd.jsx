@@ -113,7 +113,7 @@ function CropModal({ file, onConfirm, onCancel }) {
   }
 
   return (
-    <div className="sheet-overlay" onClick={onCancel} style={{ zIndex: 100 }}>
+    <div className="sheet-overlay" onClick={(e) => { e.stopPropagation(); onCancel() }} style={{ zIndex: 100 }}>
       <div className="sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 700 }}>
         <div className="sheet-header">
           <strong>Recortar imagem</strong>
@@ -297,7 +297,7 @@ export default function QuickAdd({ onClose }) {
 
   if (onClose) {
     return (
-      <div className="sheet-overlay" onClick={onClose} style={{ zIndex: 50 }}>
+      <div className="sheet-overlay" onClick={cropIndex === null ? onClose : undefined} style={{ zIndex: 50 }}>
         <div className="sheet admin-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-header">
             <strong>Adicionar Questões</strong>
