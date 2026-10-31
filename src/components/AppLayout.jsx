@@ -316,6 +316,8 @@ export default function AppLayout() {
           </div>
         </div>
       )}
+    <QuickAddButton />
     </div>
+
   )
 }
