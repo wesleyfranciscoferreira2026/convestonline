@@ -24,11 +24,13 @@ function CropModal({ file, onConfirm, onCancel }) {
   const [crop, setCrop] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [start, setStart] = useState(null)
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const image = new Image()
     image.onload = () => {
       setImg(image)
+      setReady(true)
       if (canvasRef.current) {
         const c = canvasRef.current
         c.width = image.width
@@ -37,11 +39,16 @@ function CropModal({ file, onConfirm, onCancel }) {
         ctx.drawImage(image, 0, 0)
       }
     }
+    image.onerror = () => {
+      console.error('Failed to load image')
+      setReady(false)
+    }
     image.src = URL.createObjectURL(file)
   }, [file])
 
   function getPos(e) {
     const c = canvasRef.current
+    if (!c) return { x: 0, y: 0 }
     const rect = c.getBoundingClientRect()
     const scaleX = c.width / rect.width
     const scaleY = c.height / rect.height
@@ -52,13 +59,14 @@ function CropModal({ file, onConfirm, onCancel }) {
   }
 
   function onMouseDown(e) {
+    if (!img) return
     setDragging(true)
     setStart(getPos(e))
     setCrop(null)
   }
 
   function onMouseMove(e) {
-    if (!dragging || !start) return
+    if (!dragging || !start || !img) return
     const pos = getPos(e)
     const x = Math.min(start.x, pos.x)
     const y = Math.min(start.y, pos.y)
@@ -78,7 +86,7 @@ function CropModal({ file, onConfirm, onCancel }) {
   function onMouseUp() { setDragging(false) }
 
   function confirm() {
-    if (!crop || crop.w < 10 || crop.h < 10) {
+    if (!crop || crop.w < 10 || crop.h < 10 || !img) {
       onConfirm(file)
       return
     }
@@ -88,7 +96,8 @@ function CropModal({ file, onConfirm, onCancel }) {
     const ctx = c.getContext('2d')
     ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h)
     c.toBlob((blob) => {
-      const croppedFile = new File([blob], file.name, { type: 'image/jpeg' })
+      if (!blob) { onConfirm(file); return }
+      const croppedFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })
       onConfirm(croppedFile)
     }, 'image/jpeg', 0.92)
   }
@@ -106,9 +115,10 @@ function CropModal({ file, onConfirm, onCancel }) {
           Arraste para selecionar a área da questão. Se não selecionar, a imagem inteira será usada.
         </p>
         <div style={{ overflow: 'auto', maxHeight: 400, border: '1px solid var(--color-border)', borderRadius: 8 }}>
+          {!ready && <p style={{ padding: 20, textAlign: 'center' }}>Carregando imagem…</p>}
           <canvas
             ref={canvasRef}
-            style={{ maxWidth: '100%', cursor: 'crosshair', display: 'block' }}
+            style={{ maxWidth: '100%', cursor: 'crosshair', display: ready ? 'block' : 'none' }}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
@@ -117,7 +127,7 @@ function CropModal({ file, onConfirm, onCancel }) {
         </div>
         <div className="task-form-actions" style={{ marginTop: 12 }}>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel}>Cancelar</button>
-          <button type="button" className="btn btn-primary btn-sm" onClick={confirm}>
+          <button type="button" className="btn btn-primary btn-sm" onClick={confirm} disabled={!ready}>
             <Crop size={15} aria-hidden="true" /> Confirmar recorte
           </button>
         </div>
@@ -166,6 +176,7 @@ export default function QuickAdd({ onClose }) {
     setSaving(true)
     let done = 0
     let errors = 0
+    const errorMessages = []
     for (const f of files) {
       try {
         const fileToUpload = f.croppedFile || f.file
@@ -183,17 +194,23 @@ export default function QuickAdd({ onClose }) {
           status: 'draft',
           sort_order: 0,
         })
-        if (error) throw error
+        if (error) throw new Error(error.message)
         done++
       } catch (err) {
         errors++
-        toast('Erro: ' + err.message, 'error')
+        errorMessages.push(err.message)
       }
     }
     setSaving(false)
-    toast(`${done} questão(ões) criada(s)${errors > 0 ? `, ${errors} erro(s)` : ''}.`)
-    setFiles([])
-    if (onClose) onClose()
+    if (errors > 0) {
+      toast(`${done} criada(s), ${errors} erro(s): ${errorMessages[0]}`, 'error')
+    } else {
+      toast(`${done} questão(ões) criada(s) com sucesso!`)
+    }
+    if (done > 0) {
+      setFiles([])
+      if (onClose) onClose()
+    }
   }
 
   const content = (
