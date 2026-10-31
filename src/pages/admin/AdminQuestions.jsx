@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ClipboardList, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { ClipboardList, Loader2, Pencil, Plus, Trash2, X, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
 import { useToast } from '../../components/Toast'
 import { Card, EmptyState } from '../../components/ui'
@@ -26,6 +26,11 @@ export default function AdminQuestions() {
   const [filterSubject, setFilterSubject] = useState('')
   const [editing, setEditing] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkForm, setBulkForm] = useState({ subject_id: '', exam_id: '', year: '', topic: '', count: 5 })
+  const [bulkFiles, setBulkFiles] = useState([])
+  const [bulkUploading, setBulkUploading] = useState(false)
+  const [bulkProgress, setBulkProgress] = useState('')
 
   const blank = {
     subject_id: '',
@@ -121,6 +126,47 @@ export default function AdminQuestions() {
     load()
   }
 
+  async function handleBulkUpload() {
+    if (!bulkForm.subject_id) { toast('Selecione a matéria.', 'error'); return }
+    if (bulkFiles.length === 0) { toast('Selecione pelo menos uma imagem.', 'error'); return }
+    setBulkUploading(true)
+    setBulkProgress('Enviando 0/' + bulkFiles.length)
+    let done = 0
+    let errors = 0
+    for (const file of bulkFiles) {
+      try {
+        const url = await uploadImage(file)
+        const { error } = await supabase.from('questions').insert({
+          subject_id: bulkForm.subject_id,
+          exam_id: bulkForm.exam_id || null,
+          year: bulkForm.year ? Number(bulkForm.year) : null,
+          topic: bulkForm.topic.trim() || null,
+          question_type: 'multiple_choice',
+          prompt: '',
+          stem_image_url: url,
+          options: ['A', 'B', 'C', 'D', 'E'],
+          option_images: [null, null, null, null, null],
+          correct_index: 0,
+          difficulty: 'medium',
+          status: 'draft',
+          sort_order: 0,
+        })
+        if (error) throw error
+        done++
+      } catch (err) {
+        errors++
+        toast('Erro em ' + file.name + ': ' + err.message, 'error')
+      }
+      setBulkProgress(`Enviando ${done + errors}/${bulkFiles.length}`)
+    }
+    setBulkUploading(false)
+    setBulkProgress('')
+    toast(`${done} questão(ões) criada(s)${errors > 0 ? `, ${errors} erro(s)` : ''}.`)
+    setBulkFiles([])
+    setBulkOpen(false)
+    load()
+  }
+
   return (
     <div className="page">
       <header className="page-header admin-page-header">
@@ -128,9 +174,14 @@ export default function AdminQuestions() {
           <h2>Questões</h2>
           <p>Cadastre questões por prova, ano e tópico, com imagens no enunciado e nas alternativas.</p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={() => setEditing({ ...blank, options: ['', '', '', ''], option_images: [null, null, null, null] })}>
-          <Plus size={16} aria-hidden="true" /> Nova questão
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="btn btn-primary" onClick={() => setEditing({ ...blank, options: ['', '', '', ''], option_images: [null, null, null, null] })}>
+            <Plus size={16} aria-hidden="true" /> Nova questão
+          </button>
+          <button type="button" className="btn btn-outline" onClick={() => setBulkOpen(true)}>
+            <Upload size={16} aria-hidden="true" /> Upload em lote
+          </button>
+        </div>
       </header>
 
       <div className="admin-filter">
@@ -151,7 +202,7 @@ export default function AdminQuestions() {
           {filtered.map((q) => (
             <div key={q.id} className="admin-row admin-row-question">
               <div className="admin-row-info">
-                <strong>{q.prompt.length > 140 ? q.prompt.slice(0, 140) + '…' : q.prompt}</strong>
+                <strong>{q.prompt.length > 140 ? q.prompt.slice(0, 140) + '…' : q.prompt || '(sem texto)'}</strong>
                 <span>
                   {q.subjects?.name}
                   {q.exams?.name ? ` · ${q.exams.name}` : ''}
@@ -214,6 +265,68 @@ export default function AdminQuestions() {
               onCancel={() => setEditing(null)}
               onSubjectChange={(sid) => setEditing((e) => ({ ...e, subject_id: sid, lesson_id: '' }))}
             />
+          </div>
+        </div>
+      )}
+
+      {bulkOpen && (
+        <div className="sheet-overlay" onClick={() => setBulkOpen(false)}>
+          <div className="sheet admin-sheet" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-header">
+              <strong>Upload em lote de questões</strong>
+              <button type="button" className="icon-btn" aria-label="Fechar" onClick={() => setBulkOpen(false)}>
+                <X size={19} />
+              </button>
+            </div>
+            <div className="form">
+              <div className="field">
+                <label htmlFor="bulk-subject">Matéria *</label>
+                <select id="bulk-subject" className="input" required value={bulkForm.subject_id} onChange={(e) => setBulkForm((f) => ({ ...f, subject_id: e.target.value }))}>
+                  <option value="">Selecione…</option>
+                  {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div className="task-form-row">
+                <div className="field">
+                  <label htmlFor="bulk-exam">Prova / banca</label>
+                  <select id="bulk-exam" className="input" value={bulkForm.exam_id} onChange={(e) => setBulkForm((f) => ({ ...f, exam_id: e.target.value }))}>
+                    <option value="">Nenhuma</option>
+                    {exams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor="bulk-year">Ano</label>
+                  <input id="bulk-year" type="number" className="input" min={1990} max={2100} placeholder="ex.: 2023" value={bulkForm.year} onChange={(e) => setBulkForm((f) => ({ ...f, year: e.target.value }))} />
+                </div>
+                <div className="field">
+                  <label htmlFor="bulk-topic">Tópico</label>
+                  <input id="bulk-topic" className="input" placeholder="ex.: Cinemática" value={bulkForm.topic} onChange={(e) => setBulkForm((f) => ({ ...f, topic: e.target.value }))} />
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="bulk-files">Imagens das questões (selecione quantas quiser)</label>
+                <input
+                  id="bulk-files"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => setBulkFiles(Array.from(e.target.files || []))}
+                />
+                {bulkFiles.length > 0 && (
+                  <p className="gen-hint">{bulkFiles.length} arquivo(s) selecionado(s).</p>
+                )}
+              </div>
+              {bulkProgress && <p className="form-notice">{bulkProgress}</p>}
+              <div className="task-form-actions">
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setBulkOpen(false); setBulkFiles([]) }} disabled={bulkUploading}>
+                  Cancelar
+                </button>
+                <button type="button" className="btn btn-primary btn-sm" onClick={handleBulkUpload} disabled={bulkUploading || bulkFiles.length === 0}>
+                  {bulkUploading && <Loader2 size={15} className="spin" aria-hidden="true" />}
+                  {bulkUploading ? 'Enviando…' : `Criar ${bulkFiles.length} questão(ões)`}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
